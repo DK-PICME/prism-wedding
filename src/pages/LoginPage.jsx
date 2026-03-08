@@ -7,7 +7,7 @@ import { useAuth } from '../contexts/AuthContext';
 
 export const LoginPage = () => {
   const navigate = useNavigate();
-  const { login, error: authError } = useAuth();
+  const { login, loginWithGoogle, error: authError } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [formData, setFormData] = useState({
