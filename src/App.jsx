@@ -1,4 +1,5 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { GoogleOAuthProvider } from '@react-oauth/google';
 import { WaitingPage } from './pages/WaitingPage';
 import { UploadPage } from './pages/UploadPage';
 import { ResultPage } from './pages/ResultPage';
@@ -81,12 +82,20 @@ function AppContent() {
 }
 
 function App() {
+  const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+
+  if (!googleClientId) {
+    console.warn('Google Client ID가 설정되지 않았습니다. .env 파일에서 VITE_GOOGLE_CLIENT_ID를 확인하세요.');
+  }
+
   return (
-    <Router>
-      <AuthProvider>
-        <AppContent />
-      </AuthProvider>
-    </Router>
+    <GoogleOAuthProvider clientId={googleClientId || ''}>
+      <Router>
+        <AuthProvider>
+          <AppContent />
+        </AuthProvider>
+      </Router>
+    </GoogleOAuthProvider>
   );
 }
 

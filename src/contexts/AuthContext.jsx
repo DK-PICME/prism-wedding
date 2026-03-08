@@ -149,9 +149,12 @@ export function AuthProvider({ children }) {
   };
 
   // 구글 로그인 (credential)
-  const loginWithGoogle = async (credential) => {
+  const loginWithGoogle = async (idToken) => {
     try {
       setError(null);
+      
+      // ID Token을 Firebase Credential로 변환
+      const credential = GoogleAuthProvider.credential(idToken);
       const result = await signInWithCredential(auth, credential);
 
       // Firestore에 사용자 정보 저장

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { GoogleLogin } from '@react-oauth/google';
 import { PrismHeader } from '../components/PrismHeader';
 import { PrismFooter } from '../components/PrismFooter';
 import { useAuth } from '../contexts/AuthContext';
@@ -70,13 +71,19 @@ export const LoginPage = () => {
     }
   };
 
-  const handleGoogleLogin = async () => {
+  const handleGoogleLogin = async (credentialResponse) => {
     setError('');
     setIsLoading(true);
     try {
-      // 임시: Google 로그인 구현 예정
-      console.log('Google Login 준비 중...');
-      setError('Google 로그인은 아직 구현 준비 중입니다');
+      if (!credentialResponse?.credential) {
+        setError('Google 로그인에 실패했습니다');
+        return;
+      }
+
+      await loginWithGoogle(credentialResponse.credential);
+      navigate('/order-list');
+    } catch (err) {
+      setError(err.message || 'Google 로그인에 실패했습니다');
     } finally {
       setIsLoading(false);
     }
@@ -185,15 +192,16 @@ export const LoginPage = () => {
                   </div>
                 </div>
 
-                <button
-                  type="button"
-                  onClick={handleGoogleLogin}
-                  disabled={isLoading}
-                  className="w-full px-4 py-3 border border-neutral-300 hover:bg-neutral-50 rounded-lg transition-colors flex items-center justify-center gap-2 text-neutral-900 disabled:bg-neutral-100"
-                >
-                  <i className="fa-brands fa-google text-lg"></i>
-                  Google로 로그인
-                </button>
+                <div className="w-full">
+                  <GoogleLogin
+                    onSuccess={handleGoogleLogin}
+                    onError={() => setError('Google 로그인에 실패했습니다')}
+                    theme="outline"
+                    size="large"
+                    text="signin_with"
+                    locale="ko"
+                  />
+                </div>
 
                 <button
                   type="button"
