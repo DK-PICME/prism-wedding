@@ -117,22 +117,6 @@ export const PrismHeader = ({ activeNav = 'order-list' }) => {
                     <i className="fa-solid fa-gear text-neutral-600"></i>
                     설정
                   </button>
-                  
-                  <button
-                    onClick={() => handleMenuItemClick('/order-list')}
-                    className="w-full px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-50 flex items-center gap-3 transition-colors"
-                  >
-                    <i className="fa-solid fa-user text-neutral-600"></i>
-                    프로필 보기
-                  </button>
-
-                  <button
-                    onClick={() => handleMenuItemClick('/settings')}
-                    className="w-full px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-50 flex items-center gap-3 transition-colors"
-                  >
-                    <i className="fa-solid fa-link text-neutral-600"></i>
-                    연결된 계정
-                  </button>
 
                   <button
                     onClick={() => handleMenuItemClick('/inquiry')}
@@ -146,9 +130,9 @@ export const PrismHeader = ({ activeNav = 'order-list' }) => {
 
                   <button
                     onClick={handleLogout}
-                    className="w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center gap-3 transition-colors"
+                    className="w-full px-4 py-2 text-sm text-neutral-900 hover:bg-neutral-100 flex items-center gap-3 transition-colors"
                   >
-                    <i className="fa-solid fa-sign-out-alt text-red-600"></i>
+                    <i className="fa-solid fa-sign-out-alt text-neutral-900"></i>
                     로그아웃
                   </button>
                 </div>
