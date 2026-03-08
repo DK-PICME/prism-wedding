@@ -1,13 +1,30 @@
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { PrismHeader } from '../components/PrismHeader';
 import { PrismFooter } from '../components/PrismFooter';
 
 export const SettingsPage = () => {
-  const { currentUser, userData } = useAuth();
+  const navigate = useNavigate();
+  const { currentUser, userData, logout } = useAuth();
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const [logoutError, setLogoutError] = useState('');
   
   // 사용자 이름 (displayName 또는 이메일의 앞 부분)
   const displayName = userData?.displayName || currentUser?.displayName || currentUser?.email?.split('@')[0] || '사용자';
   const userEmail = currentUser?.email || 'user@example.com';
+
+  const handleLogout = async () => {
+    setIsLoggingOut(true);
+    setLogoutError('');
+    try {
+      await logout();
+      navigate('/login');
+    } catch (err) {
+      setLogoutError(err.message || '로그아웃에 실패했습니다');
+      setIsLoggingOut(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-white">
@@ -104,6 +121,24 @@ export const SettingsPage = () => {
                         <input type="password" placeholder="새 비밀번호 확인" className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-neutral-500" />
                         <button className="px-4 py-2 bg-neutral-900 text-white hover:bg-neutral-800 rounded-lg transition-colors">
                           비밀번호 변경
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="border-t border-neutral-200 pt-6">
+                      <h3 className="text-lg text-neutral-900 mb-3">계정 관리</h3>
+                      <div className="space-y-3">
+                        {logoutError && (
+                          <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
+                            {logoutError}
+                          </div>
+                        )}
+                        <button
+                          onClick={handleLogout}
+                          disabled={isLoggingOut}
+                          className="w-full px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors disabled:bg-red-400 font-medium"
+                        >
+                          {isLoggingOut ? '로그아웃 중...' : '로그아웃'}
                         </button>
                       </div>
                     </div>

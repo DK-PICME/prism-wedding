@@ -1,9 +1,11 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { PrismHeader } from '../components/PrismHeader';
 import { PrismFooter } from '../components/PrismFooter';
 import { useAuth } from '../contexts/AuthContext';
 
 export const PasswordRecoveryPage = () => {
+  const navigate = useNavigate();
   const { resetPassword, error: authError } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
@@ -101,9 +103,13 @@ export const PasswordRecoveryPage = () => {
                   </div>
                 </div>
 
-                <a href="?page=order-list" className="block w-full px-6 py-3 border border-neutral-300 hover:bg-neutral-50 text-neutral-900 rounded-lg transition-colors text-center font-medium cursor-pointer">
+                <button
+                  type="button"
+                  onClick={() => navigate('/login')}
+                  className="block w-full px-6 py-3 border border-neutral-300 hover:bg-neutral-50 text-neutral-900 rounded-lg transition-colors text-center font-medium cursor-pointer"
+                >
                   로그인으로 돌아가기
-                </a>
+                </button>
               </form>
 
               <div className="mt-6 p-4 bg-neutral-50 rounded-lg">
@@ -117,9 +123,12 @@ export const PasswordRecoveryPage = () => {
             <div className="text-center mt-6">
               <p className="text-sm text-neutral-600">
                 계정이 없으신가요?{' '}
-                <a href="?page=sign-up" className="text-neutral-900 font-semibold hover:underline cursor-pointer">
+                <button
+                  onClick={() => navigate('/sign-up')}
+                  className="text-neutral-900 font-semibold hover:underline cursor-pointer"
+                >
                   회원가입
-                </a>
+                </button>
               </p>
             </div>
           </div>
