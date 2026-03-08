@@ -16,6 +16,7 @@ import { PaymentPage } from './pages/PaymentPage';
 import { PasswordRecoveryPage } from './pages/PasswordRecoveryPage';
 import { SignUpPage } from './pages/SignUpPage';
 import { LoginPage } from './pages/LoginPage';
+import { VerifyEmailPage } from './pages/VerifyEmailPage';
 import { InquiryPage } from './pages/InquiryPage';
 import { FailedItemManagementPage } from './pages/FailedItemManagementPage';
 import { PhotoManagementPage } from './pages/PhotoManagementPage';
@@ -70,6 +71,8 @@ function AppContent() {
         return <SignUpPage />;
       case 'login':
         return <LoginPage />;
+      case 'verify-email':
+        return <VerifyEmailPage />;
       case 'inquiry':
         return <InquiryPage />;
       case 'failed-items':

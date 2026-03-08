@@ -96,8 +96,20 @@ export const LoginPage = () => {
 
             <div className="bg-white border border-neutral-200 rounded-2xl p-8">
               {(error || authError) && (
-                <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
+                <div className={`mb-4 p-3 rounded-lg text-sm ${
+                  error.includes('이메일 인증') || authError?.includes('이메일 인증')
+                    ? 'bg-amber-50 border border-amber-200 text-amber-700'
+                    : 'bg-red-50 border border-red-200 text-red-700'
+                }`}>
                   {error || authError}
+                  {(error.includes('이메일 인증') || authError?.includes('이메일 인증')) && (
+                    <p className="mt-2 text-sm">
+                      <a href="?page=sign-up" className="font-semibold underline hover:no-underline">
+                        회원가입 페이지로 이동
+                      </a>
+                      하여 이메일 인증을 완료해주세요.
+                    </p>
+                  )}
                 </div>
               )}
 

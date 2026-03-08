@@ -89,7 +89,7 @@ export const SignUpPage = () => {
     setIsLoading(true);
     try {
       await signup(formData.email, formData.password, formData.studioName);
-      window.location.href = '?page=order-list';
+      window.location.href = '?page=verify-email';
     } catch (err) {
       if (err.code === 'auth/email-already-in-use') {
         setError('이미 사용 중인 이메일입니다');

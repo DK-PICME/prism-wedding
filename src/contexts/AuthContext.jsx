@@ -8,6 +8,7 @@ import {
   updateProfile,
   signInWithCredential,
   GoogleAuthProvider,
+  sendEmailVerification,
 } from 'firebase/auth';
 import { auth, db } from '../config/firebase';
 import { doc, setDoc, getDoc } from 'firebase/firestore';
@@ -62,6 +63,16 @@ export function AuthProvider({ children }) {
         await updateProfile(result.user, { displayName });
       }
 
+      // 이메일 검증 메일 발송
+      try {
+        await sendEmailVerification(result.user, {
+          url: `${window.location.origin}/?page=verify-email`,
+          handleCodeInApp: true,
+        });
+      } catch (emailError) {
+        console.error('이메일 검증 발송 오류:', emailError);
+      }
+
       // Firestore에 사용자 정보 저장
       await saveUserData(result.user.uid, email, displayName);
 
@@ -77,6 +88,13 @@ export function AuthProvider({ children }) {
     try {
       setError(null);
       const result = await signInWithEmailAndPassword(auth, email, password);
+
+      // 이메일 검증 확인
+      if (!result.user.emailVerified) {
+        setError('이메일 인증이 필요합니다. 등록된 이메일의 인증 링크를 클릭해주세요.');
+        await signOut(auth);
+        throw new Error('이메일 미인증');
+      }
 
       // Firestore에서 사용자 정보 업로드
       await saveUserData(result.user.uid, result.user.email, result.user.displayName);
@@ -106,6 +124,24 @@ export function AuthProvider({ children }) {
     try {
       setError(null);
       await sendPasswordResetEmail(auth, email);
+    } catch (err) {
+      setError(err.message);
+      throw err;
+    }
+  };
+
+  // 이메일 검증 재전송
+  const resendEmailVerification = async (user) => {
+    try {
+      setError(null);
+      if (!user) {
+        throw new Error('사용자 정보가 없습니다');
+      }
+
+      await sendEmailVerification(user, {
+        url: `${window.location.origin}/?page=verify-email`,
+        handleCodeInApp: true,
+      });
     } catch (err) {
       setError(err.message);
       throw err;
@@ -169,6 +205,7 @@ export function AuthProvider({ children }) {
     logout,
     resetPassword,
     loginWithGoogle,
+    resendEmailVerification,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
