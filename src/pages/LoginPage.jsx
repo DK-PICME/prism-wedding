@@ -9,6 +9,7 @@ export const LoginPage = () => {
   const navigate = useNavigate();
   const { login, loginWithGoogle, error: authError } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
   const [error, setError] = useState('');
   const [formData, setFormData] = useState({
     email: '',
@@ -73,7 +74,7 @@ export const LoginPage = () => {
 
   const handleGoogleLogin = async (credentialResponse) => {
     setError('');
-    setIsLoading(true);
+    setGoogleLoading(false);
     try {
       if (!credentialResponse?.credential) {
         setError('Google 로그인에 실패했습니다');
@@ -84,8 +85,6 @@ export const LoginPage = () => {
       navigate('/order-list');
     } catch (err) {
       setError(err.message || 'Google 로그인에 실패했습니다');
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -192,7 +191,7 @@ export const LoginPage = () => {
                   </div>
                 </div>
 
-                <div className="w-full" style={{ display: 'flex' }}>
+                <div className="w-full" style={{ display: 'flex', justifyContent: 'center' }}>
                   <GoogleLogin
                     onSuccess={handleGoogleLogin}
                     onError={() => setError('Google 로그인에 실패했습니다')}
@@ -201,12 +200,17 @@ export const LoginPage = () => {
                     text="signin_with"
                     locale="ko"
                     width="100%"
+                    containerProps={{
+                      style: {
+                        width: '100%'
+                      }
+                    }}
                   />
                 </div>
 
                 <button
                   type="button"
-                  disabled={isLoading}
+                  disabled={isLoading || googleLoading}
                   className="w-full px-4 py-3 border border-neutral-300 hover:bg-neutral-50 rounded-lg transition-colors flex items-center justify-center gap-2 text-neutral-900 disabled:bg-neutral-100"
                 >
                   <i className="fa-brands fa-naver text-lg"></i>
