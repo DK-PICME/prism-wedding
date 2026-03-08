@@ -93,12 +93,13 @@ export const SignUpPage = () => {
       await signup(formData.email, formData.password, formData.studioName);
       navigate('/verify-email');
     } catch (err) {
-      if (err.code === 'auth/email-already-in-use') {
-        setError('이미 사용 중인 이메일입니다');
-      } else if (err.code === 'auth/weak-password') {
+      const code = err?.code || '';
+      if (code === 'auth/email-already-in-use' || code === 'auth/account-exists-with-different-credential') {
+        setError('이 이메일은 이미 가입되어 있습니다. Google로 가입하셨다면 아래 Google로 가입을, 이메일로 가입하셨다면 로그인 페이지에서 비밀번호 찾기를 이용해주세요.');
+      } else if (code === 'auth/weak-password') {
         setError('비밀번호가 너무 약합니다');
       } else {
-        setError(err.message || '회원가입에 실패했습니다');
+        setError(err?.message || '회원가입에 실패했습니다');
       }
     } finally {
       setIsLoading(false);

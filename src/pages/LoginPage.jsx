@@ -56,14 +56,19 @@ export const LoginPage = () => {
       await login(formData.email, formData.password);
       navigate('/order-list');
     } catch (err) {
-      if (err.code === 'auth/user-not-found') {
-        setError('등록되지 않은 이메일입니다');
-      } else if (err.code === 'auth/wrong-password') {
-        setError('비밀번호가 올바르지 않습니다');
-      } else if (err.code === 'auth/invalid-email') {
+      const code = err?.code || '';
+      if (code === 'auth/invalid-credential' || code === 'auth/user-not-found' || code === 'auth/wrong-password') {
+        setError('이메일 또는 비밀번호가 올바르지 않습니다');
+      } else if (code === 'auth/invalid-email') {
         setError('유효하지 않은 이메일입니다');
+      } else if (code === 'auth/too-many-requests') {
+        setError('너무 많은 시도가 있었습니다. 잠시 후 다시 시도해주세요');
+      } else if (code === 'auth/user-disabled') {
+        setError('비활성화된 계정입니다. 관리자에게 문의해주세요');
+      } else if (err?.message?.includes('이메일 미인증') || code === 'auth/email-not-verified') {
+        setError('이메일 인증이 필요합니다. 등록된 이메일의 인증 링크를 클릭해주세요.');
       } else {
-        setError(err.message || '로그인에 실패했습니다');
+        setError(err?.message || '로그인에 실패했습니다');
       }
     } finally {
       setIsLoading(false);
@@ -77,7 +82,16 @@ export const LoginPage = () => {
       await loginWithGooglePopup();
       navigate('/order-list');
     } catch (err) {
-      setError(err.message || 'Google 로그인에 실패했습니다');
+      const code = err?.code || '';
+      if (code === 'auth/popup-closed-by-user') {
+        setError('Google 로그인이 취소되었습니다');
+      } else if (code === 'auth/popup-blocked') {
+        setError('팝업이 차단되었습니다. 브라우저 설정에서 팝업을 허용해주세요');
+      } else if (code === 'auth/invalid-credential') {
+        setError('Google 로그인에 실패했습니다. 다시 시도해주세요');
+      } else {
+        setError(err?.message || 'Google 로그인에 실패했습니다');
+      }
     } finally {
       setIsLoading(false);
     }
