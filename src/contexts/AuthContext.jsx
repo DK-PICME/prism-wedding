@@ -292,9 +292,20 @@ export function AuthProvider({ children }) {
       setUserData((prev) => ({ ...prev, settings: mergedSettings }));
       return true;
     } catch (err) {
-      if (err?.code === 'permission-denied' && mergedSettings) {
+      const isPermissionDenied = err?.code === 'permission-denied' || err?.message?.includes('permission');
+      if (isPermissionDenied) {
+        if (mergedSettings) {
+          setUserData((prev) => ({ ...prev, settings: mergedSettings }));
+        } else {
+          setUserData((prev) => {
+            const merged = { ...(prev?.settings || {}), ...partialSettings };
+            if (partialSettings.notifications) {
+              merged.notifications = { ...(prev?.settings?.notifications || {}), ...partialSettings.notifications };
+            }
+            return { ...prev, settings: merged };
+          });
+        }
         console.warn('Firestore 설정 저장 실패(권한)');
-        setUserData((prev) => ({ ...prev, settings: mergedSettings }));
         return true;
       }
       setError(err.message);
@@ -424,14 +435,27 @@ export function AuthProvider({ children }) {
       setCurrentUser(user);
 
       if (user) {
-        // Firestore에서 사용자 데이터 불러오기 (선택적)
-        try {
-          const userRef = doc(db, 'users', user.uid);
-          const userSnap = await getDoc(userRef);
-          if (userSnap.exists()) {
-            setUserData(userSnap.data());
-          } else {
-            // Firestore에 데이터가 없으면 Firebase Auth 정보로 생성
+        // 토큰 준비 후 Firestore 로드 (FutureBuilder 패턴: auth ready → getDoc)
+        (async () => {
+          try {
+            await user.getIdToken(true);
+            if (auth.currentUser?.uid !== user.uid) return;
+            const userRef = doc(db, 'users', user.uid);
+            const userSnap = await getDoc(userRef);
+            if (auth.currentUser?.uid !== user.uid) return;
+            if (userSnap.exists()) {
+              setUserData(userSnap.data());
+            } else {
+              setUserData({
+                uid: user.uid,
+                email: user.email,
+                displayName: user.displayName || '',
+                photoURL: user.photoURL || '',
+              });
+            }
+          } catch (err) {
+            if (auth.currentUser?.uid !== user.uid) return;
+            console.warn('Firestore 데이터 로드 실패, Firebase Auth 정보 사용:', err.code);
             setUserData({
               uid: user.uid,
               email: user.email,
@@ -439,16 +463,7 @@ export function AuthProvider({ children }) {
               photoURL: user.photoURL || '',
             });
           }
-        } catch (err) {
-          console.warn('Firestore 데이터 로드 실패, Firebase Auth 정보 사용:', err.code);
-          // 권한 오류 또는 다른 오류 시 Firebase Auth 정보 사용
-          setUserData({
-            uid: user.uid,
-            email: user.email,
-            displayName: user.displayName || '',
-            photoURL: user.photoURL || '',
-          });
-        }
+        })();
       } else {
         setUserData(null);
       }
