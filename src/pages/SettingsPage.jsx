@@ -1,7 +1,14 @@
+import { useAuth } from '../contexts/AuthContext';
 import { PrismHeader } from '../components/PrismHeader';
 import { PrismFooter } from '../components/PrismFooter';
 
 export const SettingsPage = () => {
+  const { currentUser, userData } = useAuth();
+  
+  // 사용자 이름 (displayName 또는 이메일의 앞 부분)
+  const displayName = userData?.displayName || currentUser?.displayName || currentUser?.email?.split('@')[0] || '사용자';
+  const userEmail = currentUser?.email || 'user@example.com';
+
   return (
     <div className="min-h-screen bg-white">
       <PrismHeader activeNav="settings" />
@@ -23,8 +30,8 @@ export const SettingsPage = () => {
                       alt="User"
                       className="w-24 h-24 rounded-full border-4 border-neutral-200 mx-auto mb-4"
                     />
-                    <h3 className="text-xl text-neutral-900 mb-1">웨딩 스튜디오</h3>
-                    <p className="text-neutral-600 text-sm">wedding@example.com</p>
+                    <h3 className="text-xl text-neutral-900 mb-1">{displayName}</h3>
+                    <p className="text-neutral-600 text-sm">{userEmail}</p>
                     <button className="mt-3 px-4 py-2 border border-neutral-300 hover:bg-neutral-50 rounded-lg text-sm transition-colors">
                       <i className="fa-solid fa-camera mr-2"></i>아바타 변경
                     </button>
@@ -33,11 +40,11 @@ export const SettingsPage = () => {
                   <div className="space-y-3">
                     <div>
                       <label className="block text-sm text-neutral-700 mb-2">이름</label>
-                      <input type="text" defaultValue="웨딩 스튜디오" className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-neutral-500" />
+                      <input type="text" defaultValue={displayName} className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-neutral-500" />
                     </div>
                     <div>
                       <label className="block text-sm text-neutral-700 mb-2">이메일</label>
-                      <input type="email" defaultValue="wedding@example.com" className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-neutral-500" />
+                      <input type="email" defaultValue={userEmail} className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-neutral-500" />
                     </div>
                     <button className="w-full px-4 py-2 bg-neutral-900 text-white hover:bg-neutral-800 rounded-lg transition-colors">
                       프로필 저장
@@ -81,7 +88,7 @@ export const SettingsPage = () => {
                             </div>
                             <div>
                               <div className="text-neutral-900">이메일</div>
-                              <div className="text-sm text-neutral-600">wedding@example.com</div>
+                              <div className="text-sm text-neutral-600">{userEmail}</div>
                             </div>
                           </div>
                           <span className="px-3 py-1 text-sm bg-neutral-100 text-neutral-600 rounded">기본 계정</span>
