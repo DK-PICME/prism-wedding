@@ -1,0 +1,387 @@
+
+                <html>
+                <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+                    <script src="https://cdn.tailwindcss.com"></script>
+                    <script>
+                        window.FontAwesomeConfig = {
+                            autoReplaceSvg: 'nest', // Options: 'nest', 'remove', 'replace'
+                        };
+                    </script>
+                    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+                    <style>
+                    </style>
+                    <script>
+                    tailwind.config = {
+                    theme: {
+                        extend: {
+                        colors: {
+                            primary: {"50":"#fafafa","100":"#f5f5f5","200":"#e5e5e5","300":"#d4d4d4","400":"#a3a3a3","500":"#737373","600":"#525252","700":"#404040","800":"#262626","900":"#171717","950":"#0a0a0a"}
+                        }
+                        }
+                    }
+                    }
+                </script>
+                </head>
+
+                <body>
+                        <div id="main-app" class="min-h-screen bg-white">
+  
+  <header id="header" class="fixed top-0 left-0 right-0 bg-white border-b border-neutral-200 z-50">
+    <div class="flex items-center justify-between px-8 py-4">
+      <div class="flex items-center gap-8">
+        <div class="flex items-center gap-3">
+          <div class="flex items-center justify-center w-10 h-10 bg-gradient-to-r from-neutral-800 to-neutral-600 rounded-lg">
+            <i class="fa-solid fa-gem text-white text-lg"></i>
+          </div>
+          <span class="text-xl text-neutral-900">Prism Studio</span>
+        </div>
+        
+        <nav class="flex items-center gap-1">
+          <a href="#" class="px-4 py-2 text-neutral-600 hover:text-neutral-900 hover:bg-neutral-50 rounded-lg transition-colors">
+            <i class="fa-solid fa-images mr-2"></i>사진 관리
+          </a>
+          <a href="#" class="px-4 py-2 text-neutral-600 hover:text-neutral-900 hover:bg-neutral-50 rounded-lg transition-colors">
+            <i class="fa-solid fa-list-check mr-2"></i>주문 내역
+          </a>
+          <a href="#" class="px-4 py-2 text-neutral-600 hover:text-neutral-900 hover:bg-neutral-50 rounded-lg transition-colors">
+            <i class="fa-solid fa-file-invoice mr-2"></i>주문 상세
+          </a>
+          <a href="#" class="px-4 py-2 text-neutral-900 bg-neutral-100 rounded-lg">
+            <i class="fa-solid fa-gear mr-2"></i>설정
+          </a>
+        </nav>
+      </div>
+      
+      <div class="flex items-center gap-4">
+        <button class="relative p-2 text-neutral-900 bg-neutral-100 rounded-lg">
+          <i class="fa-solid fa-bell text-xl"></i>
+          <span class="absolute top-1 right-1 w-2 h-2 bg-neutral-500 rounded-full"></span>
+        </button>
+        
+        <div class="flex items-center gap-3 pl-4 border-l border-neutral-200">
+          <img src="https://api.dicebear.com/7.x/notionists/svg?scale=200&seed=4782" alt="User" class="w-10 h-10 rounded-full border-2 border-neutral-200">
+          <div class="text-sm">
+            <div class="text-neutral-900">웨딩 스튜디오</div>
+            <div class="text-neutral-500">wedding@example.com</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main id="billing-main" class="pt-[73px]">
+    
+    <div class="px-8 py-8">
+      <div class="max-w-[1376px] mx-auto">
+        
+        <div class="mb-6">
+          <h1 class="text-3xl text-neutral-900 mb-2">청구 및 결제</h1>
+          <p class="text-neutral-600">결제 수단을 관리하고 결제 내역을 확인하세요</p>
+        </div>
+
+        <div class="grid grid-cols-3 gap-6">
+          
+          <div class="col-span-2 space-y-6">
+            
+            <div class="bg-white border border-neutral-200 rounded-2xl">
+              <div class="border-b border-neutral-200 p-6">
+                <div class="flex items-center justify-between">
+                  <h2 class="text-xl text-neutral-900">결제 수단</h2>
+                  <button class="px-4 py-2 bg-neutral-900 text-white hover:bg-neutral-800 rounded-lg transition-colors">
+                    <i class="fa-solid fa-plus mr-2"></i>결제 수단 추가
+                  </button>
+                </div>
+              </div>
+              <div class="p-6 space-y-4">
+                
+                <div class="p-4 border-2 border-neutral-900 bg-neutral-50 rounded-xl">
+                  <div class="flex items-start justify-between mb-3">
+                    <div class="flex items-center gap-3">
+                      <div class="w-12 h-12 bg-gradient-to-br from-neutral-700 to-neutral-900 rounded-lg flex items-center justify-center">
+                        <i class="fa-solid fa-credit-card text-white text-xl"></i>
+                      </div>
+                      <div>
+                        <div class="text-neutral-900 mb-1">신한카드</div>
+                        <div class="text-neutral-600 text-sm">**** **** **** 1234</div>
+                      </div>
+                    </div>
+                    <div class="flex items-center gap-2">
+                      <span class="px-3 py-1 bg-neutral-900 text-white text-xs rounded-full">기본 결제수단</span>
+                      <button class="p-2 text-neutral-600 hover:text-neutral-900">
+                        <i class="fa-solid fa-ellipsis-vertical"></i>
+                      </button>
+                    </div>
+                  </div>
+                  <div class="flex items-center justify-between text-sm">
+                    <div class="text-neutral-600">만료일: 12/2027</div>
+                    <div class="flex gap-2">
+                      <button class="px-3 py-1 text-neutral-600 hover:text-neutral-900 border border-neutral-300 hover:bg-neutral-100 rounded transition-colors">
+                        <i class="fa-solid fa-pen mr-1"></i>수정
+                      </button>
+                      <button class="px-3 py-1 text-neutral-600 hover:text-neutral-900 border border-neutral-300 hover:bg-neutral-100 rounded transition-colors">
+                        <i class="fa-solid fa-trash mr-1"></i>삭제
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="p-4 border border-neutral-200 rounded-xl hover:border-neutral-300 transition-colors">
+                  <div class="flex items-start justify-between mb-3">
+                    <div class="flex items-center gap-3">
+                      <div class="w-12 h-12 bg-neutral-200 rounded-lg flex items-center justify-center">
+                        <i class="fa-solid fa-building-columns text-neutral-600 text-xl"></i>
+                      </div>
+                      <div>
+                        <div class="text-neutral-900 mb-1">국민은행 계좌이체</div>
+                        <div class="text-neutral-600 text-sm">123-45-678901</div>
+                      </div>
+                    </div>
+                    <button class="p-2 text-neutral-600 hover:text-neutral-900">
+                      <i class="fa-solid fa-ellipsis-vertical"></i>
+                    </button>
+                  </div>
+                  <div class="flex items-center justify-between text-sm">
+                    <div class="text-neutral-600">예금주: 웨딩스튜디오</div>
+                    <div class="flex gap-2">
+                      <button class="px-3 py-1 text-neutral-600 hover:text-neutral-900 border border-neutral-300 hover:bg-neutral-100 rounded transition-colors">
+                        기본으로 설정
+                      </button>
+                      <button class="px-3 py-1 text-neutral-600 hover:text-neutral-900 border border-neutral-300 hover:bg-neutral-100 rounded transition-colors">
+                        <i class="fa-solid fa-trash mr-1"></i>삭제
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="p-4 border border-neutral-200 rounded-xl hover:border-neutral-300 transition-colors">
+                  <div class="flex items-start justify-between mb-3">
+                    <div class="flex items-center gap-3">
+                      <div class="w-12 h-12 bg-neutral-200 rounded-lg flex items-center justify-center">
+                        <i class="fa-solid fa-credit-card text-neutral-600 text-xl"></i>
+                      </div>
+                      <div>
+                        <div class="text-neutral-900 mb-1">우리카드</div>
+                        <div class="text-neutral-600 text-sm">**** **** **** 5678</div>
+                      </div>
+                    </div>
+                    <button class="p-2 text-neutral-600 hover:text-neutral-900">
+                      <i class="fa-solid fa-ellipsis-vertical"></i>
+                    </button>
+                  </div>
+                  <div class="flex items-center justify-between text-sm">
+                    <div class="text-neutral-600">만료일: 08/2026</div>
+                    <div class="flex gap-2">
+                      <button class="px-3 py-1 text-neutral-600 hover:text-neutral-900 border border-neutral-300 hover:bg-neutral-100 rounded transition-colors">
+                        기본으로 설정
+                      </button>
+                      <button class="px-3 py-1 text-neutral-600 hover:text-neutral-900 border border-neutral-300 hover:bg-neutral-100 rounded transition-colors">
+                        <i class="fa-solid fa-trash mr-1"></i>삭제
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+
+            <div class="bg-white border border-neutral-200 rounded-2xl">
+              <div class="border-b border-neutral-200 p-6">
+                <div class="flex items-center justify-between">
+                  <h2 class="text-xl text-neutral-900">결제 내역</h2>
+                  <div class="flex items-center gap-3">
+                    <select class="px-3 py-2 border border-neutral-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-neutral-500">
+                      <option>전체 기간</option>
+                      <option>최근 1개월</option>
+                      <option>최근 3개월</option>
+                      <option>최근 6개월</option>
+                      <option>2025년</option>
+                      <option>2024년</option>
+                    </select>
+                    <button class="px-4 py-2 border border-neutral-300 hover:bg-neutral-50 rounded-lg transition-colors text-sm">
+                      <i class="fa-solid fa-download mr-2"></i>전체 내역 다운로드
+                    </button>
+                  </div>
+                </div>
+              </div>
+              <div class="divide-y divide-neutral-200">
+                
+                <div class="p-6">
+                  <div class="flex items-start justify-between mb-3">
+                    <div class="flex-1">
+                      <div class="flex items-center gap-3 mb-2">
+                        <span class="text-neutral-900">주문 #ORD-2025-0142 결제</span>
+                        <span class="px-2 py-1 bg-neutral-100 text-neutral-600 text-xs rounded">완료</span>
+                      </div>
+                      <div class="text-sm text-neutral-600 mb-1">신한카드 **** 1234</div>
+                      <div class="text-sm text-neutral-500">2025.01.18 14:32</div>
+                    </div>
+                    <div class="text-right">
+                      <div class="text-xl text-neutral-900 mb-2">₩125,000</div>
+                      <div class="flex gap-2">
+                        <button class="px-3 py-1 text-sm border border-neutral-300 hover:bg-neutral-50 rounded transition-colors">
+                          <i class="fa-solid fa-file-invoice mr-1"></i>영수증
+                        </button>
+                        <button class="px-3 py-1 text-sm border border-neutral-300 hover:bg-neutral-50 rounded transition-colors">
+                          <i class="fa-solid fa-receipt mr-1"></i>세금계산서
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="p-6">
+                  <div class="flex items-start justify-between mb-3">
+                    <div class="flex-1">
+                      <div class="flex items-center gap-3 mb-2">
+                        <span class="text-neutral-900">주문 #ORD-2025-0138 결제</span>
+                        <span class="px-2 py-1 bg-neutral-100 text-neutral-600 text-xs rounded">완료</span>
+                      </div>
+                      <div class="text-sm text-neutral-600 mb-1">신한카드 **** 1234</div>
+                      <div class="text-sm text-neutral-500">2025.01.15 09:21</div>
+                    </div>
+                    <div class="text-right">
+                      <div class="text-xl text-neutral-900 mb-2">₩89,000</div>
+                      <div class="flex gap-2">
+                        <button class="px-3 py-1 text-sm border border-neutral-300 hover:bg-neutral-50 rounded transition-colors">
+                          <i class="fa-solid fa-file-invoice mr-1"></i>영수증
+                        </button>
+                        <button class="px-3 py-1 text-sm border border-neutral-300 hover:bg-neutral-50 rounded transition-colors">
+                          <i class="fa-solid fa-receipt mr-1"></i>세금계산서
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="p-6 bg-neutral-50 border-l-4 border-neutral-500">
+                  <div class="flex items-start justify-between mb-3">
+                    <div class="flex-1">
+                      <div class="flex items-center gap-3 mb-2">
+                        <span class="text-neutral-900">주문 #ORD-2025-0135 결제</span>
+                        <span class="px-2 py-1 bg-neutral-100 text-neutral-700 text-xs rounded">결제 실패</span>
+                      </div>
+                      <div class="text-sm text-neutral-600 mb-1">신한카드 **** 1234</div>
+                      <div class="text-sm text-neutral-600 mb-1">한도 초과로 인한 결제 실패</div>
+                      <div class="text-sm text-neutral-500">2025.01.12 16:45</div>
+                    </div>
+                    <div class="text-right">
+                      <div class="text-xl text-neutral-900 mb-2">₩156,000</div>
+                      <button class="px-4 py-2 bg-neutral-900 text-white hover:bg-neutral-800 rounded-lg transition-colors text-sm">
+                        <i class="fa-solid fa-rotate-right mr-2"></i>재결제
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="p-6">
+                  <div class="flex items-start justify-between mb-3">
+                    <div class="flex-1">
+                      <div class="flex items-center gap-3 mb-2">
+                        <span class="text-neutral-900">주문 #ORD-2025-0129 결제</span>
+                        <span class="px-2 py-1 bg-neutral-100 text-neutral-600 text-xs rounded">완료</span>
+                      </div>
+                      <div class="text-sm text-neutral-600 mb-1">국민은행 계좌이체</div>
+                      <div class="text-sm text-neutral-500">2025.01.08 11:15</div>
+                    </div>
+                    <div class="text-right">
+                      <div class="text-xl text-neutral-900 mb-2">₩203,000</div>
+                      <div class="flex gap-2">
+                        <button class="px-3 py-1 text-sm border border-neutral-300 hover:bg-neutral-50 rounded transition-colors">
+                          <i class="fa-solid fa-file-invoice mr-1"></i>영수증
+                        </button>
+                        <button class="px-3 py-1 text-sm border border-neutral-300 hover:bg-neutral-50 rounded transition-colors">
+                          <i class="fa-solid fa-receipt mr-1"></i>세금계산서
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="p-6">
+                  <div class="flex items-start justify-between mb-3">
+                    <div class="flex-1">
+                      <div class="flex items-center gap-3 mb-2">
+                        <span class="text-neutral-900">주문 #ORD-2025-0121 결제</span>
+                        <span class="px-2 py-1 bg-neutral-100 text-neutral-600 text-xs rounded">완료</span>
+                      </div>
+                      <div class="text-sm text-neutral-600 mb-1">우리카드 **** 5678</div>
+                      <div class="text-sm text-neutral-500">2025.01.03 13:28</div>
+                    </div>
+                    <div class="text-right">
+                      <div class="text-xl text-neutral-900 mb-2">₩67,000</div>
+                      <div class="flex gap-2">
+                        <button class="px-3 py-1 text-sm border border-neutral-300 hover:bg-neutral-50 rounded transition-colors">
+                          <i class="fa-solid fa-file-invoice mr-1"></i>영수증
+                        </button>
+                        <button class="px-3 py-1 text-sm border border-neutral-300 hover:bg-neutral-50 rounded transition-colors">
+                          <i class="fa-solid fa-receipt mr-1"></i>세금계산서
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+              <div class="p-4 border-t border-neutral-200 flex justify-center">
+                <button class="px-4 py-2 text-neutral-600 hover:text-neutral-900 transition-colors">
+                  더보기 <i class="fa-solid fa-chevron-down ml-2"></i>
+                </button>
+              </div>
+            </div>
+
+          </div>
+
+          <div class="col-span-1 space-y-6">
+            
+            <div class="bg-white border border-neutral-200 rounded-2xl p-6">
+              <h3 class="text-lg text-neutral-900 mb-4">이번 달 사용 내역</h3>
+              <div class="space-y-4">
+                <div>
+                  <div class="flex items-center justify-between mb-2">
+                    <span class="text-sm text-neutral-600">총 결제 금액</span>
+                    <span class="text-2xl text-neutral-900">₩484,000</span>
+                  </div>
+                  <div class="h-2 bg-neutral-100 rounded-full overflow-hidden">
+                    <div class="h-full bg-neutral-600 rounded-full" style="width: 68%"></div>
+                  </div>
+                </div>
+                
+                <div class="pt-4 border-t border-neutral-200 space-y-3">
+                  <div class="flex items-center justify-between text-sm">
+                    <span class="text-neutral-600">완료된 주문</span>
+                    <span class="text-neutral-900">4건</span>
+                  </div>
+                  <div class="flex items-center justify-between text-sm">
+                    <span class="text-neutral-600">실패한 결제</span>
+                    <span class="text-neutral-600">1건</span>
+                  </div>
+                  <div class="flex items-center justify-between text-sm">
+                    <span class="text-neutral-600">평균 주문 금액</span>
+                    <span class="text-neutral-900">₩121,000</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="bg-white border border-neutral-200 rounded-2xl p-6">
+              <h3 class="text-lg text-neutral-900 mb-4">세금계산서 정보</h3>
+              <div class="space-y-3">
+                <div>
+                  <label class="block text-sm text-neutral-700 mb-1">사업자등록번호</label>
+                  <input type="text" value="123-45-67890" class="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-neutral-500">
+                </div>
+                <div>
+                  <label class="block text-sm text-neutral-700 mb-1">상호명</label>
+                  <input type="text" value="웨딩 스튜디오" class="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-neutral-500">
+                </div>
+                <div>
+                  <label class="block text-sm text-neutral-700 mb-1">대표자명</label>
+                  <input type="text" value="김철수" class="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-neutral-500">
+                </div>
+                <div>
+                  <label class
+                        </body>
+                        </html>
+                        

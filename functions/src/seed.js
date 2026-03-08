@@ -7,7 +7,8 @@
  * 프로덕션 시딩: FIRESTORE_EMULATOR_HOST 환경변수 제거 후 실행
  */
 
-process.env.FIRESTORE_EMULATOR_HOST = 'localhost:8080';
+// 에뮬레이터 사용 시: process.env.FIRESTORE_EMULATOR_HOST = 'localhost:8080';
+// 프로덕션 시딩 시: 위 줄 주석 처리 (현재 상태)
 
 const { initializeApp, cert } = require('firebase-admin/app');
 const { getFirestore, Timestamp } = require('firebase-admin/firestore');

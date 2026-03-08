@@ -1,0 +1,320 @@
+
+                <html>
+                <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+                    <script src="https://cdn.tailwindcss.com"></script>
+                    <script>
+                        window.FontAwesomeConfig = {
+                            autoReplaceSvg: 'nest', // Options: 'nest', 'remove', 'replace'
+                        };
+                    </script>
+                    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+                    <style>
+                    </style>
+                    <script>
+                    tailwind.config = {
+                    theme: {
+                        extend: {
+                        colors: {
+                            primary: {"50":"#fafafa","100":"#f5f5f5","200":"#e5e5e5","300":"#d4d4d4","400":"#a3a3a3","500":"#737373","600":"#525252","700":"#404040","800":"#262626","900":"#171717","950":"#0a0a0a"}
+                        }
+                        }
+                    }
+                    }
+                </script>
+                </head>
+
+                <body>
+                        <div id="main-app" class="min-h-screen bg-white">
+  
+  <header id="header" class="fixed top-0 left-0 right-0 bg-white border-b border-neutral-200 z-50">
+    <div class="flex items-center justify-between px-8 py-4">
+      <div class="flex items-center gap-8">
+        <div class="flex items-center gap-3">
+          <div class="flex items-center justify-center w-10 h-10 bg-gradient-to-r from-neutral-800 to-neutral-600 rounded-lg">
+            <i class="fa-solid fa-gem text-white text-lg"></i>
+          </div>
+          <span class="text-xl text-neutral-900">Prism Studio</span>
+        </div>
+        
+        <nav class="flex items-center gap-1">
+          <a href="#" class="px-4 py-2 text-neutral-600 hover:text-neutral-900 hover:bg-neutral-50 rounded-lg transition-colors">
+            <i class="fa-solid fa-images mr-2"></i>사진 관리
+          </a>
+          <a href="#" class="px-4 py-2 text-neutral-600 hover:text-neutral-900 hover:bg-neutral-50 rounded-lg transition-colors">
+            <i class="fa-solid fa-list-check mr-2"></i>주문 내역
+          </a>
+          <a href="#" class="px-4 py-2 text-neutral-600 hover:text-neutral-900 hover:bg-neutral-50 rounded-lg transition-colors">
+            <i class="fa-solid fa-file-invoice mr-2"></i>주문 상세
+          </a>
+          <a href="#" class="px-4 py-2 text-neutral-900 bg-neutral-100 rounded-lg">
+            <i class="fa-solid fa-gear mr-2"></i>설정
+          </a>
+        </nav>
+      </div>
+      
+      <div class="flex items-center gap-4">
+        <button class="relative p-2 text-neutral-900 bg-neutral-100 rounded-lg">
+          <i class="fa-solid fa-bell text-xl"></i>
+          <span class="absolute top-1 right-1 w-2 h-2 bg-neutral-500 rounded-full"></span>
+        </button>
+        
+        <div class="flex items-center gap-3 pl-4 border-l border-neutral-200">
+          <img src="https://api.dicebear.com/7.x/notionists/svg?scale=200&seed=4782" alt="User" class="w-10 h-10 rounded-full border-2 border-neutral-200">
+          <div class="text-sm">
+            <div class="text-neutral-900">웨딩 스튜디오</div>
+            <div class="text-neutral-500">wedding@example.com</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main id="help-main" class="pt-[73px]">
+    
+    <div class="px-8 py-8">
+      <div class="max-w-[1376px] mx-auto">
+        
+        <div class="mb-6">
+          <h1 class="text-3xl text-neutral-900 mb-2">도움말 및 문의</h1>
+          <p class="text-neutral-600">자주 묻는 질문을 확인하거나 1:1 문의를 접수해보세요</p>
+        </div>
+
+        <div class="grid grid-cols-3 gap-6">
+          
+          <div class="col-span-2 space-y-6">
+            
+            <div class="bg-white border border-neutral-200 rounded-2xl">
+              <div class="border-b border-neutral-200 p-6">
+                <h2 class="text-xl text-neutral-900">자주 묻는 질문 (FAQ)</h2>
+              </div>
+              <div class="p-6 space-y-4">
+                
+                <div class="border border-neutral-200 rounded-xl">
+                  <button class="w-full p-4 text-left flex items-center justify-between hover:bg-neutral-50 transition-colors">
+                    <div class="flex items-center gap-3">
+                      <i class="fa-solid fa-upload text-neutral-600"></i>
+                      <span class="text-neutral-900">사진 업로드가 실패했어요</span>
+                    </div>
+                    <i class="fa-solid fa-chevron-down text-neutral-500"></i>
+                  </button>
+                  <div class="px-4 pb-4 text-sm text-neutral-600 border-t border-neutral-200 pt-4 bg-neutral-50">
+                    <p class="mb-3">사진 업로드 실패의 주요 원인과 해결 방법:</p>
+                    <ul class="space-y-2 list-disc pl-4">
+                      <li>파일 크기가 너무 큰 경우 (최대 50MB)</li>
+                      <li>지원하지 않는 파일 형식 (JPG, PNG, TIFF만 지원)</li>
+                      <li>인터넷 연결 상태가 불안정한 경우</li>
+                      <li>동시에 너무 많은 파일을 업로드하는 경우</li>
+                    </ul>
+                  </div>
+                </div>
+
+                <div class="border border-neutral-200 rounded-xl">
+                  <button class="w-full p-4 text-left flex items-center justify-between hover:bg-neutral-50 transition-colors">
+                    <div class="flex items-center gap-3">
+                      <i class="fa-solid fa-wand-magic-sparkles text-neutral-600"></i>
+                      <span class="text-neutral-900">보정 요청을 어떻게 작성하나요?</span>
+                    </div>
+                    <i class="fa-solid fa-chevron-down text-neutral-500"></i>
+                  </button>
+                </div>
+
+                <div class="border border-neutral-200 rounded-xl">
+                  <button class="w-full p-4 text-left flex items-center justify-between hover:bg-neutral-50 transition-colors">
+                    <div class="flex items-center gap-3">
+                      <i class="fa-solid fa-download text-neutral-600"></i>
+                      <span class="text-neutral-900">완성된 사진을 다운로드하려면?</span>
+                    </div>
+                    <i class="fa-solid fa-chevron-down text-neutral-500"></i>
+                  </button>
+                </div>
+
+                <div class="border border-neutral-200 rounded-xl">
+                  <button class="w-full p-4 text-left flex items-center justify-between hover:bg-neutral-50 transition-colors">
+                    <div class="flex items-center gap-3">
+                      <i class="fa-solid fa-clock text-neutral-600"></i>
+                      <span class="text-neutral-900">보정 작업은 얼마나 걸리나요?</span>
+                    </div>
+                    <i class="fa-solid fa-chevron-down text-neutral-500"></i>
+                  </button>
+                </div>
+
+                <div class="border border-neutral-200 rounded-xl">
+                  <button class="w-full p-4 text-left flex items-center justify-between hover:bg-neutral-50 transition-colors">
+                    <div class="flex items-center gap-3">
+                      <i class="fa-solid fa-credit-card text-neutral-600"></i>
+                      <span class="text-neutral-900">결제 관련 문제</span>
+                    </div>
+                    <i class="fa-solid fa-chevron-down text-neutral-500"></i>
+                  </button>
+                </div>
+
+                <div class="border border-neutral-200 rounded-xl">
+                  <button class="w-full p-4 text-left flex items-center justify-between hover:bg-neutral-50 transition-colors">
+                    <div class="flex items-center gap-3">
+                      <i class="fa-solid fa-shield-alt text-neutral-600"></i>
+                      <span class="text-neutral-900">개인정보 보호 정책</span>
+                    </div>
+                    <i class="fa-solid fa-chevron-down text-neutral-500"></i>
+                  </button>
+                </div>
+
+              </div>
+            </div>
+
+            <div class="bg-white border border-neutral-200 rounded-2xl">
+              <div class="border-b border-neutral-200 p-6">
+                <h2 class="text-xl text-neutral-900">1:1 문의하기</h2>
+              </div>
+              <div class="p-6">
+                <form class="space-y-6">
+                  
+                  <div>
+                    <label class="block text-sm text-neutral-700 mb-2">문의 카테고리</label>
+                    <select class="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-neutral-500">
+                      <option>카테고리를 선택해주세요</option>
+                      <option>사진 업로드 문제</option>
+                      <option>보정 관련 문의</option>
+                      <option>다운로드 문제</option>
+                      <option>결제 및 환불</option>
+                      <option>계정 관련</option>
+                      <option>기타</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label class="block text-sm text-neutral-700 mb-2">제목</label>
+                    <input type="text" placeholder="문의 제목을 입력해주세요" class="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-neutral-500">
+                  </div>
+
+                  <div>
+                    <label class="block text-sm text-neutral-700 mb-2">문의 내용</label>
+                    <textarea rows="6" placeholder="문의하실 내용을 상세히 작성해주세요..." class="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-neutral-500 resize-none"></textarea>
+                  </div>
+
+                  <div>
+                    <label class="block text-sm text-neutral-700 mb-2">첨부파일 (선택사항)</label>
+                    <div class="border-2 border-dashed border-neutral-300 rounded-lg p-6 text-center hover:border-neutral-400 transition-colors">
+                      <i class="fa-solid fa-paperclip text-neutral-400 text-2xl mb-3"></i>
+                      <p class="text-neutral-600 mb-2">파일을 드래그하거나 클릭하여 업로드</p>
+                      <p class="text-sm text-neutral-500">최대 10MB, JPG, PNG, PDF 파일만 가능</p>
+                      <input type="file" class="hidden" multiple>
+                    </div>
+                  </div>
+
+                  <div class="flex gap-3">
+                    <button type="button" class="flex-1 px-4 py-3 border border-neutral-300 text-neutral-700 hover:bg-neutral-50 rounded-lg transition-colors">
+                      취소
+                    </button>
+                    <button type="submit" class="flex-1 px-4 py-3 bg-neutral-900 text-white hover:bg-neutral-800 rounded-lg transition-colors">
+                      문의 접수
+                    </button>
+                  </div>
+
+                </form>
+              </div>
+            </div>
+
+          </div>
+
+          <div class="col-span-1 space-y-6">
+            
+            <div class="bg-white border border-neutral-200 rounded-2xl p-6">
+              <h3 class="text-lg text-neutral-900 mb-4">빠른 도움말</h3>
+              <div class="space-y-3">
+                <a href="#" class="flex items-center gap-3 p-3 rounded-lg hover:bg-neutral-50 transition-colors">
+                  <i class="fa-solid fa-file-image text-neutral-600"></i>
+                  <span class="text-sm text-neutral-900">지원 파일 형식</span>
+                </a>
+                <a href="#" class="flex items-center gap-3 p-3 rounded-lg hover:bg-neutral-50 transition-colors">
+                  <i class="fa-solid fa-palette text-neutral-600"></i>
+                  <span class="text-sm text-neutral-900">보정 가이드</span>
+                </a>
+                <a href="#" class="flex items-center gap-3 p-3 rounded-lg hover:bg-neutral-50 transition-colors">
+                  <i class="fa-solid fa-money-bill text-neutral-600"></i>
+                  <span class="text-sm text-neutral-900">요금 안내</span>
+                </a>
+                <a href="#" class="flex items-center gap-3 p-3 rounded-lg hover:bg-neutral-50 transition-colors">
+                  <i class="fa-solid fa-headset text-neutral-600"></i>
+                  <span class="text-sm text-neutral-900">고객센터 연결</span>
+                </a>
+              </div>
+            </div>
+
+            <div class="bg-white border border-neutral-200 rounded-2xl p-6">
+              <h3 class="text-lg text-neutral-900 mb-4">내 문의 내역</h3>
+              <div class="space-y-3">
+                
+                <div class="p-3 border border-neutral-200 rounded-lg">
+                  <div class="flex items-center justify-between mb-2">
+                    <span class="text-sm text-neutral-900">사진 업로드 오류</span>
+                    <span class="px-2 py-1 bg-neutral-100 text-neutral-600 text-xs rounded">답변완료</span>
+                  </div>
+                  <div class="text-xs text-neutral-500">2025.01.20</div>
+                </div>
+
+                <div class="p-3 border border-neutral-200 rounded-lg">
+                  <div class="flex items-center justify-between mb-2">
+                    <span class="text-sm text-neutral-900">보정 요청 수정</span>
+                    <span class="px-2 py-1 bg-neutral-600 text-white text-xs rounded">처리중</span>
+                  </div>
+                  <div class="text-xs text-neutral-500">2025.01.18</div>
+                </div>
+
+                <div class="p-3 border border-neutral-200 rounded-lg">
+                  <div class="flex items-center justify-between mb-2">
+                    <span class="text-sm text-neutral-900">다운로드 문제</span>
+                    <span class="px-2 py-1 bg-neutral-100 text-neutral-600 text-xs rounded">답변완료</span>
+                  </div>
+                  <div class="text-xs text-neutral-500">2025.01.15</div>
+                </div>
+
+              </div>
+              <div class="pt-4 border-t border-neutral-200 mt-4">
+                <button class="w-full text-sm text-neutral-600 hover:text-neutral-900 transition-colors">
+                  전체 내역 보기 <i class="fa-solid fa-chevron-right ml-1"></i>
+                </button>
+              </div>
+            </div>
+
+            <div class="bg-white border border-neutral-200 rounded-2xl p-6">
+              <h3 class="text-lg text-neutral-900 mb-4">연락처</h3>
+              <div class="space-y-4">
+                <div class="flex items-center gap-3">
+                  <i class="fa-solid fa-phone text-neutral-600"></i>
+                  <div>
+                    <div class="text-sm text-neutral-900">고객센터</div>
+                    <div class="text-sm text-neutral-600">1588-1234</div>
+                  </div>
+                </div>
+                <div class="flex items-center gap-3">
+                  <i class="fa-solid fa-envelope text-neutral-600"></i>
+                  <div>
+                    <div class="text-sm text-neutral-900">이메일</div>
+                    <div class="text-sm text-neutral-600">support@prismstudio.com</div>
+                  </div>
+                </div>
+                <div class="flex items-center gap-3">
+                  <i class="fa-solid fa-clock text-neutral-600"></i>
+                  <div>
+                    <div class="text-sm text-neutral-900">운영시간</div>
+                    <div class="text-sm text-neutral-600">평일 09:00 - 18:00</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+
+  </main>
+
+</div>
+                        </body>
+                        </html>
+                        

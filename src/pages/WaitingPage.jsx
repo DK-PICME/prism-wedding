@@ -5,6 +5,7 @@ import { ProjectInfo } from '../components/ProjectInfo';
 import { NextSteps } from '../components/NextSteps';
 import { ContactInfo } from '../components/ContactInfo';
 import { useProject, useProjectId } from '../hooks/useProject';
+import { statusToLabel } from '../utils/helpers';
 
 /**
  * WaitingPage - 샘플 검토 대기 페이지 (STEP 1)
@@ -37,7 +38,7 @@ export function WaitingPage({ projectService }) {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <Header status={project?.status || '진행중'} />
+      <Header status={statusToLabel(project?.status) || '진행중'} />
 
       <main id="main" className="bg-neutral-50 flex-1">
         <div className="max-w-screen-xl mx-auto px-6 py-12">

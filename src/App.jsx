@@ -7,6 +7,17 @@ import { MainCorrectionResultPage } from './pages/MainCorrectionResultPage';
 import { SampleRevisionRequestPage } from './pages/SampleRevisionRequestPage';
 import { MainCorrectionProgressPage } from './pages/MainCorrectionProgressPage';
 import { MainCorrectionUploadPage } from './pages/MainCorrectionUploadPage';
+import { OrderListPage } from './pages/OrderListPage';
+import { SettingsPage } from './pages/SettingsPage';
+import { NotificationCenterPage } from './pages/NotificationCenterPage';
+import { CreateNewOrderPage } from './pages/CreateNewOrderPage';
+import { OrderDetailsPage } from './pages/OrderDetailsPage';
+import { PaymentPage } from './pages/PaymentPage';
+import { PasswordRecoveryPage } from './pages/PasswordRecoveryPage';
+import { SignUpPage } from './pages/SignUpPage';
+import { InquiryPage } from './pages/InquiryPage';
+import { FailedItemManagementPage } from './pages/FailedItemManagementPage';
+import { PhotoManagementPage } from './pages/PhotoManagementPage';
 import { ProjectServiceMock } from './services/ProjectServiceMock';
 import { ProjectServiceApi } from './services/ProjectServiceApi';
 import './App.css';
@@ -39,6 +50,28 @@ function App() {
         return <MainCorrectionProgressPage projectService={projectService} />;
       case 'main-correction-upload':
         return <MainCorrectionUploadPage projectService={projectService} />;
+      case 'order-list':
+        return <OrderListPage />;
+      case 'settings':
+        return <SettingsPage />;
+      case 'notification-center':
+        return <NotificationCenterPage />;
+      case 'create-new-order':
+        return <CreateNewOrderPage />;
+      case 'order-details':
+        return <OrderDetailsPage />;
+      case 'payment':
+        return <PaymentPage />;
+      case 'password-recovery':
+        return <PasswordRecoveryPage />;
+      case 'sign-up':
+        return <SignUpPage />;
+      case 'inquiry':
+        return <InquiryPage />;
+      case 'failed-items':
+        return <FailedItemManagementPage />;
+      case 'photo-management':
+        return <PhotoManagementPage />;
       case 'waiting':
       default:
         return <WaitingPage projectService={projectService} />;

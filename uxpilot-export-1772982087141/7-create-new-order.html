@@ -1,0 +1,387 @@
+
+                <html>
+                <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+                    <script src="https://cdn.tailwindcss.com"></script>
+                    <script>
+                        window.FontAwesomeConfig = {
+                            autoReplaceSvg: 'nest', // Options: 'nest', 'remove', 'replace'
+                        };
+                    </script>
+                    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+                    <style>
+                    </style>
+                    <script>
+                    tailwind.config = {
+                    theme: {
+                        extend: {
+                        colors: {
+                            primary: {"50":"#fafafa","100":"#f5f5f5","200":"#e5e5e5","300":"#d4d4d4","400":"#a3a3a3","500":"#737373","600":"#525252","700":"#404040","800":"#262626","900":"#171717","950":"#0a0a0a"}
+                        }
+                        }
+                    }
+                    }
+                </script>
+                </head>
+
+                <body>
+                        <div id="main-app" class="min-h-screen bg-white">
+  
+  <header id="header" class="fixed top-0 left-0 right-0 bg-white border-b border-neutral-200 z-50">
+    <div class="flex items-center justify-between px-8 py-4">
+      <div class="flex items-center gap-8">
+        <div class="flex items-center gap-3">
+          <div class="flex items-center justify-center w-10 h-10 bg-gradient-to-r from-neutral-800 to-neutral-600 rounded-lg">
+            <i class="fa-solid fa-gem text-white text-lg"></i>
+          </div>
+          <span class="text-xl text-neutral-900">Prism Studio</span>
+        </div>
+        
+        <nav class="flex items-center gap-1">
+          <a href="#" class="px-4 py-2 text-neutral-900 bg-neutral-100 rounded-lg">
+            <i class="fa-solid fa-images mr-2"></i>사진 관리
+          </a>
+          <a href="#" class="px-4 py-2 text-neutral-600 hover:text-neutral-900 hover:bg-neutral-50 rounded-lg transition-colors">
+            <i class="fa-solid fa-list-check mr-2"></i>주문 내역
+          </a>
+          <a href="#" class="px-4 py-2 text-neutral-600 hover:text-neutral-900 hover:bg-neutral-50 rounded-lg transition-colors">
+            <i class="fa-solid fa-file-invoice mr-2"></i>주문 상세
+          </a>
+          <a href="#" class="px-4 py-2 text-neutral-600 hover:text-neutral-900 hover:bg-neutral-50 rounded-lg transition-colors">
+            <i class="fa-solid fa-gear mr-2"></i>설정
+          </a>
+        </nav>
+      </div>
+      
+      <div class="flex items-center gap-4">
+        <button class="relative p-2 text-neutral-600 hover:text-neutral-900 hover:bg-neutral-50 rounded-lg transition-colors">
+          <i class="fa-solid fa-bell text-xl"></i>
+          <span class="absolute top-1 right-1 w-2 h-2 bg-neutral-500 rounded-full"></span>
+        </button>
+        
+        <div class="flex items-center gap-3 pl-4 border-l border-neutral-200">
+          <img src="https://api.dicebear.com/7.x/notionists/svg?scale=200&seed=4782" alt="User" class="w-10 h-10 rounded-full border-2 border-neutral-200">
+          <div class="text-sm">
+            <div class="text-neutral-900">웨딩 스튜디오</div>
+            <div class="text-neutral-500">wedding@example.com</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main id="photo-management-main" class="pt-[73px]">
+    
+    <div class="px-8 py-8">
+      <div class="max-w-[1376px] mx-auto">
+        
+        <div class="flex items-center justify-between mb-6">
+          <div>
+            <h1 class="text-3xl text-neutral-900 mb-2">김민수 & 박지영 웨딩</h1>
+            <p class="text-neutral-600">주문번호: ORD-2025-0122-4782</p>
+          </div>
+          
+          <div class="flex items-center gap-3">
+            <button class="flex items-center gap-2 px-4 py-2 border border-neutral-300 hover:bg-neutral-50 rounded-lg transition-colors text-sm">
+              <i class="fa-solid fa-upload"></i>
+              사진 추가
+            </button>
+            <button class="flex items-center gap-2 px-4 py-2 border border-neutral-300 hover:bg-neutral-50 rounded-lg transition-colors text-sm">
+              <i class="fa-solid fa-filter"></i>
+              필터
+            </button>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-4 gap-4 mb-6">
+          <div class="bg-white border border-neutral-200 rounded-xl p-4">
+            <div class="text-2xl text-neutral-900 mb-1">150</div>
+            <div class="text-sm text-neutral-600">총 사진</div>
+          </div>
+          <div class="bg-white border border-neutral-200 rounded-xl p-4">
+            <div class="text-2xl text-neutral-900 mb-1">128</div>
+            <div class="text-sm text-neutral-600">업로드 완료</div>
+          </div>
+          <div class="bg-white border border-neutral-200 rounded-xl p-4">
+            <div class="text-2xl text-neutral-900 mb-1">22</div>
+            <div class="text-sm text-neutral-600">업로드 중</div>
+          </div>
+          <div class="bg-white border border-neutral-200 rounded-xl p-4">
+            <div class="text-2xl text-neutral-900 mb-1">0</div>
+            <div class="text-sm text-neutral-600">실패</div>
+          </div>
+        </div>
+
+        <div class="bg-white border border-neutral-200 rounded-2xl p-6">
+          <div class="flex items-center justify-between mb-6">
+            <h2 class="text-xl text-neutral-900">사진 목록</h2>
+            <div class="flex items-center gap-2">
+              <button class="flex items-center gap-2 px-3 py-2 text-sm border border-neutral-300 hover:bg-neutral-50 rounded-lg transition-colors">
+                <i class="fa-solid fa-grid-2"></i>
+                그리드
+              </button>
+              <button class="flex items-center gap-2 px-3 py-2 text-sm text-neutral-600 hover:bg-neutral-50 rounded-lg transition-colors">
+                <i class="fa-solid fa-list"></i>
+                목록
+              </button>
+            </div>
+          </div>
+
+          <div class="border-2 border-dashed border-neutral-300 rounded-xl p-12 text-center mb-6 hover:border-neutral-400 transition-colors">
+            <div class="flex items-center justify-center w-16 h-16 bg-neutral-100 rounded-full mx-auto mb-4">
+              <i class="fa-solid fa-cloud-arrow-up text-neutral-500 text-2xl"></i>
+            </div>
+            <h3 class="text-lg text-neutral-900 mb-2">사진을 드래그해서 업로드하세요</h3>
+            <p class="text-neutral-600 mb-4">JPG, PNG 파일을 지원합니다 (최대 10MB)</p>
+            <button class="px-6 py-2 bg-neutral-900 hover:bg-neutral-800 text-white rounded-lg transition-colors">
+              파일 선택
+            </button>
+          </div>
+
+          <div class="grid grid-cols-6 gap-4">
+            <div class="relative group cursor-pointer">
+              <div class="aspect-square bg-neutral-200 rounded-lg overflow-hidden">
+                <div class="w-full h-full bg-gradient-to-br from-neutral-300 to-neutral-400 flex items-center justify-center">
+                  <span class="text-neutral-600 text-sm">IMG_001.jpg</span>
+                </div>
+              </div>
+              <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 rounded-lg transition-all"></div>
+              <div class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                <button class="w-6 h-6 bg-white rounded-full flex items-center justify-center shadow-lg">
+                  <i class="fa-solid fa-times text-neutral-600 text-xs"></i>
+                </button>
+              </div>
+              <div class="absolute bottom-0 left-0 right-0 bg-white bg-opacity-90 p-2 rounded-b-lg">
+                <div class="flex items-center gap-2">
+                  <div class="flex-1 bg-neutral-200 rounded-full h-1">
+                    <div class="bg-neutral-900 h-1 rounded-full" style="width: 100%"></div>
+                  </div>
+                  <i class="fa-solid fa-check-circle text-neutral-600 text-sm"></i>
+                </div>
+              </div>
+            </div>
+
+            <div class="relative group cursor-pointer">
+              <div class="aspect-square bg-neutral-200 rounded-lg overflow-hidden">
+                <div class="w-full h-full bg-gradient-to-br from-neutral-300 to-neutral-400 flex items-center justify-center">
+                  <span class="text-neutral-600 text-sm">IMG_002.jpg</span>
+                </div>
+              </div>
+              <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 rounded-lg transition-all"></div>
+              <div class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                <button class="w-6 h-6 bg-white rounded-full flex items-center justify-center shadow-lg">
+                  <i class="fa-solid fa-times text-neutral-600 text-xs"></i>
+                </button>
+              </div>
+              <div class="absolute bottom-0 left-0 right-0 bg-white bg-opacity-90 p-2 rounded-b-lg">
+                <div class="flex items-center gap-2">
+                  <div class="flex-1 bg-neutral-200 rounded-full h-1">
+                    <div class="bg-neutral-900 h-1 rounded-full" style="width: 65%"></div>
+                  </div>
+                  <i class="fa-solid fa-spinner fa-spin text-neutral-600 text-sm"></i>
+                </div>
+              </div>
+            </div>
+
+            <div class="relative group cursor-pointer">
+              <div class="aspect-square bg-neutral-200 rounded-lg overflow-hidden">
+                <div class="w-full h-full bg-gradient-to-br from-neutral-300 to-neutral-400 flex items-center justify-center">
+                  <span class="text-neutral-600 text-sm">IMG_003.jpg</span>
+                </div>
+              </div>
+              <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 rounded-lg transition-all"></div>
+              <div class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                <button class="w-6 h-6 bg-white rounded-full flex items-center justify-center shadow-lg">
+                  <i class="fa-solid fa-times text-neutral-600 text-xs"></i>
+                </button>
+              </div>
+              <div class="absolute bottom-0 left-0 right-0 bg-white bg-opacity-90 p-2 rounded-b-lg">
+                <div class="flex items-center gap-2">
+                  <div class="flex-1 bg-neutral-200 rounded-full h-1">
+                    <div class="bg-neutral-900 h-1 rounded-full" style="width: 32%"></div>
+                  </div>
+                  <i class="fa-solid fa-spinner fa-spin text-neutral-600 text-sm"></i>
+                </div>
+              </div>
+            </div>
+
+            <div class="relative group cursor-pointer">
+              <div class="aspect-square bg-neutral-200 rounded-lg overflow-hidden">
+                <div class="w-full h-full bg-gradient-to-br from-neutral-300 to-neutral-400 flex items-center justify-center">
+                  <span class="text-neutral-600 text-sm">IMG_004.jpg</span>
+                </div>
+              </div>
+              <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 rounded-lg transition-all"></div>
+              <div class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                <button class="w-6 h-6 bg-white rounded-full flex items-center justify-center shadow-lg">
+                  <i class="fa-solid fa-times text-neutral-600 text-xs"></i>
+                </button>
+              </div>
+              <div class="absolute bottom-0 left-0 right-0 bg-white bg-opacity-90 p-2 rounded-b-lg">
+                <div class="flex items-center gap-2">
+                  <div class="flex-1 bg-neutral-200 rounded-full h-1">
+                    <div class="bg-neutral-900 h-1 rounded-full" style="width: 100%"></div>
+                  </div>
+                  <i class="fa-solid fa-check-circle text-neutral-600 text-sm"></i>
+                </div>
+              </div>
+            </div>
+
+            <div class="relative group cursor-pointer">
+              <div class="aspect-square bg-neutral-200 rounded-lg overflow-hidden">
+                <div class="w-full h-full bg-gradient-to-br from-neutral-300 to-neutral-400 flex items-center justify-center">
+                  <span class="text-neutral-600 text-sm">IMG_005.jpg</span>
+                </div>
+              </div>
+              <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 rounded-lg transition-all"></div>
+              <div class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                <button class="w-6 h-6 bg-white rounded-full flex items-center justify-center shadow-lg">
+                  <i class="fa-solid fa-times text-neutral-600 text-xs"></i>
+                </button>
+              </div>
+              <div class="absolute bottom-0 left-0 right-0 bg-white bg-opacity-90 p-2 rounded-b-lg">
+                <div class="flex items-center gap-2">
+                  <div class="flex-1 bg-neutral-200 rounded-full h-1">
+                    <div class="bg-neutral-900 h-1 rounded-full" style="width: 100%"></div>
+                  </div>
+                  <i class="fa-solid fa-check-circle text-neutral-600 text-sm"></i>
+                </div>
+              </div>
+            </div>
+
+            <div class="relative group cursor-pointer">
+              <div class="aspect-square bg-neutral-200 rounded-lg overflow-hidden">
+                <div class="w-full h-full bg-gradient-to-br from-neutral-300 to-neutral-400 flex items-center justify-center">
+                  <span class="text-neutral-600 text-sm">IMG_006.jpg</span>
+                </div>
+              </div>
+              <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 rounded-lg transition-all"></div>
+              <div class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                <button class="w-6 h-6 bg-white rounded-full flex items-center justify-center shadow-lg">
+                  <i class="fa-solid fa-times text-neutral-600 text-xs"></i>
+                </button>
+              </div>
+              <div class="absolute bottom-0 left-0 right-0 bg-white bg-opacity-90 p-2 rounded-b-lg">
+                <div class="flex items-center gap-2">
+                  <div class="flex-1 bg-neutral-200 rounded-full h-1">
+                    <div class="bg-neutral-900 h-1 rounded-full" style="width: 88%"></div>
+                  </div>
+                  <i class="fa-solid fa-spinner fa-spin text-neutral-600 text-sm"></i>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="flex items-center justify-center mt-6">
+            <button class="px-6 py-2 border border-neutral-300 hover:bg-neutral-50 rounded-lg transition-colors text-neutral-700">
+              더 보기 (144장 남음)
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </main>
+
+  <div id="photo-detail-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden">
+    <div class="flex items-center justify-center min-h-screen p-8">
+      <div class="bg-white rounded-2xl w-full max-w-[1200px] max-h-[90vh] overflow-hidden">
+        <div class="flex h-[80vh]">
+          <div class="flex-1 bg-neutral-100 flex items-center justify-center">
+            <div class="w-full h-full bg-gradient-to-br from-neutral-300 to-neutral-400 flex items-center justify-center">
+              <span class="text-neutral-600 text-xl">IMG_001.jpg</span>
+            </div>
+          </div>
+          
+          <div class="w-80 bg-white border-l border-neutral-200 flex flex-col">
+            <div class="p-6 border-b border-neutral-200">
+              <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg text-neutral-900">보정 요청사항</h3>
+                <button class="p-2 hover:bg-neutral-100 rounded-lg transition-colors">
+                  <i class="fa-solid fa-times text-neutral-600"></i>
+                </button>
+              </div>
+              
+              <div class="space-y-4">
+                <div>
+                  <label class="block text-sm text-neutral-600 mb-2">파일명</label>
+                  <div class="text-neutral-900">IMG_001.jpg</div>
+                </div>
+                
+                <div>
+                  <label class="block text-sm text-neutral-600 mb-2">업로드 상태</label>
+                  <div class="flex items-center gap-2">
+                    <i class="fa-solid fa-check-circle text-neutral-600"></i>
+                    <span class="text-neutral-900">업로드 완료</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="flex-1 p-6">
+              <label class="block text-sm text-neutral-600 mb-2">개별 보정 요청</label>
+              <textarea 
+                class="w-full h-32 p-3 border border-neutral-300 rounded-lg resize-none focus:outline-none focus:border-neutral-500" 
+                placeholder="이 사진에 대한 특별한 보정 요청사항을 입력하세요..."
+              ></textarea>
+              
+              <button class="w-full mt-4 px-4 py-2 bg-neutral-900 hover:bg-neutral-800 text-white rounded-lg transition-colors">
+                저장
+              </button>
+            </div>
+            
+            <div class="p-6 border-t border-neutral-200">
+              <div class="flex items-center justify-between mb-4">
+                <button class="flex items-center gap-2 px-4 py-2 border border-neutral-300 hover:bg-neutral-50 rounded-lg transition-colors text-sm">
+                  <i class="fa-solid fa-arrow-left"></i>
+                  이전
+                </button>
+                <button class="flex items-center gap-2 px-4 py-2 border border-neutral-300 hover:bg-neutral-50 rounded-lg transition-colors text-sm">
+                  다음
+                  <i class="fa-solid fa-arrow-right"></i>
+                </button>
+              </div>
+              
+              <div class="flex items-center justify-center gap-2 p-4 bg-neutral-50 rounded-lg overflow-x-auto">
+                <div class="flex items-center justify-center w-12 h-12 bg-neutral-900 rounded-lg flex-shrink-0">
+                  <span class="text-white text-xs">001</span>
+                </div>
+                <div class="flex items-center justify-center w-10 h-10 bg-neutral-200 rounded-lg flex-shrink-0">
+                  <span class="text-neutral-600 text-xs">002</span>
+                </div>
+                <div class="flex items-center justify-center w-10 h-10 bg-neutral-200 rounded-lg flex-shrink-0">
+                  <span class="text-neutral-600 text-xs">003</span>
+                </div>
+                <div class="flex items-center justify-center w-10 h-10 bg-neutral-200 rounded-lg flex-shrink-0">
+                  <span class="text-neutral-600 text-xs">004</span>
+                </div>
+                <div class="flex items-center justify-center w-10 h-10 bg-neutral-200 rounded-lg flex-shrink-0">
+                  <span class="text-neutral-600 text-xs">005</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="upload-toast" class="fixed top-20 right-8 bg-white border border-neutral-200 rounded-xl shadow-lg p-4 z-50 hidden">
+    <div class="flex items-center gap-3">
+      <div class="flex items-center justify-center w-8 h-8 bg-neutral-100 rounded-full">
+        <i class="fa-solid fa-check text-neutral-600"></i>
+      </div>
+      <div>
+        <div class="text-neutral-900 text-sm">IMG_007.jpg</div>
+        <div class="text-neutral-600 text-xs">업로드 완료</div>
+      </div>
+    </div>
+  </div>
+
+  <footer id="footer" class="bg-neutral-900 text-white py-12">
+    <div class="max-w
+                        </body>
+                        </html>
+                        

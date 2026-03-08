@@ -1,0 +1,375 @@
+
+                <html>
+                <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+                    <script src="https://cdn.tailwindcss.com"></script>
+                    <script>
+                        window.FontAwesomeConfig = {
+                            autoReplaceSvg: 'nest', // Options: 'nest', 'remove', 'replace'
+                        };
+                    </script>
+                    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+                    <style>
+                    </style>
+                    <script>
+                    tailwind.config = {
+                    theme: {
+                        extend: {
+                        colors: {
+                            primary: {"50":"#fafafa","100":"#f5f5f5","200":"#e5e5e5","300":"#d4d4d4","400":"#a3a3a3","500":"#737373","600":"#525252","700":"#404040","800":"#262626","900":"#171717","950":"#0a0a0a"}
+                        }
+                        }
+                    }
+                    }
+                </script>
+                </head>
+
+                <body>
+                        <div id="main-app" class="min-h-screen bg-white">
+  
+  <header id="header" class="fixed top-0 left-0 right-0 bg-white border-b border-neutral-200 z-50">
+    <div class="flex items-center justify-between px-8 py-4">
+      <div class="flex items-center gap-8">
+        <div class="flex items-center gap-3">
+          <div class="flex items-center justify-center w-10 h-10 bg-gradient-to-r from-neutral-800 to-neutral-600 rounded-lg">
+            <i class="fa-solid fa-gem text-white text-lg"></i>
+          </div>
+          <span class="text-xl text-neutral-900">Prism Studio</span>
+        </div>
+        
+        <nav class="flex items-center gap-1">
+          <a href="#" class="px-4 py-2 text-neutral-600 hover:text-neutral-900 hover:bg-neutral-50 rounded-lg transition-colors">
+            <i class="fa-solid fa-images mr-2"></i>사진 관리
+          </a>
+          <a href="#" class="px-4 py-2 text-neutral-900 bg-neutral-100 rounded-lg">
+            <i class="fa-solid fa-list-check mr-2"></i>주문 내역
+          </a>
+          <a href="#" class="px-4 py-2 text-neutral-600 hover:text-neutral-900 hover:bg-neutral-50 rounded-lg transition-colors">
+            <i class="fa-solid fa-file-invoice mr-2"></i>주문 상세
+          </a>
+          <a href="#" class="px-4 py-2 text-neutral-600 hover:text-neutral-900 hover:bg-neutral-50 rounded-lg transition-colors">
+            <i class="fa-solid fa-gear mr-2"></i>설정
+          </a>
+        </nav>
+      </div>
+      
+      <div class="flex items-center gap-4">
+        <button class="relative p-2 text-neutral-600 hover:text-neutral-900 hover:bg-neutral-50 rounded-lg transition-colors">
+          <i class="fa-solid fa-bell text-xl"></i>
+          <span class="absolute top-1 right-1 w-2 h-2 bg-neutral-500 rounded-full"></span>
+        </button>
+        
+        <div class="flex items-center gap-3 pl-4 border-l border-neutral-200">
+          <img src="https://api.dicebear.com/7.x/notionists/svg?scale=200&seed=4782" alt="User" class="w-10 h-10 rounded-full border-2 border-neutral-200">
+          <div class="text-sm">
+            <div class="text-neutral-900">웨딩 스튜디오</div>
+            <div class="text-neutral-500">wedding@example.com</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main id="order-list-main" class="pt-[73px]">
+    
+    <div class="px-8 py-8">
+      <div class="max-w-[1376px] mx-auto">
+        
+        <div class="flex items-center justify-between mb-8">
+          <div>
+            <h1 class="text-3xl text-neutral-900 mb-2">주문 내역</h1>
+            <p class="text-neutral-600">보정 주문 프로젝트를 관리하고 진행 상태를 확인하세요</p>
+          </div>
+          
+          <button class="flex items-center gap-2 bg-neutral-900 hover:bg-neutral-800 text-white px-6 py-3 rounded-xl transition-colors">
+            <i class="fa-solid fa-plus"></i>
+            새 주문 생성
+          </button>
+        </div>
+
+        <div class="bg-white border border-neutral-200 rounded-2xl p-6 mb-6">
+          <div class="flex items-center gap-4 flex-wrap">
+            <div class="flex-1 min-w-[300px]">
+              <div class="relative">
+                <i class="fa-solid fa-search absolute left-4 top-1/2 -translate-y-1/2 text-neutral-400"></i>
+                <input type="text" placeholder="주문명, 프로젝트명 검색..." class="w-full pl-11 pr-4 py-3 border border-neutral-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-transparent">
+              </div>
+            </div>
+            
+            <div class="flex items-center gap-3">
+              <select class="px-4 py-3 border border-neutral-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-neutral-900 bg-white text-neutral-700">
+                <option>전체 상태</option>
+                <option>대기</option>
+                <option>진행중</option>
+                <option>완료</option>
+              </select>
+              
+              <select class="px-4 py-3 border border-neutral-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-neutral-900 bg-white text-neutral-700">
+                <option>전체 기간</option>
+                <option>최근 7일</option>
+                <option>최근 30일</option>
+                <option>최근 90일</option>
+              </select>
+              
+              <button class="px-4 py-3 border border-neutral-300 hover:bg-neutral-50 rounded-xl transition-colors">
+                <i class="fa-solid fa-filter text-neutral-600"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-3 gap-6 mb-8">
+          <div class="bg-white border border-neutral-200 rounded-2xl p-6">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-neutral-600">대기중</span>
+              <div class="flex items-center justify-center w-10 h-10 bg-neutral-100 rounded-lg">
+                <i class="fa-solid fa-clock text-neutral-600"></i>
+              </div>
+            </div>
+            <div class="text-3xl text-neutral-900 mb-1">8</div>
+            <div class="text-sm text-neutral-500">총 340장</div>
+          </div>
+          
+          <div class="bg-white border border-neutral-200 rounded-2xl p-6">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-neutral-600">진행중</span>
+              <div class="flex items-center justify-center w-10 h-10 bg-neutral-100 rounded-lg">
+                <i class="fa-solid fa-spinner text-neutral-600"></i>
+              </div>
+            </div>
+            <div class="text-3xl text-neutral-900 mb-1">12</div>
+            <div class="text-sm text-neutral-500">총 580장</div>
+          </div>
+          
+          <div class="bg-white border border-neutral-200 rounded-2xl p-6">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-neutral-600">완료</span>
+              <div class="flex items-center justify-center w-10 h-10 bg-neutral-100 rounded-lg">
+                <i class="fa-solid fa-check-circle text-neutral-600"></i>
+              </div>
+            </div>
+            <div class="text-3xl text-neutral-900 mb-1">45</div>
+            <div class="text-sm text-neutral-500">총 2,150장</div>
+          </div>
+        </div>
+
+        <div class="bg-white border border-neutral-200 rounded-2xl overflow-hidden">
+          <div class="overflow-x-auto">
+            <table class="w-full">
+              <thead>
+                <tr class="bg-neutral-50 border-b border-neutral-200">
+                  <th class="text-left px-6 py-4 text-sm text-neutral-600">주문명</th>
+                  <th class="text-left px-6 py-4 text-sm text-neutral-600">상태</th>
+                  <th class="text-left px-6 py-4 text-sm text-neutral-600">사진 수</th>
+                  <th class="text-left px-6 py-4 text-sm text-neutral-600">생성일</th>
+                  <th class="text-left px-6 py-4 text-sm text-neutral-600">결제 상태</th>
+                  <th class="text-left px-6 py-4 text-sm text-neutral-600">금액</th>
+                  <th class="text-right px-6 py-4 text-sm text-neutral-600">작업</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr class="border-b border-neutral-100 hover:bg-neutral-50 cursor-pointer transition-colors">
+                  <td class="px-6 py-4">
+                    <div class="text-neutral-900">김민수 & 박지영 웨딩</div>
+                    <div class="text-sm text-neutral-500">프로젝트 #2025-0122</div>
+                  </td>
+                  <td class="px-6 py-4">
+                    <span class="inline-flex items-center gap-2 px-3 py-1 bg-neutral-100 text-neutral-700 rounded-lg text-sm">
+                      <i class="fa-solid fa-spinner"></i>진행중
+                    </span>
+                  </td>
+                  <td class="px-6 py-4">
+                    <div class="text-neutral-900">150장</div>
+                    <div class="text-sm text-neutral-500">85% 완료</div>
+                  </td>
+                  <td class="px-6 py-4 text-neutral-600">2025-01-20</td>
+                  <td class="px-6 py-4">
+                    <span class="inline-flex items-center gap-2 px-3 py-1 bg-neutral-100 text-neutral-700 rounded-lg text-sm">
+                      <i class="fa-solid fa-check"></i>결제완료
+                    </span>
+                  </td>
+                  <td class="px-6 py-4 text-neutral-900">₩450,000</td>
+                  <td class="px-6 py-4">
+                    <div class="flex items-center justify-end gap-2">
+                      <button class="p-2 text-neutral-600 hover:text-neutral-900 hover:bg-neutral-100 rounded-lg transition-colors">
+                        <i class="fa-solid fa-eye"></i>
+                      </button>
+                      <button class="p-2 text-neutral-600 hover:text-neutral-900 hover:bg-neutral-100 rounded-lg transition-colors">
+                        <i class="fa-solid fa-ellipsis-vertical"></i>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+
+                <tr class="border-b border-neutral-100 hover:bg-neutral-50 cursor-pointer transition-colors">
+                  <td class="px-6 py-4">
+                    <div class="text-neutral-900">이준호 & 최수진 스드메</div>
+                    <div class="text-sm text-neutral-500">프로젝트 #2025-0121</div>
+                  </td>
+                  <td class="px-6 py-4">
+                    <span class="inline-flex items-center gap-2 px-3 py-1 bg-neutral-100 text-neutral-700 rounded-lg text-sm">
+                      <i class="fa-solid fa-clock"></i>대기
+                    </span>
+                  </td>
+                  <td class="px-6 py-4">
+                    <div class="text-neutral-900">85장</div>
+                    <div class="text-sm text-neutral-500">0% 완료</div>
+                  </td>
+                  <td class="px-6 py-4 text-neutral-600">2025-01-21</td>
+                  <td class="px-6 py-4">
+                    <span class="inline-flex items-center gap-2 px-3 py-1 bg-neutral-100 text-neutral-700 rounded-lg text-sm">
+                      <i class="fa-solid fa-clock"></i>대기중
+                    </span>
+                  </td>
+                  <td class="px-6 py-4 text-neutral-900">₩255,000</td>
+                  <td class="px-6 py-4">
+                    <div class="flex items-center justify-end gap-2">
+                      <button class="p-2 text-neutral-600 hover:text-neutral-900 hover:bg-neutral-100 rounded-lg transition-colors">
+                        <i class="fa-solid fa-eye"></i>
+                      </button>
+                      <button class="p-2 text-neutral-600 hover:text-neutral-900 hover:bg-neutral-100 rounded-lg transition-colors">
+                        <i class="fa-solid fa-ellipsis-vertical"></i>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+
+                <tr class="border-b border-neutral-100 hover:bg-neutral-50 cursor-pointer transition-colors">
+                  <td class="px-6 py-4">
+                    <div class="text-neutral-900">정대현 & 한소희 본식</div>
+                    <div class="text-sm text-neutral-500">프로젝트 #2025-0118</div>
+                  </td>
+                  <td class="px-6 py-4">
+                    <span class="inline-flex items-center gap-2 px-3 py-1 bg-neutral-100 text-neutral-700 rounded-lg text-sm">
+                      <i class="fa-solid fa-check-circle"></i>완료
+                    </span>
+                  </td>
+                  <td class="px-6 py-4">
+                    <div class="text-neutral-900">200장</div>
+                    <div class="text-sm text-neutral-500">100% 완료</div>
+                  </td>
+                  <td class="px-6 py-4 text-neutral-600">2025-01-18</td>
+                  <td class="px-6 py-4">
+                    <span class="inline-flex items-center gap-2 px-3 py-1 bg-neutral-100 text-neutral-700 rounded-lg text-sm">
+                      <i class="fa-solid fa-check"></i>결제완료
+                    </span>
+                  </td>
+                  <td class="px-6 py-4 text-neutral-900">₩600,000</td>
+                  <td class="px-6 py-4">
+                    <div class="flex items-center justify-end gap-2">
+                      <button class="p-2 text-neutral-600 hover:text-neutral-900 hover:bg-neutral-100 rounded-lg transition-colors">
+                        <i class="fa-solid fa-eye"></i>
+                      </button>
+                      <button class="p-2 text-neutral-600 hover:text-neutral-900 hover:bg-neutral-100 rounded-lg transition-colors">
+                        <i class="fa-solid fa-ellipsis-vertical"></i>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+
+                <tr class="border-b border-neutral-100 hover:bg-neutral-50 cursor-pointer transition-colors">
+                  <td class="px-6 py-4">
+                    <div class="text-neutral-900">강태양 & 윤서연 야외촬영</div>
+                    <div class="text-sm text-neutral-500">프로젝트 #2025-0115</div>
+                  </td>
+                  <td class="px-6 py-4">
+                    <span class="inline-flex items-center gap-2 px-3 py-1 bg-neutral-100 text-neutral-700 rounded-lg text-sm">
+                      <i class="fa-solid fa-spinner"></i>진행중
+                    </span>
+                  </td>
+                  <td class="px-6 py-4">
+                    <div class="text-neutral-900">120장</div>
+                    <div class="text-sm text-neutral-500">45% 완료</div>
+                  </td>
+                  <td class="px-6 py-4 text-neutral-600">2025-01-15</td>
+                  <td class="px-6 py-4">
+                    <span class="inline-flex items-center gap-2 px-3 py-1 bg-neutral-100 text-neutral-700 rounded-lg text-sm">
+                      <i class="fa-solid fa-check"></i>결제완료
+                    </span>
+                  </td>
+                  <td class="px-6 py-4 text-neutral-900">₩360,000</td>
+                  <td class="px-6 py-4">
+                    <div class="flex items-center justify-end gap-2">
+                      <button class="p-2 text-neutral-600 hover:text-neutral-900 hover:bg-neutral-100 rounded-lg transition-colors">
+                        <i class="fa-solid fa-eye"></i>
+                      </button>
+                      <button class="p-2 text-neutral-600 hover:text-neutral-900 hover:bg-neutral-100 rounded-lg transition-colors">
+                        <i class="fa-solid fa-ellipsis-vertical"></i>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+
+                <tr class="border-b border-neutral-100 hover:bg-neutral-50 cursor-pointer transition-colors">
+                  <td class="px-6 py-4">
+                    <div class="text-neutral-900">오성민 & 배유진 셀프웨딩</div>
+                    <div class="text-sm text-neutral-500">프로젝트 #2025-0112</div>
+                  </td>
+                  <td class="px-6 py-4">
+                    <span class="inline-flex items-center gap-2 px-3 py-1 bg-neutral-100 text-neutral-700 rounded-lg text-sm">
+                      <i class="fa-solid fa-check-circle"></i>완료
+                    </span>
+                  </td>
+                  <td class="px-6 py-4">
+                    <div class="text-neutral-900">95장</div>
+                    <div class="text-sm text-neutral-500">100% 완료</div>
+                  </td>
+                  <td class="px-6 py-4 text-neutral-600">2025-01-12</td>
+                  <td class="px-6 py-4">
+                    <span class="inline-flex items-center gap-2 px-3 py-1 bg-neutral-100 text-neutral-700 rounded-lg text-sm">
+                      <i class="fa-solid fa-check"></i>결제완료
+                    </span>
+                  </td>
+                  <td class="px-6 py-4 text-neutral-900">₩285,000</td>
+                  <td class="px-6 py-4">
+                    <div class="flex items-center justify-end gap-2">
+                      <button class="p-2 text-neutral-600 hover:text-neutral-900 hover:bg-neutral-100 rounded-lg transition-colors">
+                        <i class="fa-solid fa-eye"></i>
+                      </button>
+                      <button class="p-2 text-neutral-600 hover:text-neutral-900 hover:bg-neutral-100 rounded-lg transition-colors">
+                        <i class="fa-solid fa-ellipsis-vertical"></i>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="flex items-center justify-between px-6 py-4 border-t border-neutral-200">
+            <div class="text-sm text-neutral-600">
+              총 <span class="text-neutral-900">65</span>개 주문 중 <span class="text-neutral-900">1-5</span> 표시
+            </div>
+            
+            <div class="flex items-center gap-2">
+              <button class="px-3 py-2 border border-neutral-300 hover:bg-neutral-50 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                <i class="fa-solid fa-chevron-left text-neutral-600"></i>
+              </button>
+              <button class="px-4 py-2 bg-neutral-900 text-white rounded-lg">1</button>
+              <button class="px-4 py-2 border border-neutral-300 hover:bg-neutral-50 rounded-lg transition-colors">2</button>
+              <button class="px-4 py-2 border border-neutral-300 hover:bg-neutral-50 rounded-lg transition-colors">3</button>
+              <button class="px-4 py-2 border border-neutral-300 hover:bg-neutral-50 rounded-lg transition-colors">4</button>
+              <span class="px-2 text-neutral-600">...</span>
+              <button class="px-4 py-2 border border-neutral-300 hover:bg-neutral-50 rounded-lg transition-colors">13</button>
+              <button class="px-3 py-2 border border-neutral-300 hover:bg-neutral-50 rounded-lg transition-colors">
+                <i class="fa-solid fa-chevron-right text-neutral-600"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </main>
+
+  <footer id="footer" class="bg-neutral-900 text-white py-12">
+    <div class="max-w-[1376px] mx-auto px-8">
+      <div class="grid grid-cols-4 gap-8 mb-8">
+        <div>
+          <div class="flex items-center gap-3 mb-4">
+            <div class="flex items-center justify-center w-10 h-
+                        </body>
+                        </html>
+                        

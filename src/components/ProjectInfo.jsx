@@ -1,4 +1,4 @@
-import { formatDateKorean, formatDateTimeKorean } from '../utils/helpers';
+import { formatDateKorean, formatDateTimeKorean, statusToLabel } from '../utils/helpers';
 
 /**
  * ProjectInfo - 프로젝트 진행 정보 표시
@@ -34,32 +34,29 @@ export function ProjectInfo({ project }) {
                 <div className="flex items-center space-x-2">
                   <span
                     data-field="status"
-                    className={`px-3 py-1 ${
-                      project.status === '검토중' ? 'bg-neutral-900 text-white' : 'bg-neutral-200 text-neutral-600'
-                    } text-sm rounded-full`}
+                    className="px-3 py-1 bg-neutral-900 text-white text-sm rounded-full"
                   >
-                    {project.status}
+                    {statusToLabel(project.status)}
                   </span>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* 업로드 상태 */}
-          <div className="flex items-start justify-between">
-            <div className="flex items-start space-x-3">
-              <i className="fa-solid fa-upload text-neutral-600 text-lg mt-1"></i>
-              <div>
-                <h3 className="text-sm text-neutral-500 mb-1">업로드 상태</h3>
-                <p data-field="uploadStatus" className="text-lg text-neutral-900">
-                  {project.uploadStatus}
-                </p>
-                <p data-field="uploadDate" className="text-sm text-neutral-500 mt-1">
-                  {formatDateTimeKorean(project.uploadDate)}
-                </p>
+          {/* 업로드 일시 */}
+          {project.uploadDate && (
+            <div className="flex items-start justify-between">
+              <div className="flex items-start space-x-3">
+                <i className="fa-solid fa-upload text-neutral-600 text-lg mt-1"></i>
+                <div>
+                  <h3 className="text-sm text-neutral-500 mb-1">샘플 업로드 일시</h3>
+                  <p data-field="uploadDate" className="text-lg text-neutral-900">
+                    {formatDateTimeKorean(project.uploadDate)}
+                  </p>
+                </div>
               </div>
             </div>
-          </div>
+          )}
         </div>
       </div>
 
