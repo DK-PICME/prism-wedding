@@ -1,3 +1,4 @@
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { WaitingPage } from './pages/WaitingPage';
 import { UploadPage } from './pages/UploadPage';
 import { ResultPage } from './pages/ResultPage';
@@ -32,71 +33,60 @@ const useMock = import.meta.env.VITE_USE_MOCK === 'true';
 const projectService = useMock ? new ProjectServiceMock() : new ProjectServiceApi();
 
 function AppContent() {
-  const params = new URLSearchParams(window.location.search);
-  const page = params.get('page') || 'login';
-
-  const renderPage = () => {
-    switch (page) {
-      case 'upload':
-        return <UploadPage projectService={projectService} />;
-      case 'result':
-        return <ResultPage projectService={projectService} />;
-      case 'status':
-        return <CurrentStatusPage projectService={projectService} />;
-      case 'completed':
-        return <CompletedPage projectService={projectService} />;
-      case 'main-correction-result':
-        return <MainCorrectionResultPage projectService={projectService} />;
-      case 'sample-revision-request':
-        return <SampleRevisionRequestPage projectService={projectService} />;
-      case 'main-correction-progress':
-        return <MainCorrectionProgressPage projectService={projectService} />;
-      case 'main-correction-upload':
-        return <MainCorrectionUploadPage projectService={projectService} />;
-      case 'order-list':
-        return <OrderListPage />;
-      case 'settings':
-        return <SettingsPage />;
-      case 'notification-center':
-        return <NotificationCenterPage />;
-      case 'create-new-order':
-        return <CreateNewOrderPage />;
-      case 'order-details':
-        return <OrderDetailsPage />;
-      case 'payment':
-        return <PaymentPage />;
-      case 'password-recovery':
-        return <PasswordRecoveryPage />;
-      case 'sign-up':
-        return <SignUpPage />;
-      case 'login':
-        return <LoginPage />;
-      case 'verify-email':
-        return <VerifyEmailPage />;
-      case 'inquiry':
-        return <InquiryPage />;
-      case 'failed-items':
-        return <FailedItemManagementPage />;
-      case 'photo-management':
-        return <PhotoManagementPage />;
-      case 'waiting':
-      default:
-        return <WaitingPage projectService={projectService} />;
-    }
-  };
-
   return (
     <div className="min-h-screen bg-neutral-50">
-      {renderPage()}
+      <Routes>
+        {/* 인증 관련 페이지 */}
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/sign-up" element={<SignUpPage />} />
+        <Route path="/verify-email" element={<VerifyEmailPage />} />
+        <Route path="/password-recovery" element={<PasswordRecoveryPage />} />
+
+        {/* 주문 관리 페이지 */}
+        <Route path="/order-list" element={<OrderListPage />} />
+        <Route path="/order-details" element={<OrderDetailsPage />} />
+        <Route path="/create-new-order" element={<CreateNewOrderPage />} />
+        <Route path="/payment" element={<PaymentPage />} />
+
+        {/* 사진 관리 페이지 */}
+        <Route path="/photo-management" element={<PhotoManagementPage />} />
+        <Route path="/upload" element={<UploadPage projectService={projectService} />} />
+        <Route path="/result" element={<ResultPage projectService={projectService} />} />
+
+        {/* 주문 상태 페이지 */}
+        <Route path="/status" element={<CurrentStatusPage projectService={projectService} />} />
+        <Route path="/completed" element={<CompletedPage projectService={projectService} />} />
+
+        {/* 본보정 관련 페이지 */}
+        <Route path="/main-correction-result" element={<MainCorrectionResultPage projectService={projectService} />} />
+        <Route path="/sample-revision-request" element={<SampleRevisionRequestPage projectService={projectService} />} />
+        <Route path="/main-correction-progress" element={<MainCorrectionProgressPage projectService={projectService} />} />
+        <Route path="/main-correction-upload" element={<MainCorrectionUploadPage projectService={projectService} />} />
+
+        {/* 설정 및 기타 페이지 */}
+        <Route path="/settings" element={<SettingsPage />} />
+        <Route path="/notification-center" element={<NotificationCenterPage />} />
+        <Route path="/inquiry" element={<InquiryPage />} />
+        <Route path="/failed-items" element={<FailedItemManagementPage />} />
+
+        {/* 기본 페이지 */}
+        <Route path="/waiting" element={<WaitingPage projectService={projectService} />} />
+
+        {/* 루트 경로 및 기본값 */}
+        <Route path="/" element={<Navigate to="/login" replace />} />
+        <Route path="*" element={<Navigate to="/waiting" replace />} />
+      </Routes>
     </div>
   );
 }
 
 function App() {
   return (
-    <AuthProvider>
-      <AppContent />
-    </AuthProvider>
+    <Router>
+      <AuthProvider>
+        <AppContent />
+      </AuthProvider>
+    </Router>
   );
 }
 

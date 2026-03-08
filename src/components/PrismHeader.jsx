@@ -1,13 +1,15 @@
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 
 export const PrismHeader = ({ activeNav = 'order-list' }) => {
+  const navigate = useNavigate();
   const { currentUser, userData } = useAuth();
   
   const navItems = [
-    { id: 'photo-management', label: '사진 관리', icon: 'fa-images' },
-    { id: 'order-list', label: '주문 내역', icon: 'fa-list-check' },
-    { id: 'order-details', label: '주문 상세', icon: 'fa-file-invoice' },
-    { id: 'settings', label: '설정', icon: 'fa-gear' },
+    { id: 'photo-management', label: '사진 관리', icon: 'fa-images', path: '/photo-management' },
+    { id: 'order-list', label: '주문 내역', icon: 'fa-list-check', path: '/order-list' },
+    { id: 'order-details', label: '주문 상세', icon: 'fa-file-invoice', path: '/order-details' },
+    { id: 'settings', label: '설정', icon: 'fa-gear', path: '/settings' },
   ];
 
   // 사용자 정보 우선순위: userData.displayName > currentUser.displayName > 이메일앞부분
@@ -27,9 +29,9 @@ export const PrismHeader = ({ activeNav = 'order-list' }) => {
 
           <nav className="flex items-center gap-1">
             {navItems.map((item) => (
-              <a
+              <button
                 key={item.id}
-                href={`?page=${item.id}`}
+                onClick={() => navigate(item.path)}
                 className={`px-4 py-2 rounded-lg transition-colors ${
                   activeNav === item.id
                     ? 'text-neutral-900 bg-neutral-100'
@@ -38,16 +40,19 @@ export const PrismHeader = ({ activeNav = 'order-list' }) => {
               >
                 <i className={`fa-solid ${item.icon} mr-2`}></i>
                 {item.label}
-              </a>
+              </button>
             ))}
           </nav>
         </div>
 
         <div className="flex items-center gap-4">
-          <a href="?page=notification-center" className="relative p-2 text-neutral-600 hover:text-neutral-900 hover:bg-neutral-50 rounded-lg transition-colors">
+          <button
+            onClick={() => navigate('/notification-center')}
+            className="relative p-2 text-neutral-600 hover:text-neutral-900 hover:bg-neutral-50 rounded-lg transition-colors"
+          >
             <i className="fa-solid fa-bell text-xl"></i>
             <span className="absolute top-1 right-1 w-2 h-2 bg-neutral-500 rounded-full"></span>
-          </a>
+          </button>
 
           <div className="flex items-center gap-3 pl-4 border-l border-neutral-200">
             <img

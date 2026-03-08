@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { PrismHeader } from '../components/PrismHeader';
 import { PrismFooter } from '../components/PrismFooter';
 import { useAuth } from '../contexts/AuthContext';
 
 export const VerifyEmailPage = () => {
+  const navigate = useNavigate();
   const { currentUser, resendEmailVerification, logout } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState('');
@@ -40,7 +42,7 @@ export const VerifyEmailPage = () => {
   const handleLogout = async () => {
     try {
       await logout();
-      window.location.href = '?page=login';
+      navigate('/login');
     } catch (err) {
       console.error('로그아웃 오류:', err);
     }

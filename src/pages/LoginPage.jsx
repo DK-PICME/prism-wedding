@@ -1,9 +1,11 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { PrismHeader } from '../components/PrismHeader';
 import { PrismFooter } from '../components/PrismFooter';
 import { useAuth } from '../contexts/AuthContext';
 
 export const LoginPage = () => {
+  const navigate = useNavigate();
   const { login, error: authError } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
@@ -52,7 +54,7 @@ export const LoginPage = () => {
     setIsLoading(true);
     try {
       await login(formData.email, formData.password);
-      window.location.href = '?page=order-list';
+      navigate('/order-list');
     } catch (err) {
       if (err.code === 'auth/user-not-found') {
         setError('등록되지 않은 이메일입니다');
@@ -104,9 +106,12 @@ export const LoginPage = () => {
                   {error || authError}
                   {(error.includes('이메일 인증') || authError?.includes('이메일 인증')) && (
                     <p className="mt-2 text-sm">
-                      <a href="?page=sign-up" className="font-semibold underline hover:no-underline">
+                      <button
+                        onClick={() => navigate('/sign-up')}
+                        className="font-semibold underline hover:no-underline"
+                      >
                         회원가입 페이지로 이동
-                      </a>
+                      </button>
                       하여 이메일 인증을 완료해주세요.
                     </p>
                   )}
@@ -152,9 +157,13 @@ export const LoginPage = () => {
                     />
                     <span className="text-sm text-neutral-600">로그인 상태 유지</span>
                   </label>
-                  <a href="?page=password-recovery" className="text-sm text-neutral-900 font-semibold hover:underline">
+                  <button
+                    type="button"
+                    onClick={() => navigate('/password-recovery')}
+                    className="text-sm text-neutral-900 font-semibold hover:underline"
+                  >
                     비밀번호 찾기
-                  </a>
+                  </button>
                 </div>
 
                 <button
@@ -200,9 +209,12 @@ export const LoginPage = () => {
             <div className="text-center mt-6">
               <p className="text-sm text-neutral-600">
                 계정이 없으신가요?{' '}
-                <a href="?page=sign-up" className="text-neutral-900 font-semibold hover:underline cursor-pointer">
+                <button
+                  onClick={() => navigate('/sign-up')}
+                  className="text-neutral-900 font-semibold hover:underline cursor-pointer"
+                >
                   회원가입
-                </a>
+                </button>
               </p>
             </div>
           </div>
