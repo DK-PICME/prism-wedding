@@ -175,15 +175,30 @@ export function AuthProvider({ children }) {
       setCurrentUser(user);
 
       if (user) {
-        // Firestore에서 사용자 데이터 불러오기
+        // Firestore에서 사용자 데이터 불러오기 (선택적)
         try {
           const userRef = doc(db, 'users', user.uid);
           const userSnap = await getDoc(userRef);
           if (userSnap.exists()) {
             setUserData(userSnap.data());
+          } else {
+            // Firestore에 데이터가 없으면 Firebase Auth 정보로 생성
+            setUserData({
+              uid: user.uid,
+              email: user.email,
+              displayName: user.displayName || '',
+              photoURL: user.photoURL || '',
+            });
           }
         } catch (err) {
-          console.error('사용자 데이터 로드 오류:', err);
+          console.warn('Firestore 데이터 로드 실패, Firebase Auth 정보 사용:', err.code);
+          // 권한 오류 또는 다른 오류 시 Firebase Auth 정보 사용
+          setUserData({
+            uid: user.uid,
+            email: user.email,
+            displayName: user.displayName || '',
+            photoURL: user.photoURL || '',
+          });
         }
       } else {
         setUserData(null);

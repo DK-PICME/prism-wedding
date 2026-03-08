@@ -10,9 +10,9 @@ export const PrismHeader = ({ activeNav = 'order-list' }) => {
     { id: 'settings', label: '설정', icon: 'fa-gear' },
   ];
 
-  // 사용자 이름 (displayName 또는 이메일의 앞 부분)
+  // 사용자 정보 우선순위: userData.displayName > currentUser.displayName > 이메일앞부분
   const displayName = userData?.displayName || currentUser?.displayName || currentUser?.email?.split('@')[0] || '사용자';
-  const userEmail = currentUser?.email || 'user@example.com';
+  const userEmail = userData?.email || currentUser?.email || 'user@example.com';
 
   return (
     <header className="fixed top-0 left-0 right-0 bg-white border-b border-neutral-200 z-50">
