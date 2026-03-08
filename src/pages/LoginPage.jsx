@@ -1,12 +1,10 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { PrismHeader } from '../components/PrismHeader';
 import { PrismFooter } from '../components/PrismFooter';
 import { useAuth } from '../contexts/AuthContext';
 
 export const LoginPage = () => {
   const { login, error: authError } = useAuth();
-  const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [formData, setFormData] = useState({
@@ -54,7 +52,7 @@ export const LoginPage = () => {
     setIsLoading(true);
     try {
       await login(formData.email, formData.password);
-      navigate('/order-list');
+      window.location.href = '?page=order-list';
     } catch (err) {
       if (err.code === 'auth/user-not-found') {
         setError('등록되지 않은 이메일입니다');

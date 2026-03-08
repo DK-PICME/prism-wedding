@@ -1,12 +1,10 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { PrismHeader } from '../components/PrismHeader';
 import { PrismFooter } from '../components/PrismFooter';
 import { useAuth } from '../contexts/AuthContext';
 
 export const SignUpPage = () => {
   const { signup, loginWithGoogle, error: authError } = useAuth();
-  const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [formData, setFormData] = useState({
@@ -91,7 +89,7 @@ export const SignUpPage = () => {
     setIsLoading(true);
     try {
       await signup(formData.email, formData.password, formData.studioName);
-      navigate('/order-list');
+      window.location.href = '?page=order-list';
     } catch (err) {
       if (err.code === 'auth/email-already-in-use') {
         setError('이미 사용 중인 이메일입니다');
