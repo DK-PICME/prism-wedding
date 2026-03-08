@@ -200,6 +200,7 @@ export const LoginPage = () => {
                     size="large"
                     text="signin_with"
                     locale="ko"
+                    width="100%"
                   />
                 </div>
 

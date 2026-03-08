@@ -259,6 +259,7 @@ export const SignUpPage = () => {
                     size="large"
                     text="signup_with"
                     locale="ko"
+                    width="100%"
                   />
                 </div>
 
