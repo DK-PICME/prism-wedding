@@ -7,6 +7,9 @@ import {
   sendPasswordResetEmail,
   updateProfile,
   signInWithCredential,
+  signInWithPopup,
+  signInWithRedirect,
+  getRedirectResult,
   GoogleAuthProvider,
   sendEmailVerification,
   deleteUser,
@@ -175,6 +178,42 @@ export function AuthProvider({ children }) {
     }
   };
 
+  // 커스텀 Google 로그인 (팝업 방식 - 새로운 방식)
+  const loginWithGooglePopup = async () => {
+    try {
+      setError(null);
+      const provider = new GoogleAuthProvider();
+      provider.addScope('profile');
+      provider.addScope('email');
+      
+      try {
+        // 팝업으로 Google 로그인 시도
+        const result = await signInWithPopup(auth, provider);
+
+        // Firestore에 사용자 정보 저장
+        await saveUserData(
+          result.user.uid,
+          result.user.email,
+          result.user.displayName,
+          result.user.photoURL
+        );
+
+        return result.user;
+      } catch (popupErr) {
+        // 팝업 차단 시 리다이렉트로 폴백
+        if (popupErr.code === 'auth/popup-blocked') {
+          console.log('팝업 차단됨 - 리다이렉트 방식으로 진행');
+          await signInWithRedirect(auth, provider);
+          return null; // 리다이렉트는 페이지 새로고침
+        }
+        throw popupErr;
+      }
+    } catch (err) {
+      setError(err.message);
+      throw err;
+    }
+  };
+
   // 프로필 업데이트 (이름, 이메일)
   const updateUserProfile = async (displayName) => {
     try {
@@ -247,6 +286,28 @@ export function AuthProvider({ children }) {
     }
   };
   useEffect(() => {
+    // 리다이렉트 후 결과 처리
+    const handleRedirectResult = async () => {
+      try {
+        const result = await getRedirectResult(auth);
+        if (result) {
+          // 리다이렉트 로그인 성공
+          await saveUserData(
+            result.user.uid,
+            result.user.email,
+            result.user.displayName,
+            result.user.photoURL
+          );
+        }
+      } catch (err) {
+        console.error('리다이렉트 결과 처리 오류:', err);
+        setError(err.message);
+      }
+    };
+
+    handleRedirectResult();
+
+    // 인증 상태 감시
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       setCurrentUser(user);
 
@@ -296,6 +357,7 @@ export function AuthProvider({ children }) {
     logout,
     resetPassword,
     loginWithGoogle,
+    loginWithGooglePopup,
     resendEmailVerification,
     updateUserProfile,
     deleteAccount,
