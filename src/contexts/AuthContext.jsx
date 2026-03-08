@@ -225,15 +225,23 @@ export function AuthProvider({ children }) {
       // Firebase Auth 프로필 업데이트
       await updateProfile(currentUser, { displayName });
 
-      // Firestore 업데이트
+      // Firestore 업데이트 (권한 없으면 로컬만 반영, 실패해도 Auth는 이미 성공)
       const userRef = doc(db, 'users', currentUser.uid);
-      await setDoc(userRef, {
-        uid: currentUser.uid,
-        email: currentUser.email,
-        displayName: displayName || '',
-        photoURL: currentUser.photoURL || '',
-        updatedAt: new Date().toISOString(),
-      }, { merge: true });
+      try {
+        await setDoc(userRef, {
+          uid: currentUser.uid,
+          email: currentUser.email,
+          displayName: displayName || '',
+          photoURL: currentUser.photoURL || '',
+          updatedAt: new Date().toISOString(),
+        }, { merge: true });
+      } catch (firestoreErr) {
+        if (firestoreErr?.code === 'permission-denied') {
+          console.warn('Firestore 프로필 동기화 실패(권한). Firebase Auth는 반영됨. firebase deploy --only firestore 규칙 배포 후 재시도하세요.');
+        } else {
+          throw firestoreErr;
+        }
+      }
 
       // 로컬 상태 업데이트
       setUserData((prev) => ({

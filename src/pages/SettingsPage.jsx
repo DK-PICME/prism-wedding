@@ -194,17 +194,19 @@ export const SettingsPage = () => {
                       </div>
                     </div>
 
-                    <div>
-                      <h3 className="text-lg text-neutral-900 mb-3">비밀번호 변경</h3>
-                      <div className="space-y-3">
-                        <input type="password" placeholder="현재 비밀번호" className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-neutral-500" />
-                        <input type="password" placeholder="새 비밀번호" className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-neutral-500" />
-                        <input type="password" placeholder="새 비밀번호 확인" className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-neutral-500" />
-                        <button className="px-4 py-2 bg-neutral-900 text-white hover:bg-neutral-800 rounded-lg transition-colors">
-                          비밀번호 변경
-                        </button>
+                    {currentUser?.providerData?.some(provider => provider.providerId === 'password') && (
+                      <div>
+                        <h3 className="text-lg text-neutral-900 mb-3">비밀번호 변경</h3>
+                        <div className="space-y-3">
+                          <input type="password" placeholder="현재 비밀번호" className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-neutral-500" />
+                          <input type="password" placeholder="새 비밀번호" className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-neutral-500" />
+                          <input type="password" placeholder="새 비밀번호 확인" className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-neutral-500" />
+                          <button className="px-4 py-2 bg-neutral-900 text-white hover:bg-neutral-800 rounded-lg transition-colors">
+                            비밀번호 변경
+                          </button>
+                        </div>
                       </div>
-                    </div>
+                    )}
 
                     <div className="border-t border-neutral-200 pt-6">
                       <h3 className="text-lg text-neutral-900 mb-3">계정 관리</h3>
