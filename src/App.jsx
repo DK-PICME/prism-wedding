@@ -3,6 +3,11 @@ import { WaitingPage } from './pages/WaitingPage';
 import { UploadPage } from './pages/UploadPage';
 import { ResultPage } from './pages/ResultPage';
 import { CurrentStatusPage } from './pages/CurrentStatusPage';
+import { CompletedPage } from './pages/CompletedPage';
+import { MainCorrectionResultPage } from './pages/MainCorrectionResultPage';
+import { SampleRevisionRequestPage } from './pages/SampleRevisionRequestPage';
+import { MainCorrectionProgressPage } from './pages/MainCorrectionProgressPage';
+import { MainCorrectionUploadPage } from './pages/MainCorrectionUploadPage';
 import { ProjectServiceMock } from './services/ProjectServiceMock';
 import './App.css';
 
@@ -25,6 +30,16 @@ function App() {
         return <ResultPage />;
       case 'status':
         return <CurrentStatusPage />;
+      case 'completed':
+        return <CompletedPage />;
+      case 'main-correction-result':
+        return <MainCorrectionResultPage />;
+      case 'sample-revision-request':
+        return <SampleRevisionRequestPage />;
+      case 'main-correction-progress':
+        return <MainCorrectionProgressPage />;
+      case 'main-correction-upload':
+        return <MainCorrectionUploadPage />;
       case 'waiting':
       default:
         return <WaitingPage projectService={projectService} />;
