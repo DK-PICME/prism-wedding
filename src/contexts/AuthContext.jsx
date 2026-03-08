@@ -186,6 +186,11 @@ export function AuthProvider({ children }) {
       provider.addScope('profile');
       provider.addScope('email');
       
+      // 계정 선택 화면 강제 표시
+      provider.setCustomParameters({
+        prompt: 'select_account',
+      });
+      
       try {
         // 팝업으로 Google 로그인 시도
         const result = await signInWithPopup(auth, provider);
