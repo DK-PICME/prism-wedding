@@ -1,10 +1,18 @@
+import { useAuth } from '../contexts/AuthContext';
+
 export const PrismHeader = ({ activeNav = 'order-list' }) => {
+  const { currentUser, userData } = useAuth();
+  
   const navItems = [
     { id: 'photo-management', label: '사진 관리', icon: 'fa-images' },
     { id: 'order-list', label: '주문 내역', icon: 'fa-list-check' },
     { id: 'order-details', label: '주문 상세', icon: 'fa-file-invoice' },
     { id: 'settings', label: '설정', icon: 'fa-gear' },
   ];
+
+  // 사용자 이름 (displayName 또는 이메일의 앞 부분)
+  const displayName = userData?.displayName || currentUser?.displayName || currentUser?.email?.split('@')[0] || '사용자';
+  const userEmail = currentUser?.email || 'user@example.com';
 
   return (
     <header className="fixed top-0 left-0 right-0 bg-white border-b border-neutral-200 z-50">
@@ -48,8 +56,8 @@ export const PrismHeader = ({ activeNav = 'order-list' }) => {
               className="w-10 h-10 rounded-full border-2 border-neutral-200"
             />
             <div className="text-sm">
-              <div className="text-neutral-900">웨딩 스튜디오</div>
-              <div className="text-neutral-500">wedding@example.com</div>
+              <div className="text-neutral-900">{displayName}</div>
+              <div className="text-neutral-500">{userEmail}</div>
             </div>
           </div>
         </div>
