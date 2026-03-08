@@ -251,7 +251,7 @@ export const SignUpPage = () => {
                   </div>
                 </div>
 
-                <div className="w-full">
+                <div className="w-full" style={{ display: 'flex' }}>
                   <GoogleLogin
                     onSuccess={handleGoogleSignUp}
                     onError={() => setError('Google 로그인에 실패했습니다')}
