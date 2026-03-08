@@ -17,6 +17,7 @@ import {
   reauthenticateWithPopup,
   EmailAuthProvider,
   unlink,
+  updatePassword,
 } from 'firebase/auth';
 import { auth, db } from '../config/firebase';
 import { doc, setDoc, getDoc, deleteDoc } from 'firebase/firestore';
@@ -474,6 +475,34 @@ export function AuthProvider({ children }) {
     return unsubscribe;
   }, []);
 
+  // 비밀번호 변경
+  const changePassword = async (currentPassword, newPassword) => {
+    try {
+      setError(null);
+      const user = auth.currentUser;
+      if (!user) throw new Error('사용자 정보를 찾을 수 없습니다.');
+      if (!user.email) throw new Error('이메일 로그인 사용자가 아닙니다.');
+      
+      // 현재 비밀번호로 재인증
+      const credential = EmailAuthProvider.credential(user.email, currentPassword);
+      try {
+        await reauthenticateWithCredential(user, credential);
+      } catch (err) {
+        if (err.code === 'auth/wrong-password') {
+          throw new Error('현재 비밀번호가 올바르지 않습니다.');
+        }
+        throw err;
+      }
+
+      // 새 비밀번호로 변경
+      await updatePassword(user, newPassword);
+      return true;
+    } catch (err) {
+      setError(err.message);
+      throw err;
+    }
+  };
+
   const value = {
     currentUser,
     userData,
@@ -490,6 +519,7 @@ export function AuthProvider({ children }) {
     updateUserSettings,
     unlinkProvider,
     deleteAccount,
+    changePassword,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

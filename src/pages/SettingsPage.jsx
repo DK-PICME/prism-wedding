@@ -6,7 +6,7 @@ import { PrismFooter } from '../components/PrismFooter';
 
 export const SettingsPage = () => {
   const navigate = useNavigate();
-  const { currentUser, userData, logout, updateUserProfile, updateUserSettings, unlinkProvider, deleteAccount } = useAuth();
+  const { currentUser, userData, logout, updateUserProfile, updateUserSettings, unlinkProvider, deleteAccount, changePassword } = useAuth();
   
   // State management
   const [isLoggingOut, setIsLoggingOut] = useState(false);
@@ -23,6 +23,21 @@ export const SettingsPage = () => {
   const [deleteConfirmation, setDeleteConfirmation] = useState(false);
   const [deleteError, setDeleteError] = useState('');
   const [deletePassword, setDeletePassword] = useState('');
+  
+  // 비밀번호 변경
+  const [currentPasswordInput, setCurrentPasswordInput] = useState('');
+  const [newPasswordInput, setNewPasswordInput] = useState('');
+  const [newPasswordConfirm, setNewPasswordConfirm] = useState('');
+  const [passwordError, setPasswordError] = useState('');
+  const [passwordSuccess, setPasswordSuccess] = useState('');
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
+
+  // 다운로드 설정
+  const [fileNameRule, setFileNameRule] = useState(userData?.settings?.download?.fileNameRule || '주문번호_원본파일명');
+  const [compressionFormat, setCompressionFormat] = useState(userData?.settings?.download?.compressionFormat || 'ZIP');
+
+  // 테마 설정
+  const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light');
   
   // 사용자 이름 (displayName 또는 이메일의 앞 부분)
   const displayName = userData?.displayName || currentUser?.displayName || currentUser?.email?.split('@')[0] || '사용자';
@@ -128,6 +143,86 @@ export const SettingsPage = () => {
     setUnlinkTargetProviderId(null);
     setUnlinkPassword('');
     setUnlinkError('');
+  };
+
+  // 비밀번호 변경 핸들러
+  const handleChangePassword = async () => {
+    setPasswordError('');
+    setPasswordSuccess('');
+
+    if (!currentPasswordInput.trim()) {
+      setPasswordError('현재 비밀번호를 입력해주세요');
+      return;
+    }
+    if (!newPasswordInput.trim()) {
+      setPasswordError('새 비밀번호를 입력해주세요');
+      return;
+    }
+    if (newPasswordInput !== newPasswordConfirm) {
+      setPasswordError('새 비밀번호가 일치하지 않습니다');
+      return;
+    }
+    if (newPasswordInput.length < 6) {
+      setPasswordError('새 비밀번호는 최소 6자 이상이어야 합니다');
+      return;
+    }
+
+    setIsChangingPassword(true);
+    try {
+      await changePassword(currentPasswordInput, newPasswordInput);
+      setPasswordSuccess('비밀번호가 성공적으로 변경되었습니다');
+      setCurrentPasswordInput('');
+      setNewPasswordInput('');
+      setNewPasswordConfirm('');
+      setTimeout(() => setPasswordSuccess(''), 3000);
+    } catch (err) {
+      setPasswordError(err.message || '비밀번호 변경에 실패했습니다');
+    } finally {
+      setIsChangingPassword(false);
+    }
+  };
+
+  // 파일명 규칙 저장
+  const handleSaveFileNameRule = async () => {
+    try {
+      await updateUserSettings({
+        download: { ...userData?.settings?.download, fileNameRule },
+      });
+    } catch (err) {
+      console.error('파일명 규칙 저장 실패:', err);
+    }
+  };
+
+  // 압축 형식 저장
+  const handleSaveCompressionFormat = async () => {
+    try {
+      await updateUserSettings({
+        download: { ...userData?.settings?.download, compressionFormat },
+      });
+    } catch (err) {
+      console.error('압축 형식 저장 실패:', err);
+    }
+  };
+
+  // 테마 변경
+  const handleThemeChange = (newTheme) => {
+    setTheme(newTheme);
+    localStorage.setItem('theme', newTheme);
+    
+    // DOM에 테마 적용
+    const html = document.documentElement;
+    if (newTheme === 'dark') {
+      html.classList.add('dark');
+    } else if (newTheme === 'light') {
+      html.classList.remove('dark');
+    } else {
+      // auto 모드: 시스템 설정 따르기
+      if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        html.classList.add('dark');
+      } else {
+        html.classList.remove('dark');
+      }
+    }
   };
 
   return (
@@ -308,11 +403,43 @@ export const SettingsPage = () => {
                       <div>
                         <h3 className="text-lg text-neutral-900 mb-3">비밀번호 변경</h3>
                         <div className="space-y-3">
-                          <input type="password" placeholder="현재 비밀번호" className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-neutral-500" />
-                          <input type="password" placeholder="새 비밀번호" className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-neutral-500" />
-                          <input type="password" placeholder="새 비밀번호 확인" className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-neutral-500" />
-                          <button className="px-4 py-2 bg-neutral-900 text-white hover:bg-neutral-800 rounded-lg transition-colors">
-                            비밀번호 변경
+                          <input 
+                            type="password" 
+                            placeholder="현재 비밀번호" 
+                            value={currentPasswordInput}
+                            onChange={(e) => setCurrentPasswordInput(e.target.value)}
+                            className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-neutral-500" 
+                          />
+                          <input 
+                            type="password" 
+                            placeholder="새 비밀번호" 
+                            value={newPasswordInput}
+                            onChange={(e) => setNewPasswordInput(e.target.value)}
+                            className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-neutral-500" 
+                          />
+                          <input 
+                            type="password" 
+                            placeholder="새 비밀번호 확인" 
+                            value={newPasswordConfirm}
+                            onChange={(e) => setNewPasswordConfirm(e.target.value)}
+                            className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-neutral-500" 
+                          />
+                          {passwordError && (
+                            <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
+                              {passwordError}
+                            </div>
+                          )}
+                          {passwordSuccess && (
+                            <div className="p-3 bg-green-50 border border-green-200 rounded-lg text-sm text-green-700">
+                              {passwordSuccess}
+                            </div>
+                          )}
+                          <button 
+                            onClick={handleChangePassword}
+                            disabled={isChangingPassword}
+                            className="px-4 py-2 bg-neutral-900 text-white hover:bg-neutral-800 rounded-lg transition-colors disabled:bg-neutral-400"
+                          >
+                            {isChangingPassword ? '변경 중...' : '비밀번호 변경'}
                           </button>
                         </div>
                       </div>
@@ -442,34 +569,51 @@ export const SettingsPage = () => {
                   </div>
                   <div className="p-6 space-y-6">
                     <div>
-                      <label className="block text-sm text-neutral-700 mb-2">기본 다운로드 폴더</label>
+                      <label className="block text-sm text-neutral-700 mb-2">파일명 규칙</label>
                       <div className="flex gap-2">
-                        <input type="text" defaultValue="/Users/studio/Downloads/PrismStudio" className="flex-1 px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-neutral-500" />
-                        <button className="px-4 py-2 border border-neutral-300 hover:bg-neutral-50 rounded-lg transition-colors">
-                          <i className="fa-solid fa-folder-open"></i>
+                        <select 
+                          value={fileNameRule}
+                          onChange={(e) => setFileNameRule(e.target.value)}
+                          className="flex-1 px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-neutral-500"
+                        >
+                          <option value="주문번호_원본파일명">주문번호_원본파일명</option>
+                          <option value="날짜_주문번호_파일명">날짜_주문번호_파일명</option>
+                          <option value="원본파일명_보정완료">원본파일명_보정완료</option>
+                          <option value="사용자정의">사용자정의</option>
+                        </select>
+                        <button
+                          onClick={handleSaveFileNameRule}
+                          className="px-4 py-2 bg-neutral-900 text-white hover:bg-neutral-800 rounded-lg transition-colors"
+                        >
+                          저장
                         </button>
                       </div>
                     </div>
 
                     <div>
-                      <label className="block text-sm text-neutral-700 mb-2">파일명 규칙</label>
-                      <select className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-neutral-500">
-                        <option>주문번호_원본파일명</option>
-                        <option>날짜_주문번호_파일명</option>
-                        <option>원본파일명_보정완료</option>
-                        <option>사용자정의</option>
-                      </select>
-                    </div>
-
-                    <div>
                       <label className="block text-sm text-neutral-700 mb-2">압축 형식</label>
-                      <div className="flex gap-4">
-                        {['ZIP', 'RAR', '압축 안함'].map((format, idx) => (
-                          <label key={idx} className="flex items-center gap-2">
-                            <input type="radio" name="compression" defaultChecked={idx === 0} className="w-4 h-4" />
-                            <span className="text-neutral-900">{format}</span>
-                          </label>
-                        ))}
+                      <div className="space-y-3">
+                        <div className="flex gap-4">
+                          {['ZIP', 'RAR', '압축 안함'].map((format) => (
+                            <label key={format} className="flex items-center gap-2">
+                              <input 
+                                type="radio" 
+                                name="compression" 
+                                value={format}
+                                checked={compressionFormat === format}
+                                onChange={(e) => setCompressionFormat(e.target.value)}
+                                className="w-4 h-4" 
+                              />
+                              <span className="text-neutral-900">{format}</span>
+                            </label>
+                          ))}
+                        </div>
+                        <button
+                          onClick={handleSaveCompressionFormat}
+                          className="px-4 py-2 bg-neutral-900 text-white hover:bg-neutral-800 rounded-lg transition-colors"
+                        >
+                          저장
+                        </button>
                       </div>
                     </div>
                   </div>
@@ -481,23 +625,20 @@ export const SettingsPage = () => {
                   </div>
                   <div className="p-6 space-y-6">
                     <div>
-                      <label className="block text-sm text-neutral-700 mb-2">언어</label>
-                      <select className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-neutral-500">
-                        <option>한국어</option>
-                        <option>English</option>
-                        <option>日本語</option>
-                        <option>中文</option>
-                      </select>
-                    </div>
-
-                    <div>
                       <label className="block text-sm text-neutral-700 mb-2">테마</label>
                       <div className="grid grid-cols-3 gap-3">
-                        {['라이트', '다크', '자동'].map((theme, idx) => (
-                          <label key={idx} className="flex items-center gap-2 p-3 border border-neutral-300 rounded-lg cursor-pointer hover:bg-neutral-50">
-                            <input type="radio" name="theme" defaultChecked={idx === 0} className="w-4 h-4" />
-                            <span className="text-neutral-900">{theme}</span>
-                          </label>
+                        {[{ value: 'light', label: '라이트' }, { value: 'dark', label: '다크' }, { value: 'auto', label: '자동' }].map((opt) => (
+                          <button
+                            key={opt.value}
+                            onClick={() => handleThemeChange(opt.value)}
+                            className={`p-3 border rounded-lg transition-colors ${
+                              theme === opt.value
+                                ? 'border-neutral-900 bg-neutral-100'
+                                : 'border-neutral-300 hover:bg-neutral-50'
+                            }`}
+                          >
+                            <div className="text-neutral-900 text-sm font-medium">{opt.label}</div>
+                          </button>
                         ))}
                       </div>
                     </div>
