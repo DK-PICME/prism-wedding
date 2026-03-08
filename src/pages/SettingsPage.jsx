@@ -270,7 +270,7 @@ export const SettingsPage = () => {
                                         />
                                       </div>
                                     ) : (
-                                      <p className="text-sm text-neutral-600 mt-3">Google 계정으로 재인증한 후 이메일 연결이 해제됩니다.</p>
+                                      <p className="text-sm text-neutral-600 mt-3">연결된 소셜 계정으로 재인증한 후 이메일 연결이 해제됩니다.</p>
                                     )}
                                     {unlinkError && (
                                       <p className="text-sm text-red-600 mt-2">{unlinkError}</p>

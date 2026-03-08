@@ -95,7 +95,7 @@ export const SignUpPage = () => {
     } catch (err) {
       const code = err?.code || '';
       if (code === 'auth/email-already-in-use' || code === 'auth/account-exists-with-different-credential') {
-        setError('이 이메일은 이미 가입되어 있습니다. Google로 가입하셨다면 아래 Google로 가입을, 이메일로 가입하셨다면 로그인 페이지에서 비밀번호 찾기를 이용해주세요.');
+        setError('이 이메일은 이미 가입되어 있습니다. 소셜 로그인으로 가입하셨다면 아래 소셜 로그인을, 이메일·비밀번호로 가입하셨다면 로그인 페이지에서 비밀번호 찾기를 이용해주세요.');
       } else if (code === 'auth/weak-password') {
         setError('비밀번호가 너무 약합니다');
       } else {
@@ -113,7 +113,7 @@ export const SignUpPage = () => {
       await loginWithGooglePopup();
       navigate('/order-list');
     } catch (err) {
-      setError(err.message || 'Google 로그인에 실패했습니다');
+      setError(err?.message || '소셜 로그인에 실패했습니다');
     } finally {
       setIsLoading(false);
     }

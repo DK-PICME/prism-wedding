@@ -84,13 +84,13 @@ export const LoginPage = () => {
     } catch (err) {
       const code = err?.code || '';
       if (code === 'auth/popup-closed-by-user') {
-        setError('Google 로그인이 취소되었습니다');
+        setError('소셜 로그인이 취소되었습니다');
       } else if (code === 'auth/popup-blocked') {
         setError('팝업이 차단되었습니다. 브라우저 설정에서 팝업을 허용해주세요');
       } else if (code === 'auth/invalid-credential') {
-        setError('Google 로그인에 실패했습니다. 다시 시도해주세요');
+        setError('소셜 로그인에 실패했습니다. 다시 시도해주세요');
       } else {
-        setError(err?.message || 'Google 로그인에 실패했습니다');
+        setError(err?.message || '소셜 로그인에 실패했습니다');
       }
     } finally {
       setIsLoading(false);
