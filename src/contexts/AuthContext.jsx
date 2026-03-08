@@ -186,9 +186,9 @@ export function AuthProvider({ children }) {
       provider.addScope('profile');
       provider.addScope('email');
       
-      // 계정 선택 화면 강제 표시
+      // 계정 선택 화면 강제 표시 안 함 (자동 로그인)
       provider.setCustomParameters({
-        prompt: 'select_account',
+        prompt: 'none',
       });
       
       try {
