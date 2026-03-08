@@ -14,7 +14,9 @@ import {
   sendEmailVerification,
   deleteUser,
   reauthenticateWithCredential,
+  reauthenticateWithPopup,
   EmailAuthProvider,
+  unlink,
 } from 'firebase/auth';
 import { auth, db } from '../config/firebase';
 import { doc, setDoc, getDoc, deleteDoc } from 'firebase/firestore';
@@ -35,6 +37,14 @@ export function AuthProvider({ children }) {
       const userRef = doc(db, 'users', uid);
       const userSnap = await getDoc(userRef);
 
+      const defaultSettings = {
+        notifications: {
+          uploadComplete: true,
+          orderStatusChange: true,
+          downloadReady: true,
+          marketing: false,
+        },
+      };
       if (!userSnap.exists()) {
         await setDoc(userRef, {
           uid,
@@ -43,6 +53,7 @@ export function AuthProvider({ children }) {
           photoURL: photoURL || '',
           createdAt: new Date(),
           lastLogin: new Date(),
+          settings: defaultSettings,
         });
       } else {
         // 기존 사용자: lastLogin 업데이트
@@ -256,6 +267,97 @@ export function AuthProvider({ children }) {
     }
   };
 
+  // 사용자 설정 업데이트 (알림, 다운로드 등 - settings 객체 merge)
+  const updateUserSettings = async (partialSettings) => {
+    let mergedSettings;
+    try {
+      setError(null);
+      const user = auth.currentUser;
+      if (!user) throw new Error('사용자 정보를 찾을 수 없습니다.');
+
+      const userRef = doc(db, 'users', user.uid);
+      const currentData = (await getDoc(userRef)).data() || {};
+      mergedSettings = {
+        ...(currentData.settings || {}),
+        ...partialSettings,
+      };
+      if (partialSettings.notifications) {
+        mergedSettings.notifications = {
+          ...(currentData.settings?.notifications || {}),
+          ...partialSettings.notifications,
+        };
+      }
+
+      await setDoc(userRef, { settings: mergedSettings, updatedAt: new Date().toISOString() }, { merge: true });
+      setUserData((prev) => ({ ...prev, settings: mergedSettings }));
+      return true;
+    } catch (err) {
+      if (err?.code === 'permission-denied' && mergedSettings) {
+        console.warn('Firestore 설정 저장 실패(권한)');
+        setUserData((prev) => ({ ...prev, settings: mergedSettings }));
+        return true;
+      }
+      setError(err.message);
+      throw err;
+    }
+  };
+
+  // 연결된 계정 해제 (providerId: 'password' | 'google.com' 등)
+  // password: 이메일/비밀번호로 재인증 필요 시 전달
+  const unlinkProvider = async (providerId, { password } = {}) => {
+    try {
+      setError(null);
+      const user = auth.currentUser;
+      if (!user) throw new Error('사용자 정보를 찾을 수 없습니다.');
+      if (user.providerData.length <= 1) {
+        throw new Error('마지막 연동 계정은 해제할 수 없습니다.');
+      }
+      if (!user.providerData.some((p) => p.providerId === providerId)) {
+        throw new Error('해당 계정이 연결되어 있지 않습니다.');
+      }
+
+      const doUnlink = async () => {
+        const u = auth.currentUser;
+        if (!u) throw new Error('사용자 정보를 찾을 수 없습니다.');
+        const updatedUser = await unlink(u, providerId);
+        setCurrentUser(updatedUser);
+        setUserData((prev) => (prev ? { ...prev } : null));
+        return true;
+      };
+
+      try {
+        return await doUnlink();
+      } catch (err) {
+        if (err.code !== 'auth/requires-recent-login') throw err;
+
+        // 재인증 필요
+        const hasPassword = user.providerData.some((p) => p.providerId === 'password');
+        const hasGoogle = user.providerData.some((p) => p.providerId === 'google.com');
+
+        if (providerId === 'password' && hasGoogle) {
+          // 이메일 해제 시: Google로 재인증
+          const provider = new GoogleAuthProvider();
+          await reauthenticateWithPopup(user, provider);
+          return await doUnlink();
+        }
+        if (providerId === 'google.com' && hasPassword) {
+          // Google 해제 시: 비밀번호로 재인증
+          if (!password?.trim()) {
+            throw new Error('재인증을 위해 비밀번호를 입력해주세요.');
+          }
+          const credential = EmailAuthProvider.credential(user.email, password);
+          await reauthenticateWithCredential(user, credential);
+          return await doUnlink();
+        }
+
+        throw new Error('보안을 위해 다시 로그인해주세요. 로그아웃 후 재로그인한 다음 시도해주세요.');
+      }
+    } catch (err) {
+      setError(err.message);
+      throw err;
+    }
+  };
+
   // 계정 삭제 (재인증 필요)
   const deleteAccount = async (password) => {
     try {
@@ -370,6 +472,8 @@ export function AuthProvider({ children }) {
     loginWithGooglePopup,
     resendEmailVerification,
     updateUserProfile,
+    updateUserSettings,
+    unlinkProvider,
     deleteAccount,
   };
 
