@@ -186,10 +186,7 @@ export function AuthProvider({ children }) {
       provider.addScope('profile');
       provider.addScope('email');
       
-      // 계정 선택 화면 강제 표시 안 함 (자동 로그인)
-      provider.setCustomParameters({
-        prompt: 'none',
-      });
+      // prompt 설정 제거 (기본값 사용) - 'none'은 리다이렉트 후 오류 발생 가능
       
       try {
         // 팝업으로 Google 로그인 시도
@@ -205,9 +202,9 @@ export function AuthProvider({ children }) {
 
         return result.user;
       } catch (popupErr) {
-        // 팝업 차단 시 리다이렉트로 폴백
-        if (popupErr.code === 'auth/popup-blocked') {
-          console.log('팝업 차단됨 - 리다이렉트 방식으로 진행');
+        // 팝업 차단 또는 자동 로그인 실패 시 리다이렉트로 폴백
+        if (popupErr.code === 'auth/popup-blocked' || popupErr.code === 'auth/invalid-credential') {
+          console.log('팝업 차단 또는 자동 로그인 실패 - 리다이렉트 방식으로 진행');
           await signInWithRedirect(auth, provider);
           return null; // 리다이렉트는 페이지 새로고침
         }
