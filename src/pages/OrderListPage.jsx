@@ -89,10 +89,10 @@ export const OrderListPage = () => {
                 <p className="text-neutral-600">보정 주문 프로젝트를 관리하고 진행 상태를 확인하세요</p>
               </div>
 
-              <button className="flex items-center gap-2 bg-neutral-900 hover:bg-neutral-800 text-white px-6 py-3 rounded-xl transition-colors">
+              <a href="?page=create-new-order" className="flex items-center gap-2 bg-neutral-900 hover:bg-neutral-800 text-white px-6 py-3 rounded-xl transition-colors cursor-pointer">
                 <i className="fa-solid fa-plus"></i>
                 새 주문 생성
-              </button>
+              </a>
             </div>
 
             <div className="bg-white border border-neutral-200 rounded-2xl p-6 mb-6">

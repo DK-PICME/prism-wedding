@@ -105,9 +105,9 @@ export const PaymentPage = () => {
                   <button className="w-full px-6 py-3 bg-neutral-900 hover:bg-neutral-800 text-white rounded-lg transition-colors font-medium mb-2">
                     ₩450,000 결제
                   </button>
-                  <button className="w-full px-6 py-3 border border-neutral-300 hover:bg-neutral-50 text-neutral-900 rounded-lg transition-colors">
+                  <a href="?page=order-list" className="block w-full px-6 py-3 border border-neutral-300 hover:bg-neutral-50 text-neutral-900 rounded-lg transition-colors text-center cursor-pointer">
                     취소
-                  </button>
+                  </a>
                 </div>
               </div>
             </div>

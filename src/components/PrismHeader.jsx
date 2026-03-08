@@ -21,7 +21,7 @@ export const PrismHeader = ({ activeNav = 'order-list' }) => {
             {navItems.map((item) => (
               <a
                 key={item.id}
-                href="#"
+                href={`?page=${item.id}`}
                 className={`px-4 py-2 rounded-lg transition-colors ${
                   activeNav === item.id
                     ? 'text-neutral-900 bg-neutral-100'
@@ -36,10 +36,10 @@ export const PrismHeader = ({ activeNav = 'order-list' }) => {
         </div>
 
         <div className="flex items-center gap-4">
-          <button className="relative p-2 text-neutral-600 hover:text-neutral-900 hover:bg-neutral-50 rounded-lg transition-colors">
+          <a href="?page=notification-center" className="relative p-2 text-neutral-600 hover:text-neutral-900 hover:bg-neutral-50 rounded-lg transition-colors">
             <i className="fa-solid fa-bell text-xl"></i>
             <span className="absolute top-1 right-1 w-2 h-2 bg-neutral-500 rounded-full"></span>
-          </button>
+          </a>
 
           <div className="flex items-center gap-3 pl-4 border-l border-neutral-200">
             <img

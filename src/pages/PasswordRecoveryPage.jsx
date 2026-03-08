@@ -43,7 +43,7 @@ export const PasswordRecoveryPage = () => {
                   </div>
                 </div>
 
-                <a href="#" className="block w-full px-6 py-3 border border-neutral-300 hover:bg-neutral-50 text-neutral-900 rounded-lg transition-colors text-center font-medium">
+                <a href="?page=order-list" className="block w-full px-6 py-3 border border-neutral-300 hover:bg-neutral-50 text-neutral-900 rounded-lg transition-colors text-center font-medium cursor-pointer">
                   로그인으로 돌아가기
                 </a>
               </form>
@@ -59,7 +59,7 @@ export const PasswordRecoveryPage = () => {
             <div className="text-center mt-6">
               <p className="text-sm text-neutral-600">
                 계정이 없으신가요?{' '}
-                <a href="#" className="text-neutral-900 font-semibold hover:underline">
+                <a href="?page=sign-up" className="text-neutral-900 font-semibold hover:underline cursor-pointer">
                   회원가입
                 </a>
               </p>

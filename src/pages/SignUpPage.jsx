@@ -108,7 +108,7 @@ export const SignUpPage = () => {
             <div className="text-center mt-6">
               <p className="text-sm text-neutral-600">
                 이미 계정이 있으신가요?{' '}
-                <a href="#" className="text-neutral-900 font-semibold hover:underline">
+                <a href="?page=order-list" className="text-neutral-900 font-semibold hover:underline cursor-pointer">
                   로그인
                 </a>
               </p>

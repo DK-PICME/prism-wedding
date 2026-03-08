@@ -15,16 +15,16 @@ export const PhotoManagementPage = () => {
                 <p className="text-neutral-600">주문번호: ORD-2025-0122-4782</p>
               </div>
 
-              <div className="flex items-center gap-3">
-                <button className="flex items-center gap-2 px-4 py-2 border border-neutral-300 hover:bg-neutral-50 rounded-lg transition-colors text-sm">
-                  <i className="fa-solid fa-upload"></i>
-                  사진 추가
-                </button>
-                <button className="flex items-center gap-2 px-4 py-2 border border-neutral-300 hover:bg-neutral-50 rounded-lg transition-colors text-sm">
-                  <i className="fa-solid fa-filter"></i>
-                  필터
-                </button>
-              </div>
+            <div className="flex items-center gap-4">
+              <a href="?page=create-new-order" className="flex items-center gap-2 px-4 py-2 border border-neutral-300 hover:bg-neutral-50 rounded-lg transition-colors text-sm cursor-pointer">
+                <i className="fa-solid fa-upload"></i>
+                사진 추가
+              </a>
+              <button className="flex items-center gap-2 px-4 py-2 border border-neutral-300 hover:bg-neutral-50 rounded-lg transition-colors text-sm">
+                <i className="fa-solid fa-filter"></i>
+                필터
+              </button>
+            </div>
             </div>
 
             <div className="grid grid-cols-4 gap-4 mb-6">

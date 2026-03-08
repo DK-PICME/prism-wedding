@@ -10,9 +10,9 @@ export const OrderDetailsPage = () => {
         <div className="px-8 py-8">
           <div className="max-w-[1376px] mx-auto">
             <div className="flex items-center gap-4 mb-6">
-              <button className="p-2 text-neutral-600 hover:text-neutral-900 hover:bg-neutral-100 rounded-lg">
+              <a href="?page=order-list" className="p-2 text-neutral-600 hover:text-neutral-900 hover:bg-neutral-100 rounded-lg cursor-pointer">
                 <i className="fa-solid fa-chevron-left"></i>
-              </button>
+              </a>
               <div>
                 <h1 className="text-3xl text-neutral-900">김민수 & 박지영 웨딩</h1>
                 <p className="text-neutral-600">주문번호: ORD-2025-0122-4782</p>
