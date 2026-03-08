@@ -4,43 +4,26 @@ import { PrismHeader } from '../components/PrismHeader';
 import { PrismFooter } from '../components/PrismFooter';
 import { useAuth } from '../contexts/AuthContext';
 
-export const SignUpPage = () => {
-  const { signup, loginWithGoogle, error: authError } = useAuth();
+export const LoginPage = () => {
+  const { login, error: authError } = useAuth();
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [formData, setFormData] = useState({
-    studioName: '',
     email: '',
     password: '',
-    passwordConfirm: '',
-  });
-  const [agreeTerms, setAgreeTerms] = useState({
-    terms: false,
-    privacy: false,
+    rememberMe: false,
   });
 
   const handleInputChange = (e) => {
-    const { name, value } = e.target;
+    const { name, value, type, checked } = e.target;
     setFormData(prev => ({
       ...prev,
-      [name]: value
-    }));
-  };
-
-  const handleCheckboxChange = (name) => {
-    setAgreeTerms(prev => ({
-      ...prev,
-      [name]: !prev[name]
+      [name]: type === 'checkbox' ? checked : value
     }));
   };
 
   const validateForm = () => {
-    if (!formData.studioName.trim()) {
-      setError('스튜디오명을 입력해주세요');
-      return false;
-    }
-
     if (!formData.email.trim()) {
       setError('이메일을 입력해주세요');
       return false;
@@ -52,28 +35,8 @@ export const SignUpPage = () => {
       return false;
     }
 
-    if (formData.password.length < 8) {
-      setError('비밀번호는 8자 이상이어야 합니다');
-      return false;
-    }
-
-    if (!/[0-9]/.test(formData.password)) {
-      setError('비밀번호에 숫자를 포함해주세요');
-      return false;
-    }
-
-    if (!/[!@#$%^&*]/.test(formData.password)) {
-      setError('비밀번호에 특수문자를 포함해주세요');
-      return false;
-    }
-
-    if (formData.password !== formData.passwordConfirm) {
-      setError('비밀번호가 일치하지 않습니다');
-      return false;
-    }
-
-    if (!agreeTerms.terms || !agreeTerms.privacy) {
-      setError('이용약관과 개인정보처리방침에 동의해주세요');
+    if (!formData.password) {
+      setError('비밀번호를 입력해주세요');
       return false;
     }
 
@@ -90,27 +53,29 @@ export const SignUpPage = () => {
 
     setIsLoading(true);
     try {
-      await signup(formData.email, formData.password, formData.studioName);
+      await login(formData.email, formData.password);
       navigate('/order-list');
     } catch (err) {
-      if (err.code === 'auth/email-already-in-use') {
-        setError('이미 사용 중인 이메일입니다');
-      } else if (err.code === 'auth/weak-password') {
-        setError('비밀번호가 너무 약합니다');
+      if (err.code === 'auth/user-not-found') {
+        setError('등록되지 않은 이메일입니다');
+      } else if (err.code === 'auth/wrong-password') {
+        setError('비밀번호가 올바르지 않습니다');
+      } else if (err.code === 'auth/invalid-email') {
+        setError('유효하지 않은 이메일입니다');
       } else {
-        setError(err.message || '회원가입에 실패했습니다');
+        setError(err.message || '로그인에 실패했습니다');
       }
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleGoogleSignUp = async () => {
+  const handleGoogleLogin = async () => {
     setError('');
     setIsLoading(true);
     try {
       // 임시: Google 로그인 구현 예정
-      console.log('Google Sign-Up 준비 중...');
+      console.log('Google Login 준비 중...');
       setError('Google 로그인은 아직 구현 준비 중입니다');
     } finally {
       setIsLoading(false);
@@ -127,8 +92,8 @@ export const SignUpPage = () => {
             </div>
 
             <div className="text-center mb-8">
-              <h1 className="text-2xl text-neutral-900 mb-2">회원가입</h1>
-              <p className="text-neutral-600">Prism Studio에 가입하여 사진 보정 서비스를 시작하세요</p>
+              <h1 className="text-2xl text-neutral-900 mb-2">로그인</h1>
+              <p className="text-neutral-600">Prism Studio 계정으로 로그인하세요</p>
             </div>
 
             <div className="bg-white border border-neutral-200 rounded-2xl p-8">
@@ -139,19 +104,6 @@ export const SignUpPage = () => {
               )}
 
               <form className="space-y-4" onSubmit={handleSubmit}>
-                <div>
-                  <label className="block text-sm text-neutral-700 mb-2">스튜디오명</label>
-                  <input
-                    type="text"
-                    name="studioName"
-                    placeholder="예: 웨딩 스튜디오"
-                    value={formData.studioName}
-                    onChange={handleInputChange}
-                    disabled={isLoading}
-                    className="w-full px-4 py-3 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-neutral-900 disabled:bg-neutral-100"
-                  />
-                </div>
-
                 <div>
                   <label className="block text-sm text-neutral-700 mb-2">이메일 주소</label>
                   <input
@@ -170,7 +122,7 @@ export const SignUpPage = () => {
                   <input
                     type="password"
                     name="password"
-                    placeholder="8자 이상, 숫자, 특수문자 포함"
+                    placeholder="비밀번호를 입력해주세요"
                     value={formData.password}
                     onChange={handleInputChange}
                     disabled={isLoading}
@@ -178,50 +130,21 @@ export const SignUpPage = () => {
                   />
                 </div>
 
-                <div>
-                  <label className="block text-sm text-neutral-700 mb-2">비밀번호 확인</label>
-                  <input
-                    type="password"
-                    name="passwordConfirm"
-                    placeholder="비밀번호를 다시 입력해주세요"
-                    value={formData.passwordConfirm}
-                    onChange={handleInputChange}
-                    disabled={isLoading}
-                    className="w-full px-4 py-3 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-neutral-900 disabled:bg-neutral-100"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <label className="flex items-start gap-2 p-3 border border-neutral-300 rounded-lg cursor-pointer hover:bg-neutral-50">
+                <div className="flex items-center justify-between">
+                  <label className="flex items-center gap-2 cursor-pointer">
                     <input
                       type="checkbox"
-                      checked={agreeTerms.terms}
-                      onChange={() => handleCheckboxChange('terms')}
+                      name="rememberMe"
+                      checked={formData.rememberMe}
+                      onChange={handleInputChange}
                       disabled={isLoading}
-                      className="w-4 h-4 mt-0.5"
+                      className="w-4 h-4"
                     />
-                    <span className="text-sm text-neutral-600">
-                      <a href="#" className="text-neutral-900 font-semibold hover:underline">이용약관</a>에 동의합니다
-                    </span>
+                    <span className="text-sm text-neutral-600">로그인 상태 유지</span>
                   </label>
-
-                  <label className="flex items-start gap-2 p-3 border border-neutral-300 rounded-lg cursor-pointer hover:bg-neutral-50">
-                    <input
-                      type="checkbox"
-                      checked={agreeTerms.privacy}
-                      onChange={() => handleCheckboxChange('privacy')}
-                      disabled={isLoading}
-                      className="w-4 h-4 mt-0.5"
-                    />
-                    <span className="text-sm text-neutral-600">
-                      <a href="#" className="text-neutral-900 font-semibold hover:underline">개인정보처리방침</a>에 동의합니다
-                    </span>
-                  </label>
-
-                  <label className="flex items-start gap-2 p-3 border border-neutral-300 rounded-lg cursor-pointer hover:bg-neutral-50">
-                    <input type="checkbox" className="w-4 h-4 mt-0.5" disabled={isLoading} />
-                    <span className="text-sm text-neutral-600">마케팅 정보 수신에 동의합니다 (선택)</span>
-                  </label>
+                  <a href="?page=password-recovery" className="text-sm text-neutral-900 font-semibold hover:underline">
+                    비밀번호 찾기
+                  </a>
                 </div>
 
                 <button
@@ -229,7 +152,7 @@ export const SignUpPage = () => {
                   disabled={isLoading}
                   className="w-full px-6 py-3 bg-neutral-900 hover:bg-neutral-800 text-white rounded-lg transition-colors font-medium disabled:bg-neutral-500"
                 >
-                  {isLoading ? '진행 중...' : '회원가입'}
+                  {isLoading ? '진행 중...' : '로그인'}
                 </button>
               </form>
 
@@ -245,12 +168,12 @@ export const SignUpPage = () => {
 
                 <button
                   type="button"
-                  onClick={handleGoogleSignUp}
+                  onClick={handleGoogleLogin}
                   disabled={isLoading}
                   className="w-full px-4 py-3 border border-neutral-300 hover:bg-neutral-50 rounded-lg transition-colors flex items-center justify-center gap-2 text-neutral-900 disabled:bg-neutral-100"
                 >
                   <i className="fa-brands fa-google text-lg"></i>
-                  Google로 가입
+                  Google로 로그인
                 </button>
 
                 <button
@@ -259,16 +182,16 @@ export const SignUpPage = () => {
                   className="w-full px-4 py-3 border border-neutral-300 hover:bg-neutral-50 rounded-lg transition-colors flex items-center justify-center gap-2 text-neutral-900 disabled:bg-neutral-100"
                 >
                   <i className="fa-brands fa-naver text-lg"></i>
-                  네이버로 가입
+                  네이버로 로그인
                 </button>
               </div>
             </div>
 
             <div className="text-center mt-6">
               <p className="text-sm text-neutral-600">
-                이미 계정이 있으신가요?{' '}
-                <a href="?page=order-list" className="text-neutral-900 font-semibold hover:underline cursor-pointer">
-                  로그인
+                계정이 없으신가요?{' '}
+                <a href="?page=sign-up" className="text-neutral-900 font-semibold hover:underline cursor-pointer">
+                  회원가입
                 </a>
               </p>
             </div>

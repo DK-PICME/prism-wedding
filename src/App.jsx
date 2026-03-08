@@ -15,11 +15,13 @@ import { OrderDetailsPage } from './pages/OrderDetailsPage';
 import { PaymentPage } from './pages/PaymentPage';
 import { PasswordRecoveryPage } from './pages/PasswordRecoveryPage';
 import { SignUpPage } from './pages/SignUpPage';
+import { LoginPage } from './pages/LoginPage';
 import { InquiryPage } from './pages/InquiryPage';
 import { FailedItemManagementPage } from './pages/FailedItemManagementPage';
 import { PhotoManagementPage } from './pages/PhotoManagementPage';
 import { ProjectServiceMock } from './services/ProjectServiceMock';
 import { ProjectServiceApi } from './services/ProjectServiceApi';
+import { AuthProvider } from './contexts/AuthContext';
 import './App.css';
 
 // 환경변수로 Mock/Api 전환
@@ -28,9 +30,9 @@ import './App.css';
 const useMock = import.meta.env.VITE_USE_MOCK === 'true';
 const projectService = useMock ? new ProjectServiceMock() : new ProjectServiceApi();
 
-function App() {
+function AppContent() {
   const params = new URLSearchParams(window.location.search);
-  const page = params.get('page') || 'waiting';
+  const page = params.get('page') || 'login';
 
   const renderPage = () => {
     switch (page) {
@@ -66,6 +68,8 @@ function App() {
         return <PasswordRecoveryPage />;
       case 'sign-up':
         return <SignUpPage />;
+      case 'login':
+        return <LoginPage />;
       case 'inquiry':
         return <InquiryPage />;
       case 'failed-items':
@@ -82,6 +86,14 @@ function App() {
     <div className="min-h-screen bg-neutral-50">
       {renderPage()}
     </div>
+  );
+}
+
+function App() {
+  return (
+    <AuthProvider>
+      <AppContent />
+    </AuthProvider>
   );
 }
 
