@@ -6,13 +6,61 @@ import { PrismFooter } from '../components/PrismFooter';
 
 export const SettingsPage = () => {
   const navigate = useNavigate();
-  const { currentUser, userData, logout } = useAuth();
+  const { currentUser, userData, logout, updateUserProfile, deleteAccount } = useAuth();
+  
+  // State management
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [logoutError, setLogoutError] = useState('');
+  const [isSavingProfile, setIsSavingProfile] = useState(false);
+  const [profileError, setProfileError] = useState('');
+  const [profileSuccess, setProfileSuccess] = useState('');
+  const [displayNameInput, setDisplayNameInput] = useState(userData?.displayName || currentUser?.displayName || currentUser?.email?.split('@')[0] || '');
+  const [isDeletingAccount, setIsDeletingAccount] = useState(false);
+  const [deleteConfirmation, setDeleteConfirmation] = useState(false);
+  const [deleteError, setDeleteError] = useState('');
   
   // 사용자 이름 (displayName 또는 이메일의 앞 부분)
   const displayName = userData?.displayName || currentUser?.displayName || currentUser?.email?.split('@')[0] || '사용자';
   const userEmail = currentUser?.email || 'user@example.com';
+
+  const handleSaveProfile = async () => {
+    if (!displayNameInput.trim()) {
+      setProfileError('이름을 입력해주세요');
+      return;
+    }
+
+    setIsSavingProfile(true);
+    setProfileError('');
+    setProfileSuccess('');
+
+    try {
+      await updateUserProfile(displayNameInput);
+      setProfileSuccess('프로필이 성공적으로 저장되었습니다');
+      setTimeout(() => setProfileSuccess(''), 3000);
+    } catch (err) {
+      setProfileError(err.message || '프로필 저장에 실패했습니다');
+    } finally {
+      setIsSavingProfile(false);
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    if (!deleteConfirmation) {
+      setDeleteError('계정 삭제를 확인해주세요');
+      return;
+    }
+
+    setIsDeletingAccount(true);
+    setDeleteError('');
+
+    try {
+      await deleteAccount();
+      navigate('/login');
+    } catch (err) {
+      setDeleteError(err.message || '계정 삭제에 실패했습니다');
+      setIsDeletingAccount(false);
+    }
+  };
 
   const handleLogout = async () => {
     setIsLoggingOut(true);
@@ -57,14 +105,39 @@ export const SettingsPage = () => {
                   <div className="space-y-3">
                     <div>
                       <label className="block text-sm text-neutral-700 mb-2">이름</label>
-                      <input type="text" defaultValue={displayName} className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-neutral-500" />
+                      <input 
+                        type="text" 
+                        value={displayNameInput}
+                        onChange={(e) => setDisplayNameInput(e.target.value)}
+                        className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-neutral-500" 
+                      />
                     </div>
                     <div>
                       <label className="block text-sm text-neutral-700 mb-2">이메일</label>
-                      <input type="email" defaultValue={userEmail} className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-neutral-500" />
+                      <input 
+                        type="email" 
+                        value={userEmail} 
+                        disabled
+                        className="w-full px-3 py-2 border border-neutral-300 rounded-lg bg-neutral-50 text-neutral-600 focus:outline-none" 
+                      />
+                      <p className="text-xs text-neutral-600 mt-1">이메일 변경은 지원하지 않습니다</p>
                     </div>
-                    <button className="w-full px-4 py-2 bg-neutral-900 text-white hover:bg-neutral-800 rounded-lg transition-colors">
-                      프로필 저장
+                    {profileError && (
+                      <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
+                        {profileError}
+                      </div>
+                    )}
+                    {profileSuccess && (
+                      <div className="p-3 bg-green-50 border border-green-200 rounded-lg text-sm text-green-700">
+                        {profileSuccess}
+                      </div>
+                    )}
+                    <button 
+                      onClick={handleSaveProfile}
+                      disabled={isSavingProfile}
+                      className="w-full px-4 py-2 bg-neutral-900 text-white hover:bg-neutral-800 rounded-lg transition-colors disabled:bg-neutral-400 font-medium"
+                    >
+                      {isSavingProfile ? '저장 중...' : '프로필 저장'}
                     </button>
                   </div>
                 </div>
@@ -141,6 +214,52 @@ export const SettingsPage = () => {
                           {isLoggingOut ? '로그아웃 중...' : '로그아웃'}
                         </button>
                       </div>
+                    </div>
+
+                    <div className="border-t border-neutral-200 pt-6">
+                      <h3 className="text-lg text-neutral-900 mb-3">계정 삭제</h3>
+                      <p className="text-sm text-neutral-600 mb-4">
+                        계정을 삭제하면 모든 데이터가 영구적으로 삭제되며 복구할 수 없습니다.
+                      </p>
+                      
+                      {!deleteConfirmation ? (
+                        <button
+                          onClick={() => setDeleteConfirmation(true)}
+                          className="w-full px-4 py-2 bg-red-100 text-red-700 hover:bg-red-200 rounded-lg transition-colors font-medium"
+                        >
+                          계정 삭제하기
+                        </button>
+                      ) : (
+                        <div className="space-y-3 p-4 bg-red-50 border border-red-200 rounded-lg">
+                          <p className="text-sm text-red-700 font-medium">
+                            정말로 계정을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.
+                          </p>
+                          {deleteError && (
+                            <div className="p-2 bg-red-100 border border-red-300 rounded text-sm text-red-700">
+                              {deleteError}
+                            </div>
+                          )}
+                          <div className="flex gap-3">
+                            <button
+                              onClick={() => {
+                                setDeleteConfirmation(false);
+                                setDeleteError('');
+                              }}
+                              disabled={isDeletingAccount}
+                              className="flex-1 px-4 py-2 bg-neutral-200 text-neutral-900 hover:bg-neutral-300 rounded-lg transition-colors disabled:bg-neutral-100"
+                            >
+                              취소
+                            </button>
+                            <button
+                              onClick={handleDeleteAccount}
+                              disabled={isDeletingAccount}
+                              className="flex-1 px-4 py-2 bg-red-600 text-white hover:bg-red-700 rounded-lg transition-colors disabled:bg-red-400 font-medium"
+                            >
+                              {isDeletingAccount ? '삭제 중...' : '계정 삭제'}
+                            </button>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>

@@ -9,9 +9,10 @@ import {
   signInWithCredential,
   GoogleAuthProvider,
   sendEmailVerification,
+  deleteUser,
 } from 'firebase/auth';
 import { auth, db } from '../config/firebase';
-import { doc, setDoc, getDoc } from 'firebase/firestore';
+import { doc, setDoc, getDoc, deleteDoc } from 'firebase/firestore';
 
 // Auth Context 생성
 const AuthContext = createContext();
@@ -172,7 +173,61 @@ export function AuthProvider({ children }) {
     }
   };
 
-  // 사용자 인증 상태 변화 감지
+  // 프로필 업데이트 (이름, 이메일)
+  const updateUserProfile = async (displayName) => {
+    try {
+      setError(null);
+      if (!currentUser) throw new Error('사용자 정보를 찾을 수 없습니다');
+
+      // Firebase Auth 프로필 업데이트
+      await updateProfile(currentUser, { displayName });
+
+      // Firestore 업데이트
+      const userRef = doc(db, 'users', currentUser.uid);
+      await setDoc(userRef, {
+        uid: currentUser.uid,
+        email: currentUser.email,
+        displayName: displayName || '',
+        photoURL: currentUser.photoURL || '',
+        updatedAt: new Date().toISOString(),
+      }, { merge: true });
+
+      // 로컬 상태 업데이트
+      setUserData((prev) => ({
+        ...prev,
+        displayName: displayName || '',
+      }));
+
+      return true;
+    } catch (err) {
+      setError(err.message);
+      throw err;
+    }
+  };
+
+  // 계정 삭제
+  const deleteAccount = async () => {
+    try {
+      setError(null);
+      if (!currentUser) throw new Error('사용자 정보를 찾을 수 없습니다');
+
+      // Firestore에서 사용자 데이터 삭제
+      const userRef = doc(db, 'users', currentUser.uid);
+      await deleteDoc(userRef);
+
+      // Firebase Auth 계정 삭제
+      await deleteUser(currentUser);
+
+      // 로컬 상태 초기화
+      setCurrentUser(null);
+      setUserData(null);
+
+      return true;
+    } catch (err) {
+      setError(err.message);
+      throw err;
+    }
+  };
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       setCurrentUser(user);
@@ -224,6 +279,8 @@ export function AuthProvider({ children }) {
     resetPassword,
     loginWithGoogle,
     resendEmailVerification,
+    updateUserProfile,
+    deleteAccount,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
