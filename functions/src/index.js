@@ -397,4 +397,4 @@ app.get('/health', (req, res) => {
 
 // ─── Firebase Functions export ────────────────────────────────────────────────
 
-exports.api = onRequest({ region: 'asia-northeast3' }, app);
+exports.api = onRequest({ region: 'us-central1' }, app);
