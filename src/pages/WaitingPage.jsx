@@ -1,26 +1,16 @@
-import { useEffect, useState } from 'react';
 import { Header } from '../components/Header';
 import { Footer } from '../components/Footer';
 import { StatusMessage } from '../components/StatusMessage';
 import { ProjectInfo } from '../components/ProjectInfo';
 import { NextSteps } from '../components/NextSteps';
 import { ContactInfo } from '../components/ContactInfo';
-import { useProject } from '../hooks/useProject';
-import { getUrlParam } from '../utils/helpers';
+import { useProject, useProjectId } from '../hooks/useProject';
 
 /**
  * WaitingPage - 샘플 검토 대기 페이지 (STEP 1)
  */
 export function WaitingPage({ projectService }) {
-  const [projectId, setProjectId] = useState(null);
-
-  useEffect(() => {
-    // URL 파라미터에서 projectId 추출
-    const id = getUrlParam('projectId') || 'proj_001'; // 테스트용 기본값
-    setProjectId(id);
-    console.log('Project ID:', id);
-  }, []);
-
+  const projectId = useProjectId();
   const { project, loading, error } = useProject(projectService, projectId);
 
   if (error) {

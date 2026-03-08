@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { WaitingPage } from './pages/WaitingPage';
 import { UploadPage } from './pages/UploadPage';
 import { ResultPage } from './pages/ResultPage';
@@ -9,37 +8,37 @@ import { SampleRevisionRequestPage } from './pages/SampleRevisionRequestPage';
 import { MainCorrectionProgressPage } from './pages/MainCorrectionProgressPage';
 import { MainCorrectionUploadPage } from './pages/MainCorrectionUploadPage';
 import { ProjectServiceMock } from './services/ProjectServiceMock';
+import { ProjectServiceApi } from './services/ProjectServiceApi';
 import './App.css';
 
-// 서비스 초기화
-const projectService = new ProjectServiceMock();
+// 환경변수로 Mock/Api 전환
+// 개발 서버(npm run dev)에서는 VITE_USE_MOCK=true → Mock 사용
+// 빌드(npm run build) 또는 에뮬레이터 연결 시 → Api 사용
+const useMock = import.meta.env.VITE_USE_MOCK === 'true';
+const projectService = useMock ? new ProjectServiceMock() : new ProjectServiceApi();
 
-/**
- * App - 메인 애플리케이션
- */
 function App() {
-  // URL에서 페이지 파라미터 추출
   const params = new URLSearchParams(window.location.search);
-  const page = params.get('page') || 'waiting'; // 기본: waiting
+  const page = params.get('page') || 'waiting';
 
   const renderPage = () => {
     switch (page) {
       case 'upload':
-        return <UploadPage />;
+        return <UploadPage projectService={projectService} />;
       case 'result':
-        return <ResultPage />;
+        return <ResultPage projectService={projectService} />;
       case 'status':
-        return <CurrentStatusPage />;
+        return <CurrentStatusPage projectService={projectService} />;
       case 'completed':
-        return <CompletedPage />;
+        return <CompletedPage projectService={projectService} />;
       case 'main-correction-result':
-        return <MainCorrectionResultPage />;
+        return <MainCorrectionResultPage projectService={projectService} />;
       case 'sample-revision-request':
-        return <SampleRevisionRequestPage />;
+        return <SampleRevisionRequestPage projectService={projectService} />;
       case 'main-correction-progress':
-        return <MainCorrectionProgressPage />;
+        return <MainCorrectionProgressPage projectService={projectService} />;
       case 'main-correction-upload':
-        return <MainCorrectionUploadPage />;
+        return <MainCorrectionUploadPage projectService={projectService} />;
       case 'waiting':
       default:
         return <WaitingPage projectService={projectService} />;

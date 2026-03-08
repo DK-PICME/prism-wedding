@@ -1,21 +1,25 @@
 import { useState } from 'react';
 import { Header } from '../components/Header';
 import { Footer } from '../components/Footer';
+import { LoadingSpinner, ErrorMessage } from '../components/LoadingSpinner';
+import { useProjectId, useSamples } from '../hooks/useProject';
 
 /**
  * SampleRevisionRequestPage - 샘플 재수정 요청 페이지
  */
-export function SampleRevisionRequestPage() {
+export function SampleRevisionRequestPage({ projectService }) {
+  const projectId = useProjectId();
+  const { samples, loading, error, reload } = useSamples(projectService, projectId);
   const [additionalRequest, setAdditionalRequest] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState(null);
 
-  const existingRequests = [
-    '얼굴톤 자연스럽게 보정',
-    '턱선 과하지 않게 다듬기',
-    '자연스러운 느낌 유지',
-  ];
+  const latestSample = samples[0] || null;
+  const existingRequests = latestSample?.revisionRequest
+    ? latestSample.revisionRequest.split(/[,\n•]/).filter(Boolean).map((r) => r.trim())
+    : [];
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!additionalRequest.trim()) {
       alert('수정 요청사항을 입력해주세요.');
@@ -23,11 +27,24 @@ export function SampleRevisionRequestPage() {
     }
 
     setIsSubmitting(true);
-    setTimeout(() => {
+    setSubmitError(null);
+
+    try {
+      if (projectService?.createRevisionRequest) {
+        await projectService.createRevisionRequest(projectId, additionalRequest);
+      }
       alert('재수정 요청이 완료되었습니다. 1-2일 내에 결과를 받아보실 수 있습니다.');
       setAdditionalRequest('');
+
+      // 대기 페이지로 이동
+      const params = new URLSearchParams(window.location.search);
+      params.set('page', 'waiting');
+      window.location.search = params.toString();
+    } catch (err) {
+      setSubmitError(err.message || '요청 중 오류가 발생했습니다.');
+    } finally {
       setIsSubmitting(false);
-    }, 1000);
+    }
   };
 
   return (
@@ -37,7 +54,6 @@ export function SampleRevisionRequestPage() {
       <main id="main" className="bg-neutral-50 flex-1">
         <div className="max-w-screen-xl mx-auto px-6 py-12">
           <div className="max-w-4xl mx-auto">
-            {/* 페이지 제목 */}
             <div className="text-center mb-8">
               <div className="inline-flex items-center justify-center w-20 h-20 bg-neutral-800 rounded-full mb-6">
                 <i className="fa-solid fa-edit text-white text-3xl"></i>
@@ -46,12 +62,13 @@ export function SampleRevisionRequestPage() {
               <p className="text-lg text-neutral-600">어떤 부분을 수정하면 좋을지 구체적으로 알려주세요.</p>
             </div>
 
-            {/* 재수정 요청 폼 */}
+            {loading && <LoadingSpinner message="기존 요청사항을 불러오는 중..." />}
+            {error && <ErrorMessage message={error.message} onRetry={reload} />}
+
             <form onSubmit={handleSubmit} className="bg-white rounded-lg border border-neutral-200 mb-8">
               <div className="p-8">
                 <h2 className="text-xl text-neutral-900 mb-6">추가 요청사항</h2>
 
-                {/* 텍스트 입력 */}
                 <div className="mb-6">
                   <label className="block text-sm text-neutral-700 mb-3">수정하고 싶은 부분을 상세히 작성해주세요</label>
                   <textarea
@@ -66,20 +83,26 @@ export function SampleRevisionRequestPage() {
                   <p className="text-sm text-neutral-500 mt-2">구체적인 요청사항을 작성하실수록 더 만족스러운 결과를 받으실 수 있습니다.</p>
                 </div>
 
-                {/* 기존 요청사항 */}
-                <div className="bg-neutral-50 rounded-lg p-6 mb-6">
-                  <h3 className="text-neutral-900 mb-3">기존 요청사항 (참고용)</h3>
-                  <ul className="space-y-2">
-                    {existingRequests.map((request, idx) => (
-                      <li key={idx} className="flex items-start space-x-3">
-                        <i className="fa-solid fa-circle-dot text-neutral-600 text-xs mt-2"></i>
-                        <span className="text-neutral-700">{request}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
+                {!loading && existingRequests.length > 0 && (
+                  <div className="bg-neutral-50 rounded-lg p-6 mb-6">
+                    <h3 className="text-neutral-900 mb-3">기존 요청사항 (참고용)</h3>
+                    <ul className="space-y-2">
+                      {existingRequests.map((request, idx) => (
+                        <li key={idx} className="flex items-start space-x-3">
+                          <i className="fa-solid fa-circle-dot text-neutral-600 text-xs mt-2"></i>
+                          <span className="text-neutral-700">{request}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
 
-                {/* 제출 버튼 */}
+                {submitError && (
+                  <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
+                    <p className="text-red-700 text-sm">{submitError}</p>
+                  </div>
+                )}
+
                 <button
                   type="submit"
                   disabled={isSubmitting}
@@ -93,7 +116,6 @@ export function SampleRevisionRequestPage() {
               </div>
             </form>
 
-            {/* 안내 박스 */}
             <div className="bg-neutral-50 border border-neutral-200 rounded-lg p-6">
               <div className="flex items-start space-x-3">
                 <i className="fa-solid fa-info-circle text-neutral-600 text-lg mt-1"></i>

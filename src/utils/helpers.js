@@ -72,3 +72,35 @@ export function getStatusBadgeStyle(status) {
 export function calculateProgress(currentStep) {
   return Math.min(100, (currentStep / 4) * 100);
 }
+
+/**
+ * 프로젝트 status 값을 한국어 표시 텍스트로 변환
+ */
+export function statusToLabel(status) {
+  const map = {
+    waiting: '대기중',
+    sample_review: '샘플 검토중',
+    sample_revision: '샘플 재수정중',
+    main_upload: '본보정 업로드 가능',
+    main_progress: '본보정 진행중',
+    main_review: '본보정 결과 확인',
+    completed: '완료',
+  };
+  return map[status] || status;
+}
+
+/**
+ * 프로젝트 status → currentStep 매핑
+ */
+export function statusToStep(status) {
+  const map = {
+    waiting: 0,
+    sample_review: 1,
+    sample_revision: 1,
+    main_upload: 2,
+    main_progress: 3,
+    main_review: 4,
+    completed: 4,
+  };
+  return map[status] ?? 0;
+}

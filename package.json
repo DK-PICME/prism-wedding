@@ -7,7 +7,12 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint . --ext js,jsx --report-unused-disable-directives --max-warnings 0",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "deploy": "npm run build && firebase deploy --only hosting",
+    "deploy:all": "npm run build && firebase deploy",
+    "deploy:functions": "firebase deploy --only functions",
+    "seed": "node functions/src/seed.js",
+    "emulators": "firebase emulators:start"
   },
   "dependencies": {
     "react": "^18.2.0",

@@ -1,13 +1,13 @@
 import { useState } from 'react';
 import { Header } from '../components/Header';
 import { Footer } from '../components/Footer';
+import { useProjectId } from '../hooks/useProject';
 
 /**
  * FileUpload - 파일 업로드 영역
  */
-function FileUpload({ onFileSelect }) {
+function FileUpload({ onFileSelect, selectedFile }) {
   const [dragActive, setDragActive] = useState(false);
-  const [selectedFile, setSelectedFile] = useState(null);
 
   const handleDrag = (e) => {
     e.preventDefault();
@@ -23,32 +23,23 @@ function FileUpload({ onFileSelect }) {
     e.preventDefault();
     e.stopPropagation();
     setDragActive(false);
-
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      const file = e.dataTransfer.files[0];
-      setSelectedFile(file);
-      onFileSelect(file);
+      onFileSelect(e.dataTransfer.files[0]);
     }
   };
 
   const handleChange = (e) => {
     if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0];
-      setSelectedFile(file);
-      onFileSelect(file);
+      onFileSelect(e.target.files[0]);
     }
   };
-
-  const fileInput = document.createElement('input');
 
   return (
     <div className="mb-8">
       <h2 className="text-xl text-neutral-900 mb-4">사진 업로드</h2>
       <div
         className={`border-2 border-dashed rounded-lg p-12 text-center transition-colors cursor-pointer ${
-          dragActive
-            ? 'border-neutral-900 bg-neutral-50'
-            : 'border-neutral-300 hover:border-neutral-400'
+          dragActive ? 'border-neutral-900 bg-neutral-50' : 'border-neutral-300 hover:border-neutral-400'
         }`}
         onDragEnter={handleDrag}
         onDragLeave={handleDrag}
@@ -56,7 +47,7 @@ function FileUpload({ onFileSelect }) {
         onDrop={handleDrop}
       >
         <div className="w-16 h-16 bg-neutral-500 rounded-lg mx-auto mb-4 flex items-center justify-center">
-          <span className="text-white text-sm">사진 업로드</span>
+          <i className="fa-solid fa-image text-white text-2xl"></i>
         </div>
         <div className="space-y-2">
           <p className="text-lg text-neutral-900">사진을 선택하거나 드래그해주세요</p>
@@ -69,12 +60,7 @@ function FileUpload({ onFileSelect }) {
         <label className="mt-4 inline-block px-6 py-2 bg-neutral-100 text-neutral-800 rounded-lg hover:bg-neutral-200 transition-colors cursor-pointer">
           <i className="fa-solid fa-plus mr-2"></i>
           파일 선택
-          <input
-            type="file"
-            hidden
-            accept="image/jpeg,image/png"
-            onChange={handleChange}
-          />
+          <input type="file" hidden accept="image/jpeg,image/png" onChange={handleChange} />
         </label>
       </div>
     </div>
@@ -84,14 +70,12 @@ function FileUpload({ onFileSelect }) {
 /**
  * UploadPage - 샘플 업로드 페이지 (STEP 1)
  */
-export function UploadPage() {
+export function UploadPage({ projectService }) {
+  const projectId = useProjectId();
   const [selectedFile, setSelectedFile] = useState(null);
   const [requestMessage, setRequestMessage] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const handleFileSelect = (file) => {
-    setSelectedFile(file);
-  };
+  const [submitError, setSubmitError] = useState(null);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -105,16 +89,32 @@ export function UploadPage() {
     }
 
     setIsSubmitting(true);
+    setSubmitError(null);
+
     try {
-      console.log('Submitting:', { file: selectedFile.name, message: requestMessage });
-      setTimeout(() => {
-        alert('샘플 보정 요청이 완료되었습니다!');
-        setIsSubmitting(false);
-        setSelectedFile(null);
-        setRequestMessage('');
-      }, 1000);
-    } catch (error) {
-      alert('업로드 중 오류가 발생했습니다.');
+      // 실제 파일 업로드는 Cloud Storage Signed URL을 통해 처리해야 하지만,
+      // 현재는 파일명을 URL로 사용하는 방식으로 구현 (추후 Storage 연동 시 교체)
+      const fileUrl = URL.createObjectURL(selectedFile);
+
+      if (projectService?.createSample) {
+        await projectService.createSample(projectId, {
+          fileName: selectedFile.name,
+          fileUrl,
+          revisionRequest: requestMessage,
+        });
+      }
+
+      alert('샘플 보정 요청이 완료되었습니다!');
+      setSelectedFile(null);
+      setRequestMessage('');
+
+      // 대기 페이지로 이동
+      const params = new URLSearchParams(window.location.search);
+      params.set('page', 'waiting');
+      window.location.search = params.toString();
+    } catch (err) {
+      setSubmitError(err.message || '업로드 중 오류가 발생했습니다.');
+    } finally {
       setIsSubmitting(false);
     }
   };
@@ -126,18 +126,14 @@ export function UploadPage() {
       <main id="main" className="bg-neutral-50 flex-1">
         <div className="max-w-screen-xl mx-auto px-6 py-12">
           <div className="max-w-2xl mx-auto">
-            {/* 페이지 제목 */}
             <div className="text-center mb-8">
               <h1 className="text-3xl text-neutral-900 mb-4">샘플 업로드</h1>
               <p className="text-lg text-neutral-600">샘플 보정을 위해 사진 1장과 요청사항을 남겨주세요.</p>
             </div>
 
-            {/* 업로드 폼 */}
             <form onSubmit={handleSubmit} className="bg-white rounded-lg border border-neutral-200 p-8 mb-8">
-              {/* 파일 업로드 */}
-              <FileUpload onFileSelect={handleFileSelect} />
+              <FileUpload onFileSelect={setSelectedFile} selectedFile={selectedFile} />
 
-              {/* 요청사항 */}
               <div className="mb-8">
                 <h2 className="text-xl text-neutral-900 mb-4">요청사항</h2>
                 <textarea
@@ -156,7 +152,6 @@ export function UploadPage() {
                 <p className="text-sm text-neutral-500 mt-2">상세한 요청사항을 작성하시면 더 정확한 보정이 가능합니다.</p>
               </div>
 
-              {/* 안내 박스 */}
               <div className="bg-neutral-50 border border-neutral-200 rounded-lg p-6 mb-8">
                 <div className="flex items-start space-x-3">
                   <i className="fa-solid fa-info-circle text-neutral-600 text-lg mt-1"></i>
@@ -172,7 +167,12 @@ export function UploadPage() {
                 </div>
               </div>
 
-              {/* 제출 버튼 */}
+              {submitError && (
+                <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
+                  <p className="text-red-700 text-sm">{submitError}</p>
+                </div>
+              )}
+
               <div className="text-center">
                 <button
                   type="submit"
