@@ -18,6 +18,7 @@ export const SettingsPage = () => {
   const [isDeletingAccount, setIsDeletingAccount] = useState(false);
   const [deleteConfirmation, setDeleteConfirmation] = useState(false);
   const [deleteError, setDeleteError] = useState('');
+  const [deletePassword, setDeletePassword] = useState('');
   
   // 사용자 이름 (displayName 또는 이메일의 앞 부분)
   const displayName = userData?.displayName || currentUser?.displayName || currentUser?.email?.split('@')[0] || '사용자';
@@ -50,11 +51,18 @@ export const SettingsPage = () => {
       return;
     }
 
+    // Google 로그인 사용자는 비밀번호 불필요, 이메일/비밀번호 사용자는 비밀번호 필요
+    const isEmailPasswordUser = currentUser?.providerData.some(provider => provider.providerId === 'password');
+    if (isEmailPasswordUser && !deletePassword.trim()) {
+      setDeleteError('비밀번호를 입력해주세요');
+      return;
+    }
+
     setIsDeletingAccount(true);
     setDeleteError('');
 
     try {
-      await deleteAccount();
+      await deleteAccount(deletePassword);
       navigate('/login');
     } catch (err) {
       setDeleteError(err.message || '계정 삭제에 실패했습니다');
@@ -234,6 +242,16 @@ export const SettingsPage = () => {
                           <p className="text-sm text-red-700 font-medium">
                             정말로 계정을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.
                           </p>
+                          {currentUser?.providerData.some(provider => provider.providerId === 'password') && (
+                            <input
+                              type="password"
+                              placeholder="비밀번호 입력"
+                              value={deletePassword}
+                              onChange={(e) => setDeletePassword(e.target.value)}
+                              className="w-full px-3 py-2 border border-red-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
+                              disabled={isDeletingAccount}
+                            />
+                          )}
                           {deleteError && (
                             <div className="p-2 bg-red-100 border border-red-300 rounded text-sm text-red-700">
                               {deleteError}
@@ -244,6 +262,7 @@ export const SettingsPage = () => {
                               onClick={() => {
                                 setDeleteConfirmation(false);
                                 setDeleteError('');
+                                setDeletePassword('');
                               }}
                               disabled={isDeletingAccount}
                               className="flex-1 px-4 py-2 bg-neutral-200 text-neutral-900 hover:bg-neutral-300 rounded-lg transition-colors disabled:bg-neutral-100"

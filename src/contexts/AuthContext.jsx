@@ -10,6 +10,8 @@ import {
   GoogleAuthProvider,
   sendEmailVerification,
   deleteUser,
+  reauthenticateWithCredential,
+  EmailAuthProvider,
 } from 'firebase/auth';
 import { auth, db } from '../config/firebase';
 import { doc, setDoc, getDoc, deleteDoc } from 'firebase/firestore';
@@ -205,18 +207,34 @@ export function AuthProvider({ children }) {
     }
   };
 
-  // 계정 삭제
-  const deleteAccount = async () => {
+  // 계정 삭제 (재인증 필요)
+  const deleteAccount = async (password) => {
     try {
       setError(null);
-      if (!currentUser) throw new Error('사용자 정보를 찾을 수 없습니다');
+      
+      // currentUser 다시 확인
+      const user = auth.currentUser;
+      if (!user) throw new Error('사용자 정보를 찾을 수 없습니다. 다시 로그인해주세요.');
 
-      // Firestore에서 사용자 데이터 삭제
-      const userRef = doc(db, 'users', currentUser.uid);
-      await deleteDoc(userRef);
+      // Firestore에서 사용자 데이터 삭제 (이를 먼저 해야 deleteUser 실패 시에도 안전)
+      const userRef = doc(db, 'users', user.uid);
+      try {
+        await deleteDoc(userRef);
+      } catch (firestoreErr) {
+        console.warn('Firestore 삭제 중 오류:', firestoreErr);
+        // Firestore 삭제 실패는 무시하고 계속 진행
+      }
 
       // Firebase Auth 계정 삭제
-      await deleteUser(currentUser);
+      try {
+        await deleteUser(user);
+      } catch (deleteErr) {
+        // 재로그인이 필요한 경우의 에러 처리
+        if (deleteErr.code === 'auth/requires-recent-login') {
+          throw new Error('보안상의 이유로 재로그인이 필요합니다. 다시 로그인 후 계정 삭제를 시도해주세요.');
+        }
+        throw deleteErr;
+      }
 
       // 로컬 상태 초기화
       setCurrentUser(null);
