@@ -217,7 +217,7 @@ export const SettingsPage = () => {
                         <button
                           onClick={handleLogout}
                           disabled={isLoggingOut}
-                          className="w-full px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors disabled:bg-red-400 font-medium"
+                          className="w-full px-4 py-2 bg-neutral-900 hover:bg-neutral-800 text-white rounded-lg transition-colors disabled:bg-neutral-400 font-medium"
                         >
                           {isLoggingOut ? '로그아웃 중...' : '로그아웃'}
                         </button>
