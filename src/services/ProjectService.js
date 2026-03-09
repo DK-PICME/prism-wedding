@@ -2,26 +2,92 @@
  * ProjectService - Firebase와의 통신 인터페이스
  * 
  * 이 인터페이스는 Firestore와의 데이터 통신을 정의합니다.
+ * Phase 2: Project + Photo 관리
  */
 
 export class ProjectService {
+  // ─── Project CRUD (Phase 2) ─────────────────────────────────────────
+
   /**
-   * 프로젝트 데이터 조회
-   * @param {string} projectId - 프로젝트 ID
-   * @returns {Promise<ProjectData>} 프로젝트 정보
+   * 사용자의 프로젝트 목록 조회 (실시간 리스너)
+   * @param {string} userId - 사용자 ID
+   * @param {Function} callback - 데이터 변경 시 호출되는 콜백
+   * @returns {Function} 구독 해제 함수
    */
-  async getProject(projectId) {
-    throw new Error('getProject method must be implemented');
+  onProjectsChanged(userId, callback) {
+    throw new Error('onProjectsChanged method must be implemented');
   }
 
   /**
-   * 프로젝트 상태 변경 구독 (실시간 업데이트)
+   * 프로젝트 생성
+   * @param {string} userId - 사용자 ID
+   * @param {Object} projectData
+   *   - name: string (프로젝트명, required)
+   *   - description: string (설명, optional)
+   * @returns {Promise<Object>}
+   *   { success: boolean, projectId: string, message: string }
+   */
+  async createProject(userId, projectData) {
+    throw new Error('createProject must be implemented');
+  }
+
+  /**
+   * 프로젝트 조회
    * @param {string} projectId - 프로젝트 ID
-   * @param {Function} callback - 데이터 변경 시 호출되는 콜백 함수
+   * @param {string} userId - 사용자 ID (권한 검증용)
+   * @returns {Promise<Object>}
+   *   { id, userId, name, description, photoCount, totalSize, createdAt, updatedAt }
+   */
+  async getProject(projectId, userId) {
+    throw new Error('getProject must be implemented');
+  }
+
+  /**
+   * 프로젝트 수정
+   * @param {string} projectId - 프로젝트 ID
+   * @param {string} userId - 사용자 ID (권한 검증용)
+   * @param {Object} updates - 수정할 필드 (name, description)
+   * @returns {Promise<Object>}
+   *   { success: boolean, message: string }
+   */
+  async updateProject(projectId, userId, updates) {
+    throw new Error('updateProject must be implemented');
+  }
+
+  /**
+   * 프로젝트 삭제 (하위 Photo도 삭제 - Cascade)
+   * @param {string} projectId - 프로젝트 ID
+   * @param {string} userId - 사용자 ID (권한 검증용)
+   * @returns {Promise<Object>}
+   *   { success: boolean, message: string, deletedPhotoCount: number }
+   */
+  async deleteProject(projectId, userId) {
+    throw new Error('deleteProject must be implemented');
+  }
+
+  /**
+   * 프로젝트 통계 업데이트 (캐시)
+   * @param {string} projectId - 프로젝트 ID
+   * @param {Object} stats
+   *   - photoCount: number
+   *   - totalSize: number
+   * @returns {Promise<Object>}
+   *   { success: boolean, message: string }
+   */
+  async updateProjectStats(projectId, stats) {
+    throw new Error('updateProjectStats must be implemented');
+  }
+
+  // ─── Photo 관리 (Phase 2) ─────────────────────────────────────────
+
+  /**
+   * 프로젝트의 사진 목록 조회 (실시간 리스너)
+   * @param {string} projectId - 프로젝트 ID
+   * @param {Function} callback - 데이터 변경 시 호출되는 콜백
    * @returns {Function} 구독 해제 함수
    */
-  onProjectStatusChanged(projectId, callback) {
-    throw new Error('onProjectStatusChanged method must be implemented');
+  onPhotosChanged(projectId, callback) {
+    throw new Error('onPhotosChanged method must be implemented');
   }
 
   /**

@@ -19,7 +19,8 @@
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
     "test:e2e:debug": "playwright test --debug",
-    "paddle:test": "node scripts/test-paddle.js"
+    "paddle:test": "node scripts/test-paddle.js",
+    "test:project-service": "node tests/ProjectService.test.js"
   },
   "dependencies": {
     "@paddle/paddle-node-sdk": "^3.6.0",
