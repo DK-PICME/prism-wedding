@@ -2,19 +2,46 @@
 
 React + Vite + Tailwind CSS로 구축한 프리즘 스튜디오 고객 포털 프로젝트입니다.
 
+🎯 **상태**: 진행 중 | 📅 **추정 완료**: 4-6주 (1명 기준) | 🔥 **우선순위**: Phase 1-2 진행 중
+
+## 📚 주요 문서
+
+이 프로젝트의 전체 아키텍처, 프로세스 흐름, 구현 전략은 다음 문서들에 상세히 기록되어 있습니다:
+
+- **[`APP_STRUCTURE_AND_PRIORITY.md`](./APP_STRUCTURE_AND_PRIORITY.md)** - 전체 화면 맵, 데이터 흐름, 연관관계, Phase별 작업 항목
+- **[`PROCESS_FLOW_DIAGRAM.md`](./PROCESS_FLOW_DIAGRAM.md)** - 사용자 여정, 상태 전이도, 페이지 네비게이션, API 흐름도
+- **[`IMPLEMENTATION_STRATEGY.md`](./IMPLEMENTATION_STRATEGY.md)** - 최종 구현 전략, 기술 스택, 로드맵, 위험 관리, KPI
+
 ## 📑 페이지 구성
 
-| 페이지 | URL | 설명 |
-|------|-----|------|
-| **Waiting Page** (STEP ①) | `?page=waiting` | 샘플 검토 대기 중 상태 표시 |
-| **Upload Page** (STEP ①) | `?page=upload` | 샘플 사진 및 요청사항 업로드 |
-| **Result Page** (STEP ②) | `?page=result` | 샘플 보정 결과 확인 및 만족도 투표 |
-| **Status Page** (STEP ④) | `?page=status` | 고유 URL을 통한 진행상황 조회 |
-| **Main Correction Upload** (STEP ③) | `?page=main-correction-upload` | 본보정 사진 및 요청사항 업로드 |
-| **Main Correction Result** (STEP ④) | `?page=main-correction-result` | 본보정 결과 확인 및 만족도 투표 |
-| **Main Correction Progress** (STEP ③) | `?page=main-correction-progress` | 본보정 진행상황 조회 |
-| **Sample Revision Request** (STEP ②) | `?page=sample-revision-request` | 샘플 재수정 요청 |
-| **Completed Page** | `?page=completed` | 모든 작업 완료 및 다운로드 |
+### 전체 화면 지도 (20개 페이지)
+
+| 그룹 | 페이지 | URL | 상태 | 설명 |
+|------|--------|-----|------|------|
+| **인증** | LoginPage | `/login` | 🔄 진행중 | 이메일/Google 로그인 |
+| | SignUpPage | `/sign-up` | 🔄 진행중 | 회원가입 및 이메일 검증 |
+| | VerifyEmailPage | `/verify-email` | 🔄 진행중 | 이메일 인증 |
+| | PasswordRecoveryPage | `/password-recovery` | 🔄 진행중 | 비밀번호 찾기 |
+| **주문관리** | OrderListPage | `/order-list` | ⚪ 대기 | 주문 목록 및 대시보드 |
+| | CreateNewOrderPage | `/create-new-order` | ⚪ 대기 | 새 주문 생성 |
+| | OrderDetailsPage | `/order-details` | ⚪ 대기 | 주문 상세 정보 |
+| | PaymentPage | `/payment` | ⚪ 대기 | 결제 처리 |
+| **사진관리** | PhotoManagementPage | `/photo-management` | ⚪ 대기 | 사진 관리 |
+| **샘플보정** | UploadPage | `/upload` | ✅ 완료 | 샘플 업로드 (STEP 1) |
+| | WaitingPage | `/waiting` | ✅ 완료 | 샘플 대기 (STEP 1) |
+| | ResultPage | `/result` | ✅ 완료 | 샘플 결과 확인 (STEP 2) |
+| | SampleRevisionRequestPage | `/sample-revision-request` | ✅ 완료 | 샘플 수정 요청 (STEP 2) |
+| **본보정** | MainCorrectionUploadPage | `/main-correction-upload` | ✅ 완료 | 본보정 업로드 (STEP 3) |
+| | MainCorrectionProgressPage | `/main-correction-progress` | ✅ 완료 | 본보정 진행중 (STEP 4) |
+| | MainCorrectionResultPage | `/main-correction-result` | ✅ 완료 | 본보정 결과 (STEP 5) |
+| **상태/설정** | CurrentStatusPage | `/status` | ✅ 완료 | 현재 상태 확인 |
+| | CompletedPage | `/completed` | ✅ 완료 | 완료 및 다운로드 |
+| | SettingsPage | `/settings` | ⚪ 대기 | 설정 (프로필, 알림, 계정) |
+| | NotificationCenterPage | `/notification-center` | ⚪ 대기 | 알림 센터 |
+| | InquiryPage | `/inquiry` | ⚪ 대기 | 1:1 문의 |
+| | FailedItemManagementPage | `/failed-items` | ⚪ 대기 | 실패 항목 관리 |
+
+**범례**: ✅ 완료 | 🔄 진행중 | ⚪ 대기
 
 ## 프로젝트 구조
 
@@ -71,158 +98,499 @@ npm run dev
 npm run build
 ```
 
-## 기능
+## 🚀 구현 로드맵
 
-### 현재 구현된 기능
+### Phase 1: 인증 및 기본 구조 (1주) ⭐⭐⭐⭐⭐
+**상태**: 🔄 진행중
 
-#### 1️⃣ Waiting Page (STEP ①)
-- ✅ 프로젝트 정보 조회 (Mock 데이터)
-- ✅ 상태별 메시지 표시
-- ✅ 진행 정보 표시 (예상 납기일, 진행 상태, 업로드 상태)
-- ✅ 로딩 상태 처리
-- ✅ 에러 처리
+- [x] LoginPage (이메일/Google OAuth) - 부분 완료
+- [x] SignUpPage + VerifyEmailPage - 부분 완료  
+- [x] PasswordRecoveryPage - 부분 완료
+- [ ] AuthContext 완성 (로그인 유지, 세션 관리)
+- [ ] 네비게이션 보호 (Private Route)
 
-#### 2️⃣ Upload Page (STEP ①)
-- ✅ 드래그 앤 드롭 파일 업로드
-- ✅ 파일 선택 대화창
-- ✅ 요청사항 텍스트 입력
-- ✅ 폼 검증
-- ✅ 업로드 완료 처리
+### Phase 2: 주문 관리 (1주) ⭐⭐⭐⭐
+**상태**: ⚪ 대기
 
-#### 3️⃣ Result Page (STEP ②)
-- ✅ 비포/애프터 이미지 비교
-- ✅ 요청사항 요약 표시
-- ✅ 만족도 투표 (만족/재수정)
-- ✅ 조건부 다운로드 버튼 (만족 확인 후 활성화)
-- ✅ 다음 단계 안내
+- [ ] OrderListPage (Firebase 연동)
+- [ ] CreateNewOrderPage (주문 생성)
+- [ ] OrderDetailsPage (상세 정보)
+- [ ] PaymentPage (결제 게이트웨이)
 
-#### 4️⃣ Status Page (STEP ④)
-- ✅ 프로젝트 정보 표시
-- ✅ 4단계 진행상황 리스트
-- ✅ 단계별 잠금/해제 표시
-- ✅ 반응형 디자인 (Tailwind CSS)
+### Phase 3: 샘플 보정 플로우 (2주) ⭐⭐⭐⭐⭐
+**상태**: ✅ UI 완료 / 🔄 Firebase 연동 진행중
 
-#### 5️⃣ Main Correction Upload Page (STEP ③)
-- ✅ 공통 요청사항 입력
-- ✅ 개별 사진별 요청사항 입력
-- ✅ 드래그 앤 드롭 파일 업로드
-- ✅ 다중 사진 업로드 관리
-- ✅ 본보정 접수 처리
+- [x] UploadPage (사진 업로드 UI)
+- [x] WaitingPage (대기 상태 표시)
+- [x] ResultPage (Before/After 비교)
+- [ ] Cloud Storage 파일 업로드 연동
+- [ ] 실시간 상태 업데이트 (폴링)
 
-#### 6️⃣ Main Correction Result Page (STEP ④)
-- ✅ 다중 사진 비포/애프터 비교
-- ✅ 각 사진별 요청사항 표시
-- ✅ 만족도 투표 (만족/재수정)
-- ✅ 조건부 다운로드 버튼
-- ✅ 결과 확인 처리
+### Phase 4: 본보정 플로우 (1주) ⭐⭐⭐⭐
+**상태**: ✅ UI 완료 / 🔄 Firebase 연동 대기
 
-#### 7️⃣ Main Correction Progress Page (STEP ③)
-- ✅ 본보정 진행 상태 표시
-- ✅ 예상 완료 시간 안내
-- ✅ 진행 현황 타임라인 (진행 중 → 완료)
-- ✅ 업로드 상태 표시
+- [x] MainCorrectionUploadPage (다중 업로드 UI)
+- [x] MainCorrectionProgressPage (진행 상태 표시)
+- [x] MainCorrectionResultPage (결과 확인)
+- [ ] 실시간 진행 상태 업데이트
+- [ ] 다운로드 기능 구현
 
-#### 8️⃣ Sample Revision Request Page (STEP ②)
-- ✅ 추가 요청사항 텍스트 입력
-- ✅ 기존 요청사항 참고용 표시
-- ✅ 재수정 요청 제출
-- ✅ 폼 검증
+### Phase 5: 부가 기능 (1주) ⭐⭐⭐
+**상태**: ⚪ 대기
 
-#### 9️⃣ Completed Page
-- ✅ 완료 알림 토스트 표시
-- ✅ 작업 완료 메시지
-- ✅ 보정 이미지 수, 완료일, 품질 정보 표시
-- ✅ 전체 이미지 다운로드 (ZIP)
-- ✅ 작업 요약 및 추가 서비스 안내
-- ✅ 감사 메시지 및 소셜 공유 버튼
+- [ ] SettingsPage (프로필, 알림, 계정 관리)
+- [ ] NotificationCenterPage (알림 목록)
+- [ ] InquiryPage (1:1 문의)
+- [ ] 알림 시스템 (Email, In-App)
 
-### 개발 중인 기능
+### Phase 6: 관리자 및 최적화 (1주) ⭐⭐
+**상태**: ⚪ 대기
 
-- 🔄 Firebase Firestore 연동
-- 🔄 실시간 상태 업데이트
-- 🔄 실제 파일 업로드 처리
+- [ ] FailedItemManagementPage (실패 항목 관리)
+- [ ] 성능 최적화 (번들 크기, 로딩 속도)
+- [ ] 보안 강화 (XSS, CSRF 방지)
+- [ ] E2E 테스트 (Playwright)
 
-## 백엔드 연동
+**총 예상 소요 시간: 4-6주 (1명 기준)**
 
-### 현재 상태
+---
+
+## 📋 기능 상세
+
+### ✅ 완료된 기능
+
+#### 사진 보정 UI 페이지
+- ✅ UploadPage - 사진 업로드 (Drag&Drop)
+- ✅ WaitingPage - 대기 상태 표시
+- ✅ ResultPage - Before/After 비교
+- ✅ SampleRevisionRequestPage - 수정 요청
+- ✅ MainCorrectionUploadPage - 다중 파일 업로드
+- ✅ MainCorrectionProgressPage - 진행 현황 타임라인
+- ✅ MainCorrectionResultPage - 완성된 사진 다운로드
+- ✅ CompletedPage - 완료 및 평가
+
+#### 인증 UI 페이지
+- ✅ LoginPage - 로그인 폼
+- ✅ SignUpPage - 회원가입 폼
+- ✅ VerifyEmailPage - 이메일 인증 UI
+- ✅ PasswordRecoveryPage - 비밀번호 찾기 UI
+
+#### 공통 컴포넌트
+- ✅ PrismHeader - 공통 헤더 네비게이션
+- ✅ PrismFooter - 공통 푸터
+- ✅ Header/Footer - 페이지별 헤더/푸터
+
+### 🔄 진행 중인 기능
+
+- 🔄 Firebase Auth 연동 (로그인 상태 유지)
+- 🔄 Firestore 데이터 연동 (프로젝트 정보)
+- 🔄 Cloud Storage 파일 업로드
+- 🔄  실시간 상태 업데이트 (폴링)
+
+### ⚪ 대기 중인 기능
+
+- ⚪ 주문 관리 (생성, 조회, 수정, 삭제)
+- ⚪ 결제 게이트웨이 (포트원, KG이니시스)
+- ⚪ 설정 페이지 (프로필, 알림 설정)
+- ⚪ 알림 센터 (메일, In-App 알림)
+- ⚪ 1:1 문의하기
+
+## 🏗️ 아키텍처
+
+### 기술 스택
+
+| 계층 | 기술 | 버전 | 용도 |
+|------|------|------|------|
+| **프론트엔드** | React | 18.2 | UI 렌더링 |
+| | React Router | 7.13 | SPA 라우팅 |
+| | Vite | 5.0 | 번들러 |
+| | Tailwind CSS | - | 스타일링 |
+| **상태 관리** | React Context | - | 인증 상태 |
+| **백엔드** | Firebase Auth | - | 사용자 인증 |
+| | Firestore | - | NoSQL 데이터베이스 |
+| | Cloud Storage | - | 파일 저장 |
+| | Cloud Functions | - | 서버리스 API |
+| | Cloud Hosting | - | 배포 |
+| **테스트** | Playwright | 1.58 | E2E 테스트 |
+
+### 시스템 구조
+
+```
+┌─────────────────────────────────────────┐
+│  React Frontend (Vite 번들)              │
+│  • 20개 페이지 컴포넌트                   │
+│  • Tailwind CSS 스타일링                 │
+│  • React Router 네비게이션               │
+└────────────────┬────────────────────────┘
+                 │ HTTP/HTTPS
+    ┌────────────▼────────────┐
+    │  Firebase Backend        │
+    ├─────────────────────────┤
+    │ • Auth (이메일, Google)  │
+    │ • Firestore (DB)        │
+    │ • Cloud Storage (파일)   │
+    │ • Cloud Functions (API) │
+    └─────────────────────────┘
+```
+
+### 데이터 모델
+
+**Firestore Collections:**
+- `users/{uid}` - 사용자 정보 (프로필, 설정)
+- `projects/{projectId}` - 프로젝트 정보 (주문, 샘플, 본보정)
+- `notifications/{notificationId}` - 알림 기록
+
+**Cloud Storage:**
+- `/photos/{projectId}/sample.jpg` - 샘플 사진
+- `/photos/{projectId}/main/` - 본보정 원본 사진
+- `/photos/{projectId}/edited/` - 보정된 사진
+
+### 현재 상태 (백엔드 연동)
 
 - **Mock 구현** (ProjectServiceMock): 개발/테스트용 더미 데이터 제공
-- **인터페이스** (ProjectService): 실제 Firebase 구현 시 참고 가능
+- **API 구현** (ProjectServiceApi): 실제 Firebase 메서드 구현
+- **인터페이스** (ProjectService): 추상 베이스 클래스
 
-### Firebase 연동 방법
+### Firebase 환경 변수
 
-1. `src/services/` 에 `ProjectServiceFirebase.js` 파일 생성
-2. `ProjectService` 인터페이스를 상속받아 실제 Firebase 메서드 구현
-3. `src/App.jsx` 에서 아래와 같이 변경:
+`.env.local` 또는 `.env.development`에서 설정:
+
+```env
+VITE_FIREBASE_API_KEY=your_api_key
+VITE_FIREBASE_AUTH_DOMAIN=your_auth_domain
+VITE_FIREBASE_PROJECT_ID=your_project_id
+VITE_FIREBASE_STORAGE_BUCKET=your_storage_bucket
+VITE_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
+VITE_FIREBASE_APP_ID=your_app_id
+VITE_USE_EMULATOR=true  # Firebase 에뮬레이터 사용 시
+VITE_USE_MOCK=false      # Mock 데이터 사용 시
+```
+
+### Mock ↔ API 전환
+
+`src/App.jsx`에서 환경변수로 자동 전환:
 
 ```javascript
-// 변경 전
-import { ProjectServiceMock } from './services/ProjectServiceMock';
-const projectService = new ProjectServiceMock();
-
-// 변경 후
-import { ProjectServiceFirebase } from './services/ProjectServiceFirebase';
-const projectService = new ProjectServiceFirebase();
+const useMock = import.meta.env.VITE_USE_MOCK === 'true';
+const projectService = useMock 
+  ? new ProjectServiceMock() 
+  : new ProjectServiceApi();
 ```
 
-## URL 파라미터
-
-- `?page=waiting&projectId=proj_001`: 샘플 검토 대기 페이지 (기본값)
-- `?page=upload`: 샘플 업로드 페이지
-- `?page=result`: 샘플 결과 확인 페이지
-- `?page=status`: 고유 URL 진입 및 현재 상태 확인 페이지
-
-### 테스트 URL 예시
+### 개발 명령어
 
 ```bash
-# 샘플 관련 페이지
-http://localhost:5173/?page=waiting&projectId=proj_001          # 샘플 검토 대기
-http://localhost:5173/?page=upload                              # 샘플 업로드
-http://localhost:5173/?page=result                              # 샘플 결과 확인
-http://localhost:5173/?page=sample-revision-request             # 샘플 재수정 요청
-http://localhost:5173/?page=status                              # 진행상황 조회
+# Mock 데이터로 개발
+npm run dev
 
-# 본보정 관련 페이지
-http://localhost:5173/?page=main-correction-upload              # 본보정 업로드
-http://localhost:5173/?page=main-correction-result              # 본보정 결과 확인
-http://localhost:5173/?page=main-correction-progress            # 본보정 진행중
+# Firebase 에뮬레이터로 개발
+npm run dev:emulator
 
-# 최종 페이지
-http://localhost:5173/?page=completed                           # 완료 및 다운로드
+# 프로덕션 빌드
+npm run build
+
+# 배포
+npm run deploy
+
+# E2E 테스트
+npm run test:e2e
+npm run test:e2e:ui  # UI 포함
 ```
 
-## 개발 가이드
+## 🧪 테스트
 
-### 새로운 페이지 추가
+### 라우팅 테스트 (React Router v7)
 
-1. `src/pages/` 에 새로운 컴포넌트 파일 생성
-2. 필요한 컴포넌트들을 import하여 조립
-3. `App.jsx` 에서 라우팅 추가 (필요 시)
+```bash
+# 인증 페이지
+http://localhost:5173/login                     # 로그인
+http://localhost:5173/sign-up                   # 회원가입
+http://localhost:5173/verify-email              # 이메일 인증
+http://localhost:5173/password-recovery         # 비밀번호 찾기
 
-### 새로운 컴포넌트 추가
+# 주문 관리
+http://localhost:5173/order-list                # 주문 목록
+http://localhost:5173/create-new-order          # 새 주문 생성
+http://localhost:5173/order-details             # 주문 상세
+http://localhost:5173/payment                   # 결제
 
-1. `src/components/` 에 파일 생성
-2. 재사용 가능하도록 props를 통해 데이터 전달
-3. 컴포넌트는 순수 함수형으로 작성
+# 사진 보정 (완료된 페이지)
+http://localhost:5173/upload                    # 샘플 업로드 (STEP 1)
+http://localhost:5173/waiting                   # 샘플 대기
+http://localhost:5173/result                    # 샘플 결과 (STEP 2)
+http://localhost:5173/sample-revision-request   # 샘플 수정 요청
+http://localhost:5173/main-correction-upload    # 본보정 업로드 (STEP 3)
+http://localhost:5173/main-correction-progress  # 본보정 진행중 (STEP 4)
+http://localhost:5173/main-correction-result    # 본보정 결과 (STEP 5)
 
-### 데이터 흐름
+# 상태/설정
+http://localhost:5173/status                    # 현재 상태 확인
+http://localhost:5173/completed                 # 완료
+http://localhost:5173/settings                  # 설정
+http://localhost:5173/notification-center       # 알림 센터
+http://localhost:5173/inquiry                   # 1:1 문의
+http://localhost:5173/photo-management          # 사진 관리
+```
+
+### E2E 테스트
+
+```bash
+# Playwright 테스트 실행
+npm run test:e2e
+
+# UI 모드 (시각적 테스트)
+npm run test:e2e:ui
+
+# 디버그 모드
+npm run test:e2e:debug
+```
+
+## 📖 개발 가이드
+
+### 프로젝트 구조
 
 ```
-App.jsx
-  └─ WaitingPage.jsx
-      ├─ Header.jsx
-      ├─ StatusMessage.jsx
-      ├─ ProjectInfo.jsx
-      ├─ NextSteps.jsx
-      ├─ ContactInfo.jsx
-      └─ Footer.jsx
+src/
+├── components/          # 재사용 가능한 컴포넌트
+│   ├── Header.jsx       # 샘플보정 진행상황 헤더
+│   ├── Footer.jsx       # 페이지 푸터
+│   ├── PrismHeader.jsx  # 메인 네비게이션 헤더
+│   ├── PrismFooter.jsx  # 메인 푸터
+│   ├── LoadingSpinner.jsx
+│   ├── StatusMessage.jsx
+│   ├── ProjectInfo.jsx
+│   └── ...
+├── pages/               # 페이지 컴포넌트 (20개)
+│   ├── LoginPage.jsx
+│   ├── SignUpPage.jsx
+│   ├── OrderListPage.jsx
+│   ├── UploadPage.jsx
+│   ├── ResultPage.jsx
+│   ├── MainCorrectionUploadPage.jsx
+│   ├── MainCorrectionProgressPage.jsx
+│   ├── MainCorrectionResultPage.jsx
+│   └── ...
+├── contexts/            # React Context
+│   └── AuthContext.jsx  # 인증 상태 관리
+├── services/            # 비즈니스 로직
+│   ├── ProjectService.js (추상 클래스)
+│   ├── ProjectServiceMock.js
+│   └── ProjectServiceApi.js
+├── hooks/               # 커스텀 React 훅
+│   └── useProject.js
+├── utils/               # 유틸리티 함수
+│   └── helpers.js
+├── config/              # 설정 파일
+│   └── firebase.js
+├── App.jsx              # 루트 컴포넌트
+└── main.jsx             # 엔트리포인트
 ```
 
-## 스타일링
+### 새로운 페이지 추가하기
+
+1. **페이지 파일 생성**: `src/pages/MyNewPage.jsx`
+
+```jsx
+export function MyNewPage() {
+  return (
+    <div className="min-h-screen flex flex-col">
+      {/* 콘텐츠 */}
+    </div>
+  );
+}
+```
+
+2. **라우팅 추가**: `src/App.jsx`
+
+```jsx
+import { MyNewPage } from './pages/MyNewPage';
+
+<Routes>
+  <Route path="/my-new-page" element={<MyNewPage />} />
+</Routes>
+```
+
+3. **네비게이션 추가**: `src/components/PrismHeader.jsx`
+
+```jsx
+<a href="/my-new-page">새 페이지</a>
+```
+
+### 새로운 컴포넌트 추가하기
+
+1. **컴포넌트 파일 생성**: `src/components/MyComponent.jsx`
+
+```jsx
+export function MyComponent({ title, onClick }) {
+  return (
+    <div className="p-4 bg-white rounded-lg">
+      <h2 className="text-lg font-semibold">{title}</h2>
+      <button onClick={onClick}>액션</button>
+    </div>
+  );
+}
+```
+
+2. **페이지에서 사용**
+
+```jsx
+import { MyComponent } from '../components/MyComponent';
+
+export function MyPage() {
+  return (
+    <MyComponent 
+      title="제목" 
+      onClick={() => console.log('clicked')} 
+    />
+  );
+}
+```
+
+### 인증 상태 사용하기
+
+```jsx
+import { useAuth } from '../contexts/AuthContext';
+
+export function MyPage() {
+  const { currentUser, userData, login, logout } = useAuth();
+
+  if (!currentUser) {
+    return <div>로그인 필요</div>;
+  }
+
+  return (
+    <div>
+      <h1>{userData?.displayName}님 환영합니다!</h1>
+      <button onClick={logout}>로그아웃</button>
+    </div>
+  );
+}
+```
+
+### 프로젝트 데이터 사용하기
+
+```jsx
+import { useProject, useProjectId } from '../hooks/useProject';
+
+export function MyPage({ projectService }) {
+  const projectId = useProjectId();
+  const { project, loading, error } = useProject(projectService, projectId);
+
+  if (loading) return <div>로딩 중...</div>;
+  if (error) return <div>에러: {error.message}</div>;
+
+  return (
+    <div>
+      <h1>{project?.name}</h1>
+      <p>{project?.status}</p>
+    </div>
+  );
+}
+```
+
+## 🎨 스타일링
 
 - **Tailwind CSS**: 유틸리티 기반 CSS 프레임워크
-- **커스텀 색상**: `tailwind.config` 에 정의된 primary 색상 사용 가능
+- **컬러 스키마**: Neutral (회색 계열) + 악센트 색상
+- **반응형**: Mobile-first 디자인 (sm, md, lg, xl 브레이크포인트)
+- **다크 모드**: 지원 예정 (localStorage 기반)
 
-## 라이선스
+### Tailwind 설정
+
+`tailwind.config.js`에서 커스텀 색상 및 테마 설정 가능
+
+```javascript
+module.exports = {
+  theme: {
+    colors: {
+      // 기본 Tailwind 색상 사용
+      neutral: { ... },
+      white: '#fff',
+      // 추가 커스텀 색상
+    }
+  }
+}
+```
+
+---
+
+## 🚀 배포
+
+### Firebase Hosting 배포
+
+```bash
+# 1. 프로덕션 빌드
+npm run build
+
+# 2. 배포 (호스팅만)
+npm run deploy
+
+# 3. 전체 배포 (Firebase 모든 서비스)
+npm run deploy:all
+
+# 4. Cloud Functions만 배포
+npm run deploy:functions
+```
+
+### 환경별 설정
+
+| 환경 | 설정 | 용도 |
+|------|------|------|
+| **개발** | `.env.development` | `npm run dev` |
+| **에뮬레이터** | `.env.local` + `VITE_USE_EMULATOR=true` | `npm run dev:emulator` |
+| **프로덕션** | `.env.production` | `npm run build` |
+
+---
+
+## 📞 문의 및 지원
+
+### 문제 해결
+
+**로그인 실패:**
+- Firebase Console에서 Authentication 활성화 확인
+- Google OAuth 설정 확인
+- 이메일 인증 활성화 확인
+
+**파일 업로드 실패:**
+- Cloud Storage 권한 확인 (`firebase.google.com` → Storage 규칙)
+- 파일 크기 확인 (최대 10MB)
+- 브라우저 콘솔 에러 확인
+
+**데이터 로드 실패:**
+- Firestore 권한 확인 (`firebase.google.com` → Firestore 규칙)
+- 네트워크 연결 확인
+- Firebase 할당량 확인
+
+### 개발자 연락처
+
+- 프로젝트 담당자: [연락처]
+- Firebase 지원: https://firebase.google.com/support
+
+---
+
+## 📚 추가 자료
+
+- [Vite 공식 문서](https://vitejs.dev/)
+- [React 공식 문서](https://react.dev/)
+- [Firebase 문서](https://firebase.google.com/docs)
+- [Tailwind CSS 문서](https://tailwindcss.com/docs)
+- [React Router 문서](https://reactrouter.com/)
+
+---
+
+## 📝 라이선스
 
 Copyright © 2026 Prism Studio. All rights reserved.
+
+---
+
+## 🔄 버전 히스토리
+
+### v1.0.0 (2025-03-09)
+- 초기 프로젝트 구조 설정
+- 20개 페이지 UI 구현 완료 (샘플보정, 본보정)
+- 인증 시스템 부분 구현 (LoginPage, SignUpPage)
+- Firebase 기본 연동
+- 로드맵 및 아키텍처 문서 작성
+
+**다음 버전**: Phase 2 (주문관리, 결제) 구현
