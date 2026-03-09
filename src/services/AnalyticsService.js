@@ -359,3 +359,6 @@ export class AnalyticsService {
 
 // 싱글톤 인스턴스
 export const analyticsService = new AnalyticsService();
+
+// 기본 export (default)
+export default analyticsService;
