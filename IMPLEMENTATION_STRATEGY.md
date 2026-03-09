@@ -46,10 +46,12 @@
 | **Analytics** | Google Analytics 4 | - | 기본 분석 추적 |
 | | Smartlook | - | 세션 녹화 + 히트맵 |
 | | AnalyticsService | 커스텀 | 통합 이벤트 추적 |
+| **Payment** | Paddle | - | 글로벌 결제 + 구독 관리 |
+| | Paddle.js | - | 체크아웃 UI |
 | **Backend** | Firebase Auth | - | 인증 |
 | | Firestore | - | NoSQL DB |
 | | Cloud Storage | - | 파일 저장 |
-| | Cloud Functions | - | API 로직 |
+| | Cloud Functions | - | API 로직 + Webhook |
 | | Cloud Hosting | - | 배포 |
 | **Testing** | Playwright | 1.58 | E2E 테스트 |
 | **Linting** | ESLint | 8.55 | 코드 품질 |
@@ -448,7 +450,29 @@ Day 5: 최종 배포 준비
 - OrderListPage: UI 완성, Firebase 연동 대기
 - CreateNewOrderPage: UI 완성, 폼 검증 완성
 - OrderDetailsPage: UI 완성
-- PaymentPage: UI 완성, 결제 게이트웨이 연동 대기
+- PaymentPage: UI 완성, **Paddle 결제 게이트웨이 연동 예정**
+
+#### 💳 결제 시스템 (Paddle - 글로벌 선택) **NEW**
+- **선택 이유**: 글로벌 확장 전략 (200+ 국가 지원)
+- **자동 세금 처리**: VAT, Sales Tax 자동 계산 & 납부
+- **구독 관리**: 갱신, 업그레이드, 다운그레이드 자동화
+- **유지보수 최소**: Webhook만 처리하면 대부분 자동
+- **React 연동**: Paddle.js + Webhooks (간단함)
+- **Merchant of Record**: 세금 책임은 Paddle 담당 → 우리는 관리 없음
+
+**Paddle 장점:**
+✅ 200+ 국가 자동 지원  
+✅ 30개 통화 기본 제공 (한국 포함)  
+✅ 로컬 결제 방법 (Alipay, iDEAL, 한국 결제 등)  
+✅ 세금 자동 계산 & 납부 (준법성 100%)  
+✅ 유지보수 최소 (개발자 부담 감소)  
+✅ 구독 갱신 자동화 (완전 자동)  
+
+**구현 계획:**
+- Phase 2-B: Paddle 통합 (9시간)
+  - Day 1: Paddle 계정 + 샌드박스 설정 (3h)
+  - Day 2-3: Paddle.js 임베딩 + 테스트 (4h)
+  - Day 4: Firebase Webhook 핸들러 (2h)
 
 #### ⏳ 추가 기능 (계획 중)
 - SettingsPage: 구조만 완성
