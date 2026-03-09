@@ -102,16 +102,18 @@ npm run build
 ## 🚀 구현 로드맵
 
 ### Phase 1: 인증 및 기본 구조 (1주) ⭐⭐⭐⭐⭐
-**상태**: 🔄 진행중
+**상태**: ✅ 완료 (분석 인프라 통합)
 
-- [x] LoginPage (이메일/Google OAuth) - 부분 완료
-- [x] SignUpPage + VerifyEmailPage - 부분 완료  
-- [x] PasswordRecoveryPage - 부분 완료
-- [ ] AuthContext 완성 (로그인 유지, 세션 관리)
-- [ ] 네비게이션 보호 (Private Route)
+- [x] LoginPage (이메일/Google OAuth) - 완료
+- [x] SignUpPage + VerifyEmailPage - 완료  
+- [x] PasswordRecoveryPage - 완료
+- [x] AuthContext 완성 (로그인 유지, 세션 관리)
+- [x] 네비게이션 보호 (Private Route)
+- [x] GA4 + Smartlook 분석 인프라 - **NEW**
+- [x] 이벤트 추적 시스템 - **NEW**
 
 ### Phase 2: 주문 관리 (1주) ⭐⭐⭐⭐
-**상태**: ⚪ 대기
+**상태**: 🔄 진행 중
 
 - [ ] OrderListPage (Firebase 연동)
 - [ ] CreateNewOrderPage (주문 생성)
@@ -176,9 +178,17 @@ npm run build
 - ✅ VerifyEmailPage - 이메일 인증 UI
 - ✅ PasswordRecoveryPage - 비밀번호 찾기 UI
 
+#### 분석 및 추적 인프라 **NEW**
+- ✅ AnalyticsService - 통합 분석 서비스 (GA4, Smartlook)
+- ✅ 이벤트 추적 - sign_up, login, email_verified, purchase 등
+- ✅ UTM 파라미터 캡처 - 유입 채널 추적
+- ✅ 사용자 식별 - 로그인 사용자 자동 식별
+- ✅ 페이지뷰 추적 - 모든 라우트 변경 시 자동 추적
+
 #### 공통 컴포넌트
 - ✅ PrismHeader - 공통 헤더 네비게이션
 - ✅ PrismFooter - 공통 푸터
+- ✅ ProtectedRoute - 보호된 라우트
 - ✅ Header/Footer - 페이지별 헤더/푸터
 
 ### 🔄 진행 중인 기능
