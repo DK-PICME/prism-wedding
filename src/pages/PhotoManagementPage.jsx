@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { PrismHeader } from '../components/PrismHeader';
 import { PrismFooter } from '../components/PrismFooter';
 import { useAuth } from '../contexts/AuthContext';
-import ProjectServiceMock from '../services/ProjectServiceMock.js';
+import ProjectServiceApi from '../services/ProjectServiceApi.js';
 import PhotoService from '../services/PhotoService.js';
 import StorageService from '../services/StorageService.js';
 import analyticsService from '../services/AnalyticsService.js';
@@ -22,7 +22,7 @@ export const PhotoManagementPage = () => {
   const navigate = useNavigate();
   const { currentUser } = useAuth();
   const fileInputRef = useRef(null);
-  const projectService = ProjectServiceMock; // Mock 사용 (나중에 Api로 전환)
+  const projectService = ProjectServiceApi; // Firebase 실제 연동
 
   // ─── 상태 관리 ─────────────────────────────────────────
   const [projects, setProjects] = useState([]);
