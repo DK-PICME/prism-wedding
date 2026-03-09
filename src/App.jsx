@@ -36,7 +36,7 @@ const useMock = import.meta.env.VITE_USE_MOCK === 'true';
 const projectService = useMock ? new ProjectServiceMock() : new ProjectServiceApi();
 
 function AppContent() {
-  const { user } = useAuth();
+  const { currentUser } = useAuth();
 
   // 분석 초기화 및 UTM 파라미터 캡처
   useEffect(() => {
@@ -46,14 +46,14 @@ function AppContent() {
 
   // 사용자 식별
   useEffect(() => {
-    if (user) {
-      analyticsService.identifyUser(user.uid, {
-        email: user.email,
-        displayName: user.displayName || '미설정',
-        createdAt: user.metadata?.creationTime,
+    if (currentUser) {
+      analyticsService.identifyUser(currentUser.uid, {
+        email: currentUser.email,
+        displayName: currentUser.displayName || '미설정',
+        createdAt: currentUser.metadata?.creationTime,
       });
     }
-  }, [user]);
+  }, [currentUser]);
 
   // 페이지 변경 시 페이지뷰 추적
   useEffect(() => {
