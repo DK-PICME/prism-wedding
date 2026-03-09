@@ -1,0 +1,33 @@
+---
+description: Phase 2 설계 작업 시 PHASE2_MASTER_SPEC.md를 단일 참조 소스로 강제
+alwaysApply: true
+---
+
+# Phase 2 설계 참조 규칙
+
+## 단일 진실의 원천
+
+Phase 2 관련 작업 시 **`PHASE2_MASTER_SPEC.md`가 유일한 설계 기준**이다.
+
+- 아키텍처 결정, Firestore 스키마, Photo 상태 머신, 가격 모델, 플로우, Cloud Function 명세, 구현 체크리스트 모두 이 문서 기준으로 작업한다.
+- `docs/archive/` 안의 문서들은 참고하지 않는다. 사용자가 명시적으로 "저 문서 참고해"라고 할 때만 열람한다.
+
+## 작업 규칙
+
+**새 문서 생성은 가능하다** (분석 결과물, 구현 가이드 등). 단, 내용의 근거는 반드시 `PHASE2_MASTER_SPEC.md`에서 출발해야 한다.
+
+**`PHASE2_MASTER_SPEC.md`와 충돌하는 내용을 발견하면** 임의로 판단하지 말고 사용자에게 컨펌을 받는다.
+
+**`PHASE2_MASTER_SPEC.md` 업데이트가 필요한 결정이 생기면** 해당 문서를 직접 수정하고 커밋한다.
+
+## 핵심 확정 사항 (빠른 참조)
+
+| 항목 | 확정값 |
+|------|--------|
+| Photo 상태 | 7개: PENDING(로컬만)·UPLOADING·UPLOAD_COMPLETED·PROCESSING·READY·UPLOAD_FAILED·PROCESSING_FAILED |
+| 주문 연계 상태 | 별도 상태 없음 → `isLocked` + `lockedByOrder` 필드 사용 |
+| photoId 생성 | Firestore `doc().id` 사용 (`Date.now()` 금지) |
+| 가격 모델 | Firebase Remote Config + 로컬 기본값, 주문 시 스냅샷 저장 |
+| 복제 방식 | Copy-on-Order (Cloud Function, 지수 백오프 최대 3회) |
+| PENDING Firestore 저장 | 금지 (프론트 로컬 상태만) |
+| CF 메모리 | processUploadedPhoto: 512MB |
