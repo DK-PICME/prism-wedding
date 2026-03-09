@@ -3,25 +3,25 @@
  * 기능: Paddle API 연결 테스트 (Ping)
  * 
  * 사용법:
- *   1. .env.local 파일에 PADDLE_API_KEY 설정
- *   2. node scripts/test-paddle.js
+ *   npm run paddle:test
+ * 
+ * 참고: PADDLE_API_KEY는 .env.development 또는 .env.production에서 자동 로드
  */
 
 import { Paddle, Environment } from '@paddle/paddle-node-sdk';
+import 'dotenv/config'; // .env 파일 자동 로드
 
 // 환경변수 확인
 const apiKey = process.env.PADDLE_API_KEY;
 
 if (!apiKey) {
   console.error('❌ Error: PADDLE_API_KEY not found in environment variables');
-  console.error('Please set PADDLE_API_KEY in .env.local or as environment variable');
+  console.error('Please ensure PADDLE_API_KEY is set in .env.development or .env.production');
   process.exit(1);
 }
 
-// Paddle 클라이언트 초기화
-const paddle = new Paddle(apiKey, {
-  environment: Environment.Sandbox // 샌드박스 환경으로 테스트
-});
+// Paddle 클라이언트 초기화 (자동으로 프로덕션 API로 인식)
+const paddle = new Paddle(apiKey);
 
 /**
  * Paddle API Ping 테스트
@@ -43,7 +43,7 @@ async function testPaddleConnection() {
     console.log('─'.repeat(50));
     console.log('\n📊 Response Details:');
     console.log(`   • Status: Connected ✓`);
-    console.log(`   • Environment: Sandbox`);
+    console.log(`   • Environment: Production (Live API)`);
     console.log(`   • Products found: ${response.data ? response.data.length : 0}`);
     console.log(`   • Timestamp: ${new Date().toISOString()}`);
 
@@ -74,8 +74,8 @@ async function testPaddleConnection() {
     console.error('\n💡 Troubleshooting:');
     console.error('   1. Verify PADDLE_API_KEY is correct');
     console.error('   2. Check API key permissions (Developer Settings > API Keys)');
-    console.error('   3. Ensure API key is for Sandbox environment');
-    console.error('   4. Check internet connection');
+    console.error('   3. Check internet connection');
+    console.error('   4. Verify .env file is loaded');
 
     return false;
   }
