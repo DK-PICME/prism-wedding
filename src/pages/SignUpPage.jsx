@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { PrismHeader } from '../components/PrismHeader';
 import { PrismFooter } from '../components/PrismFooter';
 import { useAuth } from '../contexts/AuthContext';
-import { analyticsService } from '../services/AnalyticsService';
 
 export const SignUpPage = () => {
   const navigate = useNavigate();
@@ -92,7 +91,6 @@ export const SignUpPage = () => {
     setIsLoading(true);
     try {
       await signup(formData.email, formData.password, formData.studioName);
-      analyticsService.trackSignUp('email');
       navigate('/verify-email');
     } catch (err) {
       const code = err?.code || '';
@@ -113,7 +111,6 @@ export const SignUpPage = () => {
     setIsLoading(true);
     try {
       await loginWithGooglePopup();
-      analyticsService.trackSignUp('google');
       navigate('/order-list');
     } catch (err) {
       setError(err?.message || '소셜 로그인에 실패했습니다');

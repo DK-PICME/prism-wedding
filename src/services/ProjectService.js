@@ -32,4 +32,169 @@ export class ProjectService {
   generateMockData(overrides = {}) {
     throw new Error('generateMockData method must be implemented');
   }
+
+  // ─── 주문 관리 (Phase 2) ─────────────────────────────────────────
+
+  /**
+   * 사용자의 주문 목록 조회
+   *
+   * @param {string} userId - 현재 사용자 ID
+   * @param {Object} options
+   *   - status?: 'waiting' | 'in-progress' | 'completed' (상태 필터)
+   *   - startDate?: Date (시작 날짜)
+   *   - endDate?: Date (종료 날짜)
+   *   - searchQuery?: string (주문명/프로젝트ID 검색)
+   *   - page?: number (페이지 번호, 기본값 1)
+   *   - limit?: number (페이지당 개수, 기본값 10)
+   *
+   * @returns {Promise<Object>}
+   *   {
+   *     orders: Array<Order>,
+   *     total: number,
+   *     page: number,
+   *     limit: number,
+   *     hasMore: boolean
+   *   }
+   */
+  async getOrders(userId, options = {}) {
+    throw new Error('getOrders must be implemented');
+  }
+
+  /**
+   * 개별 주문 조회
+   *
+   * @param {string} orderId - 주문 ID
+   * @param {string} userId - 현재 사용자 ID (권한 검증용)
+   *
+   * @returns {Promise<Order>}
+   *   {
+   *     id: string,
+   *     userId: string,
+   *     name: string,
+   *     projectId: string,
+   *     status: string,
+   *     photos: number,
+   *     progress: number,
+   *     createdAt: Timestamp,
+   *     date: string,
+   *     paymentStatus: string,
+   *     amount: number,
+   *     basePrice: number,
+   *     additionalCost: number,
+   *     weddingType: string,
+   *     remarks: string,
+   *     timeline: Array
+   *   }
+   */
+  async getOrder(orderId, userId) {
+    throw new Error('getOrder must be implemented');
+  }
+
+  /**
+   * 새 주문 생성
+   *
+   * @param {string} userId - 현재 사용자 ID
+   * @param {Object} orderData
+   *   - name: string (주문명)
+   *   - weddingType: string (웨딩 종류)
+   *   - date: string (촬영 날짜)
+   *   - estimatedPhotos: number (예상 사진 수)
+   *   - remarks: string (특별 요청사항)
+   *   - basePrice: number (장당 기본 가격)
+   *   - additionalCost: number (추가 비용)
+   *
+   * @returns {Promise<Object>}
+   *   {
+   *     success: boolean,
+   *     orderId: string,
+   *     projectId: string,
+   *     message: string
+   *   }
+   */
+  async createOrder(userId, orderData) {
+    throw new Error('createOrder must be implemented');
+  }
+
+  /**
+   * 주문 수정
+   *
+   * @param {string} orderId - 주문 ID
+   * @param {string} userId - 현재 사용자 ID (권한 검증용)
+   * @param {Object} updates - 수정할 필드 (부분 업데이트)
+   *
+   * @returns {Promise<Object>}
+   *   {
+   *     success: boolean,
+   *     message: string
+   *   }
+   */
+  async updateOrder(orderId, userId, updates) {
+    throw new Error('updateOrder must be implemented');
+  }
+
+  /**
+   * 주문 삭제
+   *
+   * @param {string} orderId - 주문 ID
+   * @param {string} userId - 현재 사용자 ID (권한 검증용)
+   *
+   * @returns {Promise<Object>}
+   *   {
+   *     success: boolean,
+   *     message: string
+   *   }
+   */
+  async deleteOrder(orderId, userId) {
+    throw new Error('deleteOrder must be implemented');
+  }
+
+  /**
+   * 주문 상태 업데이트
+   *
+   * @param {string} orderId - 주문 ID
+   * @param {string} status - 새로운 상태 ('waiting' | 'in-progress' | 'completed')
+   * @param {Object} options
+   *   - progress?: number (진행률, 0-100)
+   *   - updatedBy?: string (업데이트한 사용자 ID)
+   *
+   * @returns {Promise<Object>}
+   *   { success: boolean, message: string }
+   */
+  async updateOrderStatus(orderId, status, options = {}) {
+    throw new Error('updateOrderStatus must be implemented');
+  }
+
+  /**
+   * 결제 상태 업데이트
+   *
+   * @param {string} orderId - 주문 ID
+   * @param {string} paymentStatus - 결제 상태 ('waiting' | 'completed' | 'failed' | 'refunded')
+   * @param {Object} paymentData
+   *   - transactionId?: string (거래 ID)
+   *   - amount?: number (결제 금액)
+   *   - method?: string (결제 방법)
+   *   - processedAt?: string (처리 시간)
+   *
+   * @returns {Promise<Object>}
+   *   { success: boolean, message: string }
+   */
+  async updatePaymentStatus(orderId, paymentStatus, paymentData = {}) {
+    throw new Error('updatePaymentStatus must be implemented');
+  }
+
+  /**
+   * 타임라인 항목 추가
+   *
+   * @param {string} orderId - 주문 ID
+   * @param {Object} timelineItem
+   *   - event: string (이벤트명)
+   *   - status: string ('pending' | 'in-progress' | 'completed')
+   *   - date?: string (발생 날짜, 미제공 시 현재 시간)
+   *
+   * @returns {Promise<Object>}
+   *   { success: boolean, timelineId: string, message: string }
+   */
+  async addTimelineItem(orderId, timelineItem) {
+    throw new Error('addTimelineItem must be implemented');
+  }
 }

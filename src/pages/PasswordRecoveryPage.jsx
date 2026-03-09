@@ -47,8 +47,9 @@ export const PasswordRecoveryPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-white">
-      <main className="pt-[73px]">
+    <div className="min-h-screen bg-white flex flex-col">
+      <PrismHeader activeNav="password-recovery" />
+      <main className="flex-1 pt-[73px]">
         <div className="px-8 py-8">
           <div className="max-w-md mx-auto">
             <div className="flex items-center justify-center w-12 h-12 bg-gradient-to-r from-neutral-800 to-neutral-600 rounded-lg mx-auto mb-6">
@@ -134,6 +135,7 @@ export const PasswordRecoveryPage = () => {
           </div>
         </div>
       </main>
+      <PrismFooter />
     </div>
   );
 };

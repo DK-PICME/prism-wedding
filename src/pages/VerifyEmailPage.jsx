@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { PrismHeader } from '../components/PrismHeader';
 import { PrismFooter } from '../components/PrismFooter';
 import { useAuth } from '../contexts/AuthContext';
-import { analyticsService } from '../services/AnalyticsService';
 
 export const VerifyEmailPage = () => {
   const navigate = useNavigate();
@@ -13,22 +12,12 @@ export const VerifyEmailPage = () => {
   const [countdown, setCountdown] = useState(0);
 
   useEffect(() => {
-    // 현재 사용자가 이메일 검증되었는지 확인
-    if (currentUser?.emailVerified) {
-      analyticsService.trackEmailVerified();
-      // 몇 초 후 자동으로 다음 페이지로 이동
-      const timer = setTimeout(() => {
-        navigate('/order-list');
-      }, 2000);
-      return () => clearTimeout(timer);
-    }
-
     // 카운트다운 타이머
     if (countdown > 0) {
       const timer = setTimeout(() => setCountdown(countdown - 1), 1000);
       return () => clearTimeout(timer);
     }
-  }, [countdown, currentUser?.emailVerified, navigate]);
+  }, [countdown]);
 
   const handleResendEmail = async () => {
     setIsLoading(true);

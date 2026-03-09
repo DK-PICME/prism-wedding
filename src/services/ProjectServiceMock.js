@@ -10,6 +10,8 @@ export class ProjectServiceMock extends ProjectService {
     super();
     this.projects = new Map();
     this.listeners = new Map();
+    this.orders = new Map();        // Phase 2: 주문 관리
+    this.nextOrderId = 1;
     this.initializeMockData();
   }
 
@@ -226,5 +228,337 @@ export class ProjectServiceMock extends ProjectService {
         });
       }
     }
+  }
+
+  // ─── Phase 2: 주문 관리 ───────────────────────────────────────
+
+  /**
+   * 사용자의 주문 목록 조회 (더미)
+   */
+  async getOrders(userId, options = {}) {
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        // 더미 주문 데이터
+        const allOrders = [
+          {
+            id: 'order_001',
+            userId,
+            name: '김민수 & 박지영 웨딩',
+            projectId: '#2025-0122',
+            status: 'in-progress',
+            statusLabel: '진행중',
+            statusIcon: 'fa-spinner',
+            photos: 150,
+            progress: 85,
+            createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
+            date: '2025-01-20',
+            paymentStatus: 'completed',
+            amount: 450000,
+            basePrice: 3000,
+            additionalCost: 0,
+            weddingType: '본식 촬영',
+            remarks: '자연스러운 톤으로 보정 부탁드립니다',
+            timeline: [
+              { date: '2025-01-18 14:30', event: '주문 생성', status: 'completed' },
+              { date: '2025-01-19 09:15', event: '결제 완료', status: 'completed' },
+            ]
+          },
+          {
+            id: 'order_002',
+            userId,
+            name: '이준호 & 최수진 스드메',
+            projectId: '#2025-0121',
+            status: 'waiting',
+            statusLabel: '대기',
+            statusIcon: 'fa-clock',
+            photos: 85,
+            progress: 0,
+            createdAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000),
+            date: '2025-01-21',
+            paymentStatus: 'waiting',
+            amount: 255000,
+            basePrice: 3000,
+            additionalCost: 0,
+            weddingType: '스드메 촬영',
+            remarks: '',
+            timeline: []
+          },
+          {
+            id: 'order_003',
+            userId,
+            name: '정대현 & 한소희 본식',
+            projectId: '#2025-0118',
+            status: 'completed',
+            statusLabel: '완료',
+            statusIcon: 'fa-check-circle',
+            photos: 200,
+            progress: 100,
+            createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000),
+            date: '2025-01-18',
+            paymentStatus: 'completed',
+            amount: 600000,
+            basePrice: 3000,
+            additionalCost: 0,
+            weddingType: '본식 촬영',
+            remarks: '프리미엄 보정 요청',
+            timeline: [
+              { date: '2025-01-15 10:00', event: '주문 생성', status: 'completed' },
+            ]
+          },
+        ];
+
+        // 필터링
+        let filtered = allOrders;
+
+        // 상태 필터
+        if (options.status) {
+          filtered = filtered.filter(o => o.status === options.status);
+        }
+
+        // 기간 필터
+        if (options.startDate) {
+          filtered = filtered.filter(o => o.createdAt >= options.startDate);
+        }
+        if (options.endDate) {
+          filtered = filtered.filter(o => o.createdAt <= options.endDate);
+        }
+
+        // 검색
+        if (options.searchQuery) {
+          const q = options.searchQuery.toLowerCase();
+          filtered = filtered.filter(o => 
+            o.name.toLowerCase().includes(q) || 
+            o.projectId.toLowerCase().includes(q)
+          );
+        }
+
+        // 페이지네이션
+        const page = options.page || 1;
+        const limit = options.limit || 10;
+        const total = filtered.length;
+        const start = (page - 1) * limit;
+        const paginated = filtered.slice(start, start + limit);
+
+        resolve({
+          orders: paginated,
+          total,
+          page,
+          limit,
+          hasMore: start + limit < total,
+        });
+      }, 500);
+    });
+  }
+
+  /**
+   * 개별 주문 조회 (더미)
+   */
+  async getOrder(orderId, userId) {
+    return new Promise((resolve, reject) => {
+      setTimeout(() => {
+        const order = this.orders.get(orderId);
+        if (order) {
+          if (order.userId !== userId) {
+            reject(new Error('권한이 없습니다'));
+            return;
+          }
+          resolve(JSON.parse(JSON.stringify(order)));
+        } else {
+          reject(new Error(`Order not found: ${orderId}`));
+        }
+      }, 300);
+    });
+  }
+
+  /**
+   * 새 주문 생성 (더미)
+   */
+  async createOrder(userId, orderData) {
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        const orderId = `order_${Date.now()}`;
+        const projectId = `#2025-${String(this.nextOrderId).padStart(4, '0')}`;
+        this.nextOrderId++;
+
+        const order = {
+          id: orderId,
+          userId,
+          name: `${orderData.name || '미입력'}`,
+          projectId,
+          status: 'waiting',
+          statusLabel: '대기',
+          statusIcon: 'fa-clock',
+          photos: orderData.estimatedPhotos || 0,
+          progress: 0,
+          createdAt: new Date(),
+          date: orderData.date,
+          paymentStatus: 'waiting',
+          amount: (orderData.basePrice * orderData.estimatedPhotos) + (orderData.additionalCost || 0),
+          basePrice: orderData.basePrice,
+          additionalCost: orderData.additionalCost || 0,
+          weddingType: orderData.weddingType,
+          remarks: orderData.remarks || '',
+          timeline: [
+            { date: new Date().toISOString(), event: '주문 생성', status: 'completed' }
+          ]
+        };
+
+        this.orders.set(orderId, order);
+
+        console.log('[ProjectServiceMock] Order created:', order);
+
+        resolve({
+          success: true,
+          orderId,
+          projectId,
+          message: '주문이 생성되었습니다',
+        });
+      }, 500);
+    });
+  }
+
+  /**
+   * 주문 수정 (더미)
+   */
+  async updateOrder(orderId, userId, updates) {
+    return new Promise((resolve, reject) => {
+      setTimeout(() => {
+        const order = this.orders.get(orderId);
+        if (!order) {
+          reject(new Error(`Order not found: ${orderId}`));
+          return;
+        }
+
+        if (order.userId !== userId) {
+          reject(new Error('권한이 없습니다'));
+          return;
+        }
+
+        const updated = { ...order, ...updates, updatedAt: new Date() };
+        this.orders.set(orderId, updated);
+
+        console.log('[ProjectServiceMock] Order updated:', updated);
+
+        resolve({
+          success: true,
+          message: '주문이 수정되었습니다',
+        });
+      }, 500);
+    });
+  }
+
+  /**
+   * 주문 삭제 (더미)
+   */
+  async deleteOrder(orderId, userId) {
+    return new Promise((resolve, reject) => {
+      setTimeout(() => {
+        const order = this.orders.get(orderId);
+        if (!order) {
+          reject(new Error(`Order not found: ${orderId}`));
+          return;
+        }
+
+        if (order.userId !== userId) {
+          reject(new Error('권한이 없습니다'));
+          return;
+        }
+
+        this.orders.delete(orderId);
+
+        console.log('[ProjectServiceMock] Order deleted:', orderId);
+
+        resolve({
+          success: true,
+          message: '주문이 삭제되었습니다',
+        });
+      }, 300);
+    });
+  }
+
+  /**
+   * 주문 상태 업데이트 (더미)
+   */
+  async updateOrderStatus(orderId, status, options = {}) {
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        const order = this.orders.get(orderId);
+        if (order) {
+          order.status = status;
+          if (options.progress !== undefined) {
+            order.progress = options.progress;
+          }
+          if (options.updatedBy) {
+            order.updatedBy = options.updatedBy;
+          }
+
+          console.log('[ProjectServiceMock] Order status updated:', { orderId, status, progress: options.progress });
+        }
+
+        resolve({
+          success: true,
+          message: '주문 상태가 업데이트되었습니다',
+        });
+      }, 300);
+    });
+  }
+
+  /**
+   * 결제 상태 업데이트 (더미)
+   */
+  async updatePaymentStatus(orderId, paymentStatus, paymentData = {}) {
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        const order = this.orders.get(orderId);
+        if (order) {
+          order.paymentStatus = paymentStatus;
+          if (paymentData.transactionId) {
+            order.transactionId = paymentData.transactionId;
+          }
+          if (paymentData.processedAt) {
+            order.paymentProcessedAt = paymentData.processedAt;
+          }
+
+          console.log('[ProjectServiceMock] Payment status updated:', { orderId, paymentStatus, ...paymentData });
+        }
+
+        resolve({
+          success: true,
+          message: '결제 상태가 업데이트되었습니다',
+        });
+      }, 300);
+    });
+  }
+
+  /**
+   * 타임라인 항목 추가 (더미)
+   */
+  async addTimelineItem(orderId, timelineItem) {
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        const order = this.orders.get(orderId);
+        if (order && !order.timeline) {
+          order.timeline = [];
+        }
+
+        const item = {
+          id: `timeline_${Date.now()}`,
+          ...timelineItem,
+          date: timelineItem.date || new Date().toISOString(),
+        };
+
+        if (order) {
+          order.timeline.push(item);
+
+          console.log('[ProjectServiceMock] Timeline item added:', item);
+        }
+
+        resolve({
+          success: true,
+          timelineId: item.id,
+          message: '타임라인이 추가되었습니다',
+        });
+      }, 300);
+    });
   }
 }

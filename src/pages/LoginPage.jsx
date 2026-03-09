@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { PrismHeader } from '../components/PrismHeader';
 import { PrismFooter } from '../components/PrismFooter';
 import { useAuth } from '../contexts/AuthContext';
-import { analyticsService } from '../services/AnalyticsService';
 
 export const LoginPage = () => {
   const navigate = useNavigate();
@@ -55,7 +54,6 @@ export const LoginPage = () => {
     setIsLoading(true);
     try {
       await login(formData.email, formData.password);
-      analyticsService.trackLogin('email');
       navigate('/order-list');
     } catch (err) {
       const code = err?.code || '';
@@ -82,7 +80,6 @@ export const LoginPage = () => {
     setIsLoading(true);
     try {
       await loginWithGooglePopup();
-      analyticsService.trackLogin('google');
       navigate('/order-list');
     } catch (err) {
       const code = err?.code || '';
