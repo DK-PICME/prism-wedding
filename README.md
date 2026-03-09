@@ -112,13 +112,58 @@ npm run build
 - [x] GA4 + Smartlook 분석 인프라 - **NEW**
 - [x] 이벤트 추적 시스템 - **NEW**
 
-### Phase 2: 주문 관리 (1주) ⭐⭐⭐⭐
-**상태**: 🔄 진행 중
+### Phase 2: 주문 관리 (2주) ⭐⭐⭐⭐⭐
+**상태**: 🔄 진행 중 (아키텍처 설계 완료, 구현 시작 단계)
 
+#### Phase 2-1: 사진 관리 & 주문 생성 플로우 (1주)
+- [ ] PhotoManagementPage - 사진 관리 (폴더 + Dropbox 스타일 UI)
+  - [ ] Firestore Folder 컬렉션 구조
+  - [ ] Photo 7가지 상태 머신 (PENDING → UPLOADING → PROCESSING → READY 등)
+  - [ ] 실시간 상태 업데이트 (Firestore Listener)
+  - [ ] 우상단 뱃지 UI (스피닝 원, 아이콘)
+  - [ ] 색상 체계 (파란색/주황색 진행, 초록색 성공, 빨강색 실패)
+  - [ ] 에러 처리 (재시도 최대 3회, 지수 백오프)
+- [ ] CreateNewOrderPage - 주문 생성
+  - [ ] 선택된 사진 상태 전달 메커니즘
+  - [ ] 가격 계산 로직 (기본가 + 옵션 + 세금)
+  - [ ] Firestore Order 문서 생성 (Draft 상태)
+  - [ ] 상태 검증 (선택된 사진이 READY 상태인지 확인)
+- [ ] OrderDetailsPage - 견적서 확인
+  - [ ] 주문 정보 동적 로드 (Real-time)
+  - [ ] 사진 복제 상태 표시 (프로그레스 바)
+  - [ ] 타임아웃 카운트다운 (1시간, 클라이언트-서버 시간 동기화)
+  - [ ] 세마포어 관리 (5분마다 Lock Duration 갱신)
+  - [ ] "결제하기" 버튼 (복제 완료 후 활성화)
+
+#### Phase 2-2: 사진 복제 프로세스 (3-4일)
+- [ ] Cloud Function: photoCopyOnOrder (Pub/Sub 트리거)
+  - [ ] Order 문서 생성 이벤트 감지
+  - [ ] Semaphore Lock 획득 (Photo.status = COPYING_TO_ORDER)
+  - [ ] Worker Pool (10-15개) 병렬 복제
+  - [ ] S3: user-uploads → order-storage/{orderId}/ 복제 (15-25초)
+  - [ ] 복제 완료 후 Photo.status = READONLY로 전환
+  - [ ] Order.copyStatus = COMPLETED 업데이트
+  - [ ] **에러 처리: 지수 백오프로 최대 2-3회 재시도**
+    - [ ] 1회 실패: 1초 대기 후 재시도
+    - [ ] 2회 실패: 2초 대기 후 재시도
+    - [ ] 3회 실패: 오류 기록 + 수동 개입 필요 (TODO 참고)
+
+#### Phase 2-3: 에러 정리 & 모니터링 (향후 계획)
+- [ ] TODO: Admin Dashboard - 고아 파일 모니터링
+  - [ ] 고아 파일 목록 조회 (orphan photos/orders)
+  - [ ] 수동 정리 버튼 (선택 삭제)
+  - [ ] 자동 정리 예약 (일주일 후)
+  - [ ] 정리 로그 기록
+- [ ] TODO: Cloud Scheduler - 자동 정리 Cron Job (Phase 3)
+  - [ ] UPLOAD_FAILED: 7일 후 자동 삭제
+  - [ ] PROCESSING_FAILED: 14일 후 자동 삭제 (원본 유지)
+  - [ ] Orphan Order: 1시간 후 자동 취소/정리
+
+#### Phase 2-4: 결제 페이지 (1-2일)
 - [ ] OrderListPage (Firebase 연동)
-- [ ] CreateNewOrderPage (주문 생성)
-- [ ] OrderDetailsPage (상세 정보)
 - [ ] PaymentPage (결제 게이트웨이)
+  - [ ] 진입 조건 검증 (복제 완료, 세마포어 활성 등)
+  - [ ] 카드/계좌이체/휴대폰 결제 지원
 
 ### Phase 3: 샘플 보정 플로우 (2주) ⭐⭐⭐⭐⭐
 **상태**: ✅ UI 완료 / 🔄 Firebase 연동 진행중

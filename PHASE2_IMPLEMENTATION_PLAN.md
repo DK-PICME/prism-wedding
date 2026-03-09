@@ -105,6 +105,77 @@ order_003: 완료 (100% 완료, 결제완료)
 
 ---
 
+## ✅ 아키텍처 결정사항 (V2)
+
+### Cloud Function 트리거 방식 도입 ✅
+
+기존의 복잡한 클라이언트 사이드 타이밍 관리는 제거하고, **Cloud Function + Pub/Sub 트리거** 방식 도입:
+
+```
+Order 문서 생성 (Firestore Write)
+  ↓ 자동 트리거
+Pub/Sub: order.created 이벤트 발행
+  ↓
+Cloud Function: photoCopyOnOrder() 자동 실행
+  ├─ Semaphore Lock 획득 (Photo N개)
+  ├─ Worker Pool (10-15개)로 병렬 복제
+  ├─ 지수 백오프로 재시도 (최대 2-3회)
+  │  ├─ 1회 실패: 1초 대기
+  │  ├─ 2회 실패: 2초 대기
+  │  └─ 3회 실패: 오류 기록 (Admin 수동 처리)
+  ├─ Photo.status: COPYING_TO_ORDER → READONLY
+  └─ Order.copyStatus: PENDING → COMPLETED
+```
+
+**타이밍 이슈 해결:**
+- ✅ 1시간 제한: Order.createdAt + 3600초 (서버 기준, 정확)
+- ✅ 30분 Lock: Photo.lockExpiry 관리 (자동 갱신)
+- ✅ 복제 시간: 15-25초 (Cloud Function 비동기)
+- ✅ OrderDetailsPage: 상태만 Real-time 표시 (계산 X)
+
+### 에러 처리 전략 ✅
+
+**지수 백오프 (Exponential Backoff) 재시도:**
+```
+const retryDelays = [1000, 2000, 4000]; // 1s, 2s, 4s
+최대 재시도: 2-3회
+
+if (첫 번째 실패):
+  → 1초 대기 후 재시도 (2회 시도)
+  
+if (두 번째 실패):
+  → 2초 대기 후 재시도 (3회 시도)
+  
+if (세 번째 실패):
+  → 오류 기록 + 알림 (Admin 수동 개입)
+  → Photo.status = "PROCESSING_FAILED"
+```
+
+### 고아 정리 전략 (TODO) 🔵
+
+**수동 + 자동 혼합 방식:**
+
+```
+PHASE 3 이후: Admin Dashboard 구현
+
+🔴 수동 모니터링 (현재)
+   └─ 운영팀이 필요시 수동으로 정리
+
+🟢 TODO: Admin Dashboard (Phase 3+)
+   ├─ 고아 파일 목록 조회
+   ├─ 수동 선택 정리 버튼
+   ├─ 자동 정리 예약 (7일 후)
+   └─ 정리 로그 기록
+
+🟢 TODO: Cloud Scheduler - 자동 정리 (Phase 4+)
+   ├─ UPLOAD_FAILED: 7일 후 자동 삭제
+   ├─ PROCESSING_FAILED: 14일 후 자동 삭제
+   ├─ Orphan Order: 1시간 후 자동 취소
+   └─ 매일 자정 실행
+```
+
+---
+
 ## 🚀 다음 단계 (실제 구현)
 
 ### Phase 2-1: OrderListPage 구현 (1.5시간)
