@@ -107,8 +107,10 @@ export function AuthProvider({ children }) {
       setError(null);
       const result = await signInWithEmailAndPassword(auth, email, password);
 
-      // 이메일 검증 확인
-      if (!result.user.emailVerified) {
+      // 개발/에뮬레이터 환경에서는 이메일 검증 건너뛰기
+      const isDev = import.meta.env.VITE_USE_MOCK === 'true' || import.meta.env.VITE_USE_EMULATOR === 'true';
+      
+      if (!isDev && !result.user.emailVerified) {
         setError('이메일 인증이 필요합니다. 등록된 이메일의 인증 링크를 클릭해주세요.');
         await signOut(auth);
         throw new Error('이메일 미인증');
