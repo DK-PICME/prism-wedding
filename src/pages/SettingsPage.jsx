@@ -1,6 +1,7 @@
 import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { PrismHeader } from '../components/PrismHeader';
 import { PrismFooter } from '../components/PrismFooter';
 
@@ -91,9 +92,6 @@ export const SettingsPage = () => {
       reader.readAsDataURL(file);
 
       // Firebase Storage에 업로드
-      const { storage } = await import('firebase/app');
-      const { getStorage, ref, uploadBytes, getDownloadURL } = await import('firebase/storage');
-      
       const firebaseApp = (await import('../config/firebase')).default;
       const firebaseStorage = getStorage(firebaseApp);
       const fileName = `users/${currentUser.uid}/avatar_${Date.now()}`;
@@ -117,6 +115,8 @@ export const SettingsPage = () => {
       }
     }
   };
+
+  const handleSaveProfile = async () => {
     if (!displayNameInput.trim()) {
       setProfileError('이름을 입력해주세요');
       return;
