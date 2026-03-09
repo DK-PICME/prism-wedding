@@ -1,119 +1,185 @@
 import { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { PrismHeader } from '../components/PrismHeader';
 import { PrismFooter } from '../components/PrismFooter';
 import { useAuth } from '../contexts/AuthContext';
-import PhotoService from '../services/PhotoService';
-import StorageService from '../services/StorageService';
-import analyticsService from '../services/AnalyticsService';
+import ProjectServiceMock from '../services/ProjectServiceMock.js';
+import PhotoService from '../services/PhotoService.js';
+import StorageService from '../services/StorageService.js';
+import analyticsService from '../services/AnalyticsService.js';
 
+/**
+ * PhotoManagementPage - 사진 관리 페이지
+ * 
+ * Project 기반 섹션 UI:
+ * - 각 Project는 접을 수 있는 섹션
+ * - 섹션 헤더: 프로젝트명 + 생성날짜 + 접기/펴기 + 수정/삭제
+ * - 사진 그리드 또는 업로드 유도 UI
+ * - 사진 선택 체크박스 (READY + !isLocked만)
+ * - 하단: 선택 카운트 + 주문 생성 버튼
+ */
 export const PhotoManagementPage = () => {
+  const navigate = useNavigate();
   const { currentUser } = useAuth();
   const fileInputRef = useRef(null);
-  const dropZoneRef = useRef(null);
+  const projectService = ProjectServiceMock; // Mock 사용 (나중에 Api로 전환)
 
-  // 상태 관리
-  const [folderId] = useState('default-folder'); // 나중에 폴더 선택 기능 추가 가능
-  const [photos, setPhotos] = useState([]);
-  const [stats, setStats] = useState({
-    total: 0,
-    ready: 0,
-    uploading: 0,
-    processing: 0,
-    failed: 0,
-    totalSize: 0,
-  });
+  // ─── 상태 관리 ─────────────────────────────────────────
+  const [projects, setProjects] = useState([]);
+  const [photosByProject, setPhotosByProject] = useState({}); // {projectId: [photos]}
+  const [expandedProjects, setExpandedProjects] = useState({}); // {projectId: boolean}
+  const [selectedPhotoIds, setSelectedPhotoIds] = useState(new Set());
+  const [uploadingFiles, setUploadingFiles] = useState({}); // {photoId: progress}
   const [loading, setLoading] = useState(true);
-  const [uploadingFiles, setUploadingFiles] = useState({}); // {photoDocId: progress}
-  const [viewMode, setViewMode] = useState('grid'); // 'grid' | 'list'
   const [error, setError] = useState(null);
+  const [showNewProjectDialog, setShowNewProjectDialog] = useState(false);
+  const [newProjectName, setNewProjectName] = useState('');
 
-  // 초기 로드
+  // ─── 초기 로드 ─────────────────────────────────────────
   useEffect(() => {
     if (currentUser) {
-      loadPhotos();
+      loadProjects();
       analyticsService.track('photo_management_viewed');
     }
   }, [currentUser]);
 
   /**
-   * 사진 목록 로드
+   * 프로젝트 목록 로드 (실시간 리스너)
    */
-  const loadPhotos = async () => {
+  const loadProjects = () => {
     try {
       setLoading(true);
       setError(null);
 
-      const photos = await PhotoService.getPhotosByFolder(currentUser.uid, folderId);
-      const photoStats = await PhotoService.getPhotoStats(currentUser.uid, folderId);
+      // 실시간 리스너 등록
+      const unsubscribe = projectService.onProjectsChanged(
+        currentUser.uid,
+        (projects) => {
+          setProjects(projects);
+          setLoading(false);
 
-      setPhotos(photos);
-      setStats(photoStats);
+          // 각 프로젝트의 사진 로드
+          projects.forEach((project) => {
+            loadPhotosByProject(project.id);
+          });
+
+          // 프로젝트별로 기본적으로 펴기 상태로
+          const expanded = {};
+          projects.forEach((project) => {
+            expanded[project.id] = true;
+          });
+          setExpandedProjects(expanded);
+        }
+      );
+
+      // cleanup: 언마운트 시 리스너 해제
+      return unsubscribe;
     } catch (err) {
-      console.error('❌ 사진 로드 실패:', err);
+      console.error('❌ 프로젝트 로드 실패:', err);
       setError(err.message);
-      analyticsService.trackError('photo_load_failed', err.message);
-    } finally {
+      analyticsService.trackError('project_load_failed', err.message);
       setLoading(false);
     }
   };
 
   /**
-   * 드래그 오버 처리
+   * 프로젝트별 사진 로드 (실시간 리스너)
    */
-  const handleDragOver = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    dropZoneRef.current?.classList.add('border-neutral-500', 'bg-neutral-50');
+  const loadPhotosByProject = (projectId) => {
+    try {
+      const unsubscribe = projectService.onPhotosChanged(projectId, (photos) => {
+        setPhotosByProject((prev) => ({
+          ...prev,
+          [projectId]: photos,
+        }));
+      });
+
+      return unsubscribe;
+    } catch (err) {
+      console.error('❌ 사진 로드 실패:', err);
+    }
   };
 
-  /**
-   * 드래그 리브 처리
-   */
-  const handleDragLeave = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    dropZoneRef.current?.classList.remove('border-neutral-500', 'bg-neutral-50');
-  };
+  // ─── 프로젝트 관리 ─────────────────────────────────────────
 
   /**
-   * 드래그 드롭 처리
+   * 새 프로젝트 생성
    */
-  const handleDrop = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    dropZoneRef.current?.classList.remove('border-neutral-500', 'bg-neutral-50');
+  const handleCreateProject = async () => {
+    if (!newProjectName.trim()) {
+      setError('프로젝트명을 입력해주세요.');
+      return;
+    }
 
-    const files = Array.from(e.dataTransfer.files);
-    if (files.length > 0) {
-      handleFileSelect(files);
+    try {
+      setError(null);
+      const result = await projectService.createProject(currentUser.uid, {
+        name: newProjectName,
+      });
+
+      if (result.success) {
+        setNewProjectName('');
+        setShowNewProjectDialog(false);
+        analyticsService.track('project_created', { name: newProjectName });
+      } else {
+        setError(result.message);
+      }
+    } catch (err) {
+      console.error('❌ 프로젝트 생성 실패:', err);
+      setError(err.message);
+      analyticsService.trackError('project_creation_failed', err.message);
     }
   };
 
   /**
-   * 파일 입력 처리
+   * 프로젝트 삭제
    */
-  const handleFileInputChange = (e) => {
-    const files = Array.from(e.target.files || []);
-    if (files.length > 0) {
-      handleFileSelect(files);
+  const handleDeleteProject = async (projectId) => {
+    const confirmed = window.confirm(
+      '이 프로젝트와 모든 사진이 삭제됩니다. 계속하시겠습니까?'
+    );
+    if (!confirmed) return;
+
+    try {
+      setError(null);
+      const result = await projectService.deleteProject(projectId, currentUser.uid);
+
+      if (result.success) {
+        analyticsService.track('project_deleted', {
+          projectId,
+          deletedPhotos: result.deletedPhotoCount,
+        });
+      } else {
+        setError(result.message);
+      }
+    } catch (err) {
+      console.error('❌ 프로젝트 삭제 실패:', err);
+      setError(err.message);
     }
   };
 
   /**
-   * 파일 선택 처리 (드래그/입력 공통)
+   * 프로젝트 섹션 토글 (접기/펴기)
    */
-  const handleFileSelect = async (files) => {
+  const toggleProjectSection = (projectId) => {
+    setExpandedProjects((prev) => ({
+      ...prev,
+      [projectId]: !prev[projectId],
+    }));
+  };
+
+  // ─── 사진 관리 ─────────────────────────────────────────
+
+  /**
+   * 파일 선택 처리
+   */
+  const handleFileSelect = async (files, projectId) => {
     try {
       setError(null);
 
       for (const file of files) {
-        await uploadPhotoFile(file);
+        await uploadPhotoFile(file, projectId);
       }
-
-      // 업로드 완료 후 목록 새로고침
-      setTimeout(() => {
-        loadPhotos();
-      }, 1000);
     } catch (err) {
       console.error('❌ 파일 선택 처리 실패:', err);
       setError(err.message);
@@ -124,12 +190,12 @@ export const PhotoManagementPage = () => {
   /**
    * 개별 사진 파일 업로드
    */
-  const uploadPhotoFile = async (file) => {
+  const uploadPhotoFile = async (file, projectId) => {
     try {
-      // 1. Firestore에 사진 문서 생성 (UPLOADING 상태)
+      // 1. Firestore에 사진 문서 생성
       const photoDoc = await PhotoService.createPhotoDocument(
         currentUser.uid,
-        folderId,
+        projectId,
         file.name,
         file.size,
         file.name.split('.').pop()
@@ -155,7 +221,7 @@ export const PhotoManagementPage = () => {
             [photoDoc.docId]: progress,
           }));
 
-          // 진행률 Firestore 업데이트 (선택사항: 너무 자주 업데이트하면 비용 증가)
+          // 진행률 업데이트 (20% 단위)
           if (progress % 20 === 0) {
             PhotoService.updateUploadProgress(photoDoc.docId, progress);
           }
@@ -163,12 +229,8 @@ export const PhotoManagementPage = () => {
       );
 
       // 3. 업로드 완료 처리
-      await PhotoService.markUploadCompleted(
-        photoDoc.docId,
-        uploadResult.url
-      );
+      await PhotoService.markUploadCompleted(photoDoc.docId, uploadResult.url);
 
-      // 4. 업로드 상태 제거
       setUploadingFiles((prev) => {
         const newState = { ...prev };
         delete newState[photoDoc.docId];
@@ -177,40 +239,57 @@ export const PhotoManagementPage = () => {
 
       analyticsService.track('photo_upload_completed', {
         fileName: file.name,
-        fileSize: file.size,
       });
 
       console.log(`✅ 사진 업로드 완료: ${file.name}`);
     } catch (err) {
       console.error(`❌ 사진 업로드 실패: ${file.name}`, err);
-
-      // 실패 처리 (이미 생성된 경우)
-      if (uploadingFiles[file.name]) {
-        // TODO: photoDocId로 실패 표시
-      }
-
       analyticsService.trackError('photo_upload_error', err.message);
       throw err;
     }
   };
 
   /**
+   * 사진 선택 토글
+   */
+  const togglePhotoSelection = (photoId, status, isLocked) => {
+    // READY + !isLocked만 선택 가능
+    if (status !== 'READY' || isLocked) {
+      return;
+    }
+
+    const newSelected = new Set(selectedPhotoIds);
+    if (newSelected.has(photoId)) {
+      newSelected.delete(photoId);
+    } else {
+      newSelected.add(photoId);
+    }
+    setSelectedPhotoIds(newSelected);
+
+    analyticsService.track('photo_selected', {
+      photoId,
+      totalSelected: newSelected.size,
+    });
+  };
+
+  /**
    * 사진 삭제
    */
-  const handleDeletePhoto = async (photoId, photoDocId) => {
+  const handleDeletePhoto = async (photoId, docId) => {
+    const confirmed = window.confirm('이 사진을 삭제하시겠습니까?');
+    if (!confirmed) return;
+
     try {
-      const confirmed = window.confirm('이 사진을 삭제하시겠습니까?');
-      if (!confirmed) return;
-
       setLoading(true);
-      await PhotoService.deletePhoto(photoDocId);
-      setPhotos((prev) => prev.filter((p) => p.id !== photoDocId));
-
-      analyticsService.track('photo_deleted', {
-        photoId: photoDocId,
+      await PhotoService.deletePhoto(docId);
+      setSelectedPhotoIds((prev) => {
+        const newSet = new Set(prev);
+        newSet.delete(photoId);
+        return newSet;
       });
 
-      console.log(`✅ 사진 삭제 완료: ${photoDocId}`);
+      analyticsService.track('photo_deleted', { photoId: docId });
+      console.log(`✅ 사진 삭제 완료: ${docId}`);
     } catch (err) {
       console.error('❌ 사진 삭제 실패:', err);
       setError(err.message);
@@ -219,6 +298,29 @@ export const PhotoManagementPage = () => {
       setLoading(false);
     }
   };
+
+  /**
+   * 주문 생성 진행
+   */
+  const handleCreateOrder = () => {
+    if (selectedPhotoIds.size === 0) {
+      setError('최소 1개 이상의 사진을 선택해주세요.');
+      return;
+    }
+
+    analyticsService.track('order_creation_started', {
+      photoCount: selectedPhotoIds.size,
+    });
+
+    // CreateNewOrderPage로 이동 (선택된 사진 정보 전달)
+    navigate('/create-new-order', {
+      state: {
+        selectedPhotoIds: Array.from(selectedPhotoIds),
+      },
+    });
+  };
+
+  // ─── 유틸리티 함수 ─────────────────────────────────────────
 
   /**
    * 바이트를 MB로 변환
@@ -231,6 +333,24 @@ export const PhotoManagementPage = () => {
     return (bytes / Math.pow(k, i)).toFixed(2) + ' ' + sizes[i];
   };
 
+  /**
+   * 날짜 포맷
+   */
+  const formatDate = (date) => {
+    if (!date) return '';
+    if (typeof date === 'object' && date.toDate) {
+      date = date.toDate();
+    }
+    if (typeof date === 'string') {
+      date = new Date(date);
+    }
+    return new Intl.DateTimeFormat('ko-KR', {
+      year: 'numeric',
+      month: 'numeric',
+      day: 'numeric',
+    }).format(date);
+  };
+
   if (!currentUser) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-white">
@@ -241,275 +361,368 @@ export const PhotoManagementPage = () => {
     );
   }
 
+  const projectsWithPhotos = projects.map((project) => ({
+    ...project,
+    photos: photosByProject[project.id] || [],
+  }));
+
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-neutral-50">
       <PrismHeader activeNav="photo-management" />
 
-      <main className="pt-[73px]">
+      <main className="pt-[73px] pb-[100px]">
         <div className="px-8 py-8">
           <div className="max-w-[1376px] mx-auto">
-            {/* 헤더 */}
-            <div className="flex items-center justify-between mb-6">
-              <div>
-                <h1 className="text-3xl text-neutral-900 mb-2">사진 관리</h1>
-                <p className="text-neutral-600">웨딩 사진들을 보관하고 관리하세요</p>
-              </div>
-
-              <div className="flex items-center gap-4">
-                <a
-                  href="/create-new-order"
-                  className="flex items-center gap-2 px-4 py-2 border border-neutral-300 hover:bg-neutral-50 rounded-lg transition-colors text-sm cursor-pointer"
-                >
-                  <i className="fa-solid fa-plus"></i>
-                  새 주문 만들기
-                </a>
-              </div>
+            {/* 페이지 헤더 */}
+            <div className="mb-8">
+              <h1 className="text-3xl font-bold text-neutral-900 mb-2">사진 관리</h1>
+              <p className="text-neutral-600">웨딩 사진들을 프로젝트별로 보관하고 관리하세요</p>
             </div>
 
             {/* 에러 메시지 */}
             {error && (
-              <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
-                <i className="fa-solid fa-circle-exclamation mr-2"></i>
-                {error}
+              <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm flex justify-between items-center">
+                <div>
+                  <i className="fa-solid fa-circle-exclamation mr-2"></i>
+                  {error}
+                </div>
                 <button
                   onClick={() => setError(null)}
-                  className="ml-auto text-red-600 hover:text-red-800"
+                  className="text-red-600 hover:text-red-800"
                 >
                   ✕
                 </button>
               </div>
             )}
 
-            {/* 통계 카드 */}
-            <div className="grid grid-cols-5 gap-4 mb-6">
-              {[
-                { label: '총 사진', count: stats.total, icon: 'fa-images', color: 'neutral' },
-                { label: '준비완료', count: stats.ready, icon: 'fa-check-circle', color: 'green' },
-                { label: '업로드 중', count: stats.uploading, icon: 'fa-spinner', color: 'blue' },
-                { label: '처리 중', count: stats.processing, icon: 'fa-cog', color: 'purple' },
-                { label: '실패', count: stats.failed, icon: 'fa-circle-xmark', color: 'red' },
-              ].map((stat, idx) => {
-                const colorClasses = {
-                  neutral: 'bg-neutral-50 text-neutral-900',
-                  green: 'bg-green-50 text-green-700',
-                  blue: 'bg-blue-50 text-blue-700',
-                  purple: 'bg-purple-50 text-purple-700',
-                  red: 'bg-red-50 text-red-700',
-                };
-                return (
-                  <div key={idx} className={`border border-neutral-200 rounded-xl p-4 ${colorClasses[stat.color]}`}>
-                    <div className="flex items-center gap-3">
-                      <i className={`fa-solid ${stat.icon} text-xl`}></i>
-                      <div>
-                        <div className="text-2xl font-bold">{stat.count}</div>
-                        <div className="text-xs opacity-75">{stat.label}</div>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-
-            {/* 사진 목록 */}
-            <div className="bg-white border border-neutral-200 rounded-2xl p-6">
-              {/* 도구모음 */}
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl text-neutral-900">사진 목록</h2>
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => setViewMode('grid')}
-                    className={`flex items-center gap-2 px-3 py-2 text-sm rounded-lg transition-colors ${
-                      viewMode === 'grid'
-                        ? 'border border-neutral-300 bg-neutral-900 text-white'
-                        : 'text-neutral-600 hover:bg-neutral-50'
-                    }`}
-                  >
-                    <i className="fa-solid fa-grip"></i>
-                    그리드
-                  </button>
-                  <button
-                    onClick={() => setViewMode('list')}
-                    className={`flex items-center gap-2 px-3 py-2 text-sm rounded-lg transition-colors ${
-                      viewMode === 'list'
-                        ? 'border border-neutral-300 bg-neutral-900 text-white'
-                        : 'text-neutral-600 hover:bg-neutral-50'
-                    }`}
-                  >
-                    <i className="fa-solid fa-list"></i>
-                    목록
-                  </button>
+            {/* 로딩 상태 */}
+            {loading && (
+              <div className="flex items-center justify-center py-20">
+                <div className="text-center">
+                  <i className="fa-solid fa-spinner text-3xl text-neutral-400 mb-4 animate-spin"></i>
+                  <p className="text-neutral-600">프로젝트를 로드 중입니다...</p>
                 </div>
               </div>
+            )}
 
-              {/* 드래그 드롭 영역 */}
-              <div
-                ref={dropZoneRef}
-                onDragOver={handleDragOver}
-                onDragLeave={handleDragLeave}
-                onDrop={handleDrop}
-                className="border-2 border-dashed border-neutral-300 rounded-xl p-12 text-center mb-6 hover:border-neutral-400 transition-colors cursor-pointer"
-                onClick={() => fileInputRef.current?.click()}
-              >
-                <div className="flex items-center justify-center w-16 h-16 bg-neutral-100 rounded-full mx-auto mb-4">
-                  <i className="fa-solid fa-cloud-arrow-up text-neutral-500 text-2xl"></i>
-                </div>
-                <h3 className="text-lg text-neutral-900 mb-2">사진을 드래그해서 업로드하세요</h3>
-                <p className="text-neutral-600 mb-4">JPG, PNG, WebP 파일을 지원합니다 (최대 10MB)</p>
-                <button className="px-6 py-2 bg-neutral-900 hover:bg-neutral-800 text-white rounded-lg transition-colors">
-                  파일 선택
-                </button>
-
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  multiple
-                  accept="image/jpeg,image/png,image/webp"
-                  onChange={handleFileInputChange}
-                  className="hidden"
-                />
-              </div>
-
-              {/* 로딩 상태 */}
-              {loading && (
-                <div className="flex items-center justify-center py-12">
-                  <div className="text-center">
-                    <i className="fa-solid fa-spinner text-2xl text-neutral-400 mb-2 animate-spin"></i>
-                    <p className="text-neutral-600">사진을 로드 중입니다...</p>
+            {/* 프로젝트 리스트 */}
+            {!loading && (
+              <>
+                {projectsWithPhotos.length === 0 ? (
+                  <div className="bg-white border border-neutral-200 rounded-2xl p-12 text-center">
+                    <i className="fa-solid fa-inbox text-4xl text-neutral-300 mb-4"></i>
+                    <p className="text-neutral-600 mb-6">아직 프로젝트가 없습니다.</p>
+                    <button
+                      onClick={() => setShowNewProjectDialog(true)}
+                      className="px-6 py-2 bg-neutral-900 hover:bg-neutral-800 text-white rounded-lg transition-colors"
+                    >
+                      새 프로젝트 생성
+                    </button>
                   </div>
-                </div>
-              )}
+                ) : (
+                  <div className="space-y-6">
+                    {projectsWithPhotos.map((project) => (
+                      <ProjectSection
+                        key={project.id}
+                        project={project}
+                        photos={project.photos}
+                        isExpanded={expandedProjects[project.id] || false}
+                        onToggle={() => toggleProjectSection(project.id)}
+                        onDelete={() => handleDeleteProject(project.id)}
+                        onFileSelect={(files) => handleFileSelect(files, project.id)}
+                        selectedPhotoIds={selectedPhotoIds}
+                        uploadingFiles={uploadingFiles}
+                        onPhotoSelect={(photoId, status, isLocked) =>
+                          togglePhotoSelection(photoId, status, isLocked)
+                        }
+                        onPhotoDelete={(photoId, docId) =>
+                          handleDeletePhoto(photoId, docId)
+                        }
+                        formatFileSize={formatFileSize}
+                      />
+                    ))}
 
-              {/* 사진 없음 상태 */}
-              {!loading && photos.length === 0 && (
-                <div className="flex items-center justify-center py-12">
-                  <div className="text-center">
-                    <i className="fa-solid fa-image text-4xl text-neutral-300 mb-2"></i>
-                    <p className="text-neutral-600">아직 업로드된 사진이 없습니다.</p>
+                    {/* 새 프로젝트 추가 */}
+                    <button
+                      onClick={() => setShowNewProjectDialog(true)}
+                      className="w-full p-6 border-2 border-dashed border-neutral-300 rounded-2xl text-neutral-600 hover:text-neutral-900 hover:border-neutral-400 transition-colors flex items-center justify-center gap-2"
+                    >
+                      <i className="fa-solid fa-plus"></i>
+                      새 프로젝트 추가
+                    </button>
                   </div>
-                </div>
-              )}
-
-              {/* 그리드 뷰 */}
-              {!loading && photos.length > 0 && viewMode === 'grid' && (
-                <div className="grid grid-cols-6 gap-4">
-                  {photos.map((photo) => (
-                    <div key={photo.id} className="relative group">
-                      <div className="aspect-square bg-neutral-200 rounded-lg overflow-hidden">
-                        {photo.uploadedUrl ? (
-                          <img
-                            src={photo.uploadedUrl}
-                            alt={photo.fileName}
-                            className="w-full h-full object-cover"
-                          />
-                        ) : (
-                          <div className="w-full h-full bg-gradient-to-br from-neutral-300 to-neutral-400 flex items-center justify-center">
-                            <span className="text-neutral-600 text-xs text-center px-2">{photo.fileName}</span>
-                          </div>
-                        )}
-
-                        {/* 상태 배지 */}
-                        <div className={`absolute top-2 left-2 px-2 py-1 rounded text-xs font-medium ${PhotoService.getStatusColor(photo.status)}`}>
-                          {PhotoService.getStatusLabel(photo.status)}
-                        </div>
-
-                        {/* 진행률 */}
-                        {uploadingFiles[photo.id] !== undefined && (
-                          <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center rounded-lg">
-                            <div className="text-center">
-                              <div className="text-white text-sm font-bold mb-1">{Math.round(uploadingFiles[photo.id])}%</div>
-                              <i className="fa-solid fa-spinner text-white text-lg animate-spin"></i>
-                            </div>
-                          </div>
-                        )}
-
-                        {/* 호버 액션 */}
-                        {photo.status === 'READY' && !uploadingFiles[photo.id] && (
-                          <>
-                            <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 rounded-lg transition-all"></div>
-                            <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">
-                              <button
-                                onClick={() => handleDeletePhoto(photo.id, photo.id)}
-                                className="p-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors"
-                                title="삭제"
-                              >
-                                <i className="fa-solid fa-trash text-xs"></i>
-                              </button>
-                            </div>
-                          </>
-                        )}
-                      </div>
-
-                      {/* 파일 정보 */}
-                      <div className="mt-2 text-xs text-neutral-600 truncate" title={photo.fileName}>
-                        {photo.fileName}
-                      </div>
-                      <div className="text-xs text-neutral-500">{formatFileSize(photo.fileSize)}</div>
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {/* 목록 뷰 */}
-              {!loading && photos.length > 0 && viewMode === 'list' && (
-                <div className="overflow-x-auto">
-                  <table className="w-full text-sm">
-                    <thead className="border-b border-neutral-200">
-                      <tr>
-                        <th className="text-left py-3 px-4 text-neutral-700 font-medium">파일명</th>
-                        <th className="text-left py-3 px-4 text-neutral-700 font-medium">크기</th>
-                        <th className="text-left py-3 px-4 text-neutral-700 font-medium">상태</th>
-                        <th className="text-left py-3 px-4 text-neutral-700 font-medium">업로드</th>
-                        <th className="text-left py-3 px-4 text-neutral-700 font-medium">작업</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {photos.map((photo) => (
-                        <tr key={photo.id} className="border-b border-neutral-100 hover:bg-neutral-50">
-                          <td className="py-3 px-4 text-neutral-900 truncate">{photo.fileName}</td>
-                          <td className="py-3 px-4 text-neutral-600">{formatFileSize(photo.fileSize)}</td>
-                          <td className="py-3 px-4">
-                            <span className={`inline-block px-2 py-1 rounded text-xs font-medium ${PhotoService.getStatusColor(photo.status)}`}>
-                              {PhotoService.getStatusLabel(photo.status)}
-                            </span>
-                          </td>
-                          <td className="py-3 px-4">
-                            {uploadingFiles[photo.id] !== undefined ? (
-                              <div className="flex items-center gap-2">
-                                <div className="w-24 h-2 bg-neutral-200 rounded-full overflow-hidden">
-                                  <div
-                                    className="h-full bg-blue-500 transition-all"
-                                    style={{ width: `${uploadingFiles[photo.id]}%` }}
-                                  ></div>
-                                </div>
-                                <span className="text-xs text-neutral-600">{Math.round(uploadingFiles[photo.id])}%</span>
-                              </div>
-                            ) : (
-                              <span className="text-neutral-500">완료</span>
-                            )}
-                          </td>
-                          <td className="py-3 px-4">
-                            {photo.status === 'READY' && !uploadingFiles[photo.id] && (
-                              <button
-                                onClick={() => handleDeletePhoto(photo.id, photo.id)}
-                                className="text-red-600 hover:text-red-800 transition-colors"
-                                title="삭제"
-                              >
-                                <i className="fa-solid fa-trash"></i>
-                              </button>
-                            )}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-            </div>
+                )}
+              </>
+            )}
           </div>
         </div>
       </main>
 
+      {/* 새 프로젝트 다이얼로그 */}
+      {showNewProjectDialog && (
+        <NewProjectDialog
+          projectName={newProjectName}
+          onNameChange={setNewProjectName}
+          onCreate={handleCreateProject}
+          onClose={() => {
+            setShowNewProjectDialog(false);
+            setNewProjectName('');
+          }}
+        />
+      )}
+
+      {/* 하단 액션 바 */}
+      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-neutral-200 px-8 py-4">
+        <div className="max-w-[1376px] mx-auto flex items-center justify-between">
+          <div className="text-sm text-neutral-600">
+            선택됨: <span className="font-bold text-neutral-900">{selectedPhotoIds.size}</span>개
+          </div>
+          <button
+            onClick={handleCreateOrder}
+            disabled={selectedPhotoIds.size === 0}
+            className={`px-6 py-2 rounded-lg transition-colors ${
+              selectedPhotoIds.size > 0
+                ? 'bg-neutral-900 hover:bg-neutral-800 text-white'
+                : 'bg-neutral-200 text-neutral-400 cursor-not-allowed'
+            }`}
+          >
+            주문 생성
+          </button>
+        </div>
+      </div>
+
       <PrismFooter />
+    </div>
+  );
+};
+
+/**
+ * 프로젝트 섹션 컴포넌트
+ */
+const ProjectSection = ({
+  project,
+  photos,
+  isExpanded,
+  onToggle,
+  onDelete,
+  onFileSelect,
+  selectedPhotoIds,
+  uploadingFiles,
+  onPhotoSelect,
+  onPhotoDelete,
+  formatFileSize,
+}) => {
+  const fileInputRef = useRef(null);
+
+  return (
+    <div className="bg-white border border-neutral-200 rounded-2xl overflow-hidden">
+      {/* 섹션 헤더 */}
+      <div className="bg-neutral-50 border-b border-neutral-200 px-6 py-4 flex items-center justify-between">
+        <div className="flex items-center gap-4 flex-1">
+          <button
+            onClick={onToggle}
+            className="text-neutral-600 hover:text-neutral-900 transition-colors"
+          >
+            <i className={`fa-solid fa-chevron-${isExpanded ? 'down' : 'right'}`}></i>
+          </button>
+          <div>
+            <h3 className="font-semibold text-neutral-900">{project.name}</h3>
+            <p className="text-xs text-neutral-500">
+              {new Date(project.createdAt?.seconds ? project.createdAt.seconds * 1000 : project.createdAt).toLocaleDateString('ko-KR')}
+            </p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <button
+            onClick={onDelete}
+            className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+            title="삭제"
+          >
+            <i className="fa-solid fa-trash"></i>
+          </button>
+        </div>
+      </div>
+
+      {/* 섹션 바디 (접혀있으면 숨김) */}
+      {isExpanded && (
+        <div className="p-6">
+          {photos.length === 0 ? (
+            // 비어있을 때 업로드 유도
+            <div
+              onClick={() => fileInputRef.current?.click()}
+              className="border-2 border-dashed border-neutral-300 rounded-xl p-12 text-center hover:border-neutral-400 transition-colors cursor-pointer"
+            >
+              <div className="flex items-center justify-center w-16 h-16 bg-neutral-100 rounded-full mx-auto mb-4">
+                <i className="fa-solid fa-cloud-arrow-up text-neutral-500 text-2xl"></i>
+              </div>
+              <h4 className="text-lg font-medium text-neutral-900 mb-2">사진을 드래그해서 업로드하세요</h4>
+              <p className="text-neutral-600 mb-4">JPG, PNG, WebP 파일을 지원합니다 (최대 10MB)</p>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  fileInputRef.current?.click();
+                }}
+                className="px-6 py-2 bg-neutral-900 hover:bg-neutral-800 text-white rounded-lg transition-colors"
+              >
+                파일 선택
+              </button>
+              <input
+                ref={fileInputRef}
+                type="file"
+                multiple
+                accept="image/jpeg,image/png,image/webp"
+                onChange={(e) => {
+                  const files = Array.from(e.target.files || []);
+                  if (files.length > 0) {
+                    onFileSelect(files);
+                  }
+                }}
+                className="hidden"
+              />
+            </div>
+          ) : (
+            // 사진 그리드
+            <>
+              <div className="grid grid-cols-6 gap-4">
+                {photos.map((photo) => (
+                  <PhotoCard
+                    key={photo.id}
+                    photo={photo}
+                    isSelected={selectedPhotoIds.has(photo.id)}
+                    uploadProgress={uploadingFiles[photo.id]}
+                    onSelect={onPhotoSelect}
+                    onDelete={onPhotoDelete}
+                    formatFileSize={formatFileSize}
+                  />
+                ))}
+              </div>
+            </>
+          )}
+        </div>
+      )}
+    </div>
+  );
+};
+
+/**
+ * 사진 카드 컴포넌트
+ */
+const PhotoCard = ({
+  photo,
+  isSelected,
+  uploadProgress,
+  onSelect,
+  onDelete,
+  formatFileSize,
+}) => {
+  const canSelect = photo.status === 'READY' && !photo.isLocked;
+
+  return (
+    <div className="relative group">
+      <div className="aspect-square bg-neutral-200 rounded-lg overflow-hidden relative">
+        {/* 사진 이미지 */}
+        {photo.uploadedUrl ? (
+          <img
+            src={photo.uploadedUrl}
+            alt={photo.fileName}
+            className="w-full h-full object-cover"
+          />
+        ) : (
+          <div className="w-full h-full bg-gradient-to-br from-neutral-300 to-neutral-400 flex items-center justify-center">
+            <span className="text-neutral-600 text-xs text-center px-2">{photo.fileName}</span>
+          </div>
+        )}
+
+        {/* 상태 배지 */}
+        <div className={`absolute top-2 left-2 px-2 py-1 rounded text-xs font-medium ${PhotoService.getStatusColor(photo.status)}`}>
+          {PhotoService.getStatusLabel(photo.status)}
+        </div>
+
+        {/* 진행률 */}
+        {uploadProgress !== undefined && (
+          <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center rounded-lg">
+            <div className="text-center">
+              <div className="text-white text-sm font-bold mb-1">{Math.round(uploadProgress)}%</div>
+              <i className="fa-solid fa-spinner text-white text-lg animate-spin"></i>
+            </div>
+          </div>
+        )}
+
+        {/* 체크박스 & 호버 액션 */}
+        {canSelect && uploadProgress === undefined && (
+          <>
+            <div className="absolute top-2 right-2">
+              <input
+                type="checkbox"
+                checked={isSelected}
+                onChange={(e) => {
+                  e.stopPropagation();
+                  onSelect(photo.id, photo.status, photo.isLocked);
+                }}
+                className="w-5 h-5 cursor-pointer"
+              />
+            </div>
+
+            <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 rounded-lg transition-all"></div>
+
+            <div className="absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+              <button
+                onClick={() => onDelete(photo.id, photo.id)}
+                className="p-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors"
+                title="삭제"
+              >
+                <i className="fa-solid fa-trash text-xs"></i>
+              </button>
+            </div>
+          </>
+        )}
+      </div>
+
+      {/* 파일 정보 */}
+      <div className="mt-2 text-xs text-neutral-600 truncate" title={photo.fileName}>
+        {photo.fileName}
+      </div>
+      <div className="text-xs text-neutral-500">{formatFileSize(photo.fileSize)}</div>
+    </div>
+  );
+};
+
+/**
+ * 새 프로젝트 다이얼로그
+ */
+const NewProjectDialog = ({ projectName, onNameChange, onCreate, onClose }) => {
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+        <h2 className="text-xl font-bold text-neutral-900 mb-4">새 프로젝트</h2>
+
+        <input
+          type="text"
+          value={projectName}
+          onChange={(e) => onNameChange(e.target.value)}
+          placeholder="프로젝트명을 입력하세요"
+          className="w-full px-4 py-2 border border-neutral-300 rounded-lg mb-6 focus:outline-none focus:ring-2 focus:ring-neutral-900"
+          onKeyPress={(e) => {
+            if (e.key === 'Enter') onCreate();
+          }}
+        />
+
+        <div className="flex gap-3 justify-end">
+          <button
+            onClick={onClose}
+            className="px-4 py-2 border border-neutral-300 rounded-lg hover:bg-neutral-50 transition-colors"
+          >
+            취소
+          </button>
+          <button
+            onClick={onCreate}
+            className="px-4 py-2 bg-neutral-900 text-white rounded-lg hover:bg-neutral-800 transition-colors"
+          >
+            생성
+          </button>
+        </div>
+      </div>
     </div>
   );
 };
