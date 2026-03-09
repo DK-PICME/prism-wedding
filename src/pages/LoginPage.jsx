@@ -98,7 +98,7 @@ export const LoginPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white dark:bg-neutral-950">
       <main className="pt-[73px]">
         <div className="px-8 py-8">
           <div className="max-w-md mx-auto">

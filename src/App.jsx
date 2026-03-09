@@ -1,4 +1,5 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { useEffect } from 'react';
 import { WaitingPage } from './pages/WaitingPage';
 import { UploadPage } from './pages/UploadPage';
 import { ResultPage } from './pages/ResultPage';
@@ -81,6 +82,25 @@ function AppContent() {
 }
 
 function App() {
+  useEffect(() => {
+    // 초기 테마 설정
+    const theme = localStorage.getItem('theme') || 'light';
+    const html = document.documentElement;
+    
+    if (theme === 'dark') {
+      html.classList.add('dark');
+    } else if (theme === 'light') {
+      html.classList.remove('dark');
+    } else if (theme === 'auto') {
+      // 시스템 설정 따르기
+      if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        html.classList.add('dark');
+      } else {
+        html.classList.remove('dark');
+      }
+    }
+  }, []);
+
   return (
     <Router>
       <AuthProvider>

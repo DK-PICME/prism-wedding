@@ -47,14 +47,14 @@ export const PrismHeader = ({ activeNav = 'order-list' }) => {
   };
 
   return (
-    <header className="fixed top-0 left-0 right-0 bg-white border-b border-neutral-200 z-50">
+    <header className="fixed top-0 left-0 right-0 bg-white dark:bg-neutral-900 border-b border-neutral-200 dark:border-neutral-800 z-50">
       <div className="flex items-center justify-between px-8 py-4">
         <div className="flex items-center gap-8">
           <div className="flex items-center gap-3">
             <div className="flex items-center justify-center w-10 h-10 bg-gradient-to-r from-neutral-800 to-neutral-600 rounded-lg">
               <i className="fa-solid fa-gem text-white text-lg"></i>
             </div>
-            <span className="text-xl text-neutral-900">Prism Studio</span>
+            <span className="text-xl text-neutral-900 dark:text-white">Prism Studio</span>
           </div>
 
           <nav className="flex items-center gap-1">

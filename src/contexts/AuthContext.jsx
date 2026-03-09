@@ -230,25 +230,35 @@ export function AuthProvider({ children }) {
     }
   };
 
-  // 프로필 업데이트 (이름, 이메일)
-  const updateUserProfile = async (displayName) => {
+  // 프로필 업데이트 (이름, 사진)
+  const updateUserProfile = async (displayName, photoURL) => {
     try {
       setError(null);
       if (!currentUser) throw new Error('사용자 정보를 찾을 수 없습니다');
 
       // Firebase Auth 프로필 업데이트
-      await updateProfile(currentUser, { displayName });
+      const profileData = { displayName };
+      if (photoURL) {
+        profileData.photoURL = photoURL;
+      }
+      await updateProfile(currentUser, profileData);
 
-      // Firestore 업데이트 (권한 없으면 로컬만 반영, 실패해도 Auth는 이미 성공)
+      // Firestore 업데이트
       const userRef = doc(db, 'users', currentUser.uid);
       try {
-        await setDoc(userRef, {
+        const updateData = {
           uid: currentUser.uid,
           email: currentUser.email,
           displayName: displayName || '',
-          photoURL: currentUser.photoURL || '',
           updatedAt: new Date().toISOString(),
-        }, { merge: true });
+        };
+        if (photoURL) {
+          updateData.photoURL = photoURL;
+        } else {
+          updateData.photoURL = currentUser.photoURL || '';
+        }
+        
+        await setDoc(userRef, updateData, { merge: true });
       } catch (firestoreErr) {
         if (firestoreErr?.code === 'permission-denied') {
           console.warn('Firestore 프로필 동기화 실패(권한). Firebase Auth는 반영됨. firebase deploy --only firestore 규칙 배포 후 재시도하세요.');
@@ -261,6 +271,7 @@ export function AuthProvider({ children }) {
       setUserData((prev) => ({
         ...prev,
         displayName: displayName || '',
+        photoURL: photoURL || prev?.photoURL || '',
       }));
 
       return true;

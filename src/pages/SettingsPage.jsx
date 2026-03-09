@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { PrismHeader } from '../components/PrismHeader';
@@ -24,6 +24,12 @@ export const SettingsPage = () => {
   const [deleteError, setDeleteError] = useState('');
   const [deletePassword, setDeletePassword] = useState('');
   
+  // 아바타 변경
+  const [avatarPreview, setAvatarPreview] = useState(userData?.photoURL || null);
+  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
+  const [avatarError, setAvatarError] = useState('');
+  const fileInputRef = useRef(null);
+  
   // 비밀번호 변경
   const [currentPasswordInput, setCurrentPasswordInput] = useState('');
   const [newPasswordInput, setNewPasswordInput] = useState('');
@@ -34,6 +40,7 @@ export const SettingsPage = () => {
 
   // 다운로드 설정
   const [fileNameRule, setFileNameRule] = useState(userData?.settings?.download?.fileNameRule || '주문번호_원본파일명');
+  const [customFileNameRule, setCustomFileNameRule] = useState(userData?.settings?.download?.customFileNameRule || '');
   const [compressionFormat, setCompressionFormat] = useState(userData?.settings?.download?.compressionFormat || 'ZIP');
 
   // 테마 설정
@@ -53,7 +60,63 @@ export const SettingsPage = () => {
   };
   const getProviderInfo = (providerId) => providerConfig[providerId] || { label: providerId, icon: 'fa-solid fa-link', bgClass: 'bg-neutral-500' };
 
-  const handleSaveProfile = async () => {
+  // 아바타 변경 핸들러
+  const handleAvatarChange = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // 파일 검증
+    const maxSize = 5 * 1024 * 1024; // 5MB
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
+
+    if (file.size > maxSize) {
+      setAvatarError('파일 크기는 5MB 이하여야 합니다');
+      return;
+    }
+
+    if (!allowedTypes.includes(file.type)) {
+      setAvatarError('JPG, PNG, WebP 형식만 지원합니다');
+      return;
+    }
+
+    setAvatarError('');
+    setIsUploadingAvatar(true);
+
+    try {
+      // 로컬 미리보기
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setAvatarPreview(e.target?.result);
+      };
+      reader.readAsDataURL(file);
+
+      // Firebase Storage에 업로드
+      const { storage } = await import('firebase/app');
+      const { getStorage, ref, uploadBytes, getDownloadURL } = await import('firebase/storage');
+      
+      const firebaseApp = (await import('../config/firebase')).default;
+      const firebaseStorage = getStorage(firebaseApp);
+      const fileName = `users/${currentUser.uid}/avatar_${Date.now()}`;
+      const fileRef = ref(firebaseStorage, fileName);
+      
+      await uploadBytes(fileRef, file);
+      const photoURL = await getDownloadURL(fileRef);
+
+      // Firestore에 photoURL 저장
+      await updateUserProfile(displayNameInput, photoURL);
+      
+      // 로컬 상태 업데이트
+      setAvatarPreview(photoURL);
+    } catch (err) {
+      console.error('아바타 업로드 실패:', err);
+      setAvatarError('아바타 업로드에 실패했습니다');
+    } finally {
+      setIsUploadingAvatar(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
+  };
     if (!displayNameInput.trim()) {
       setProfileError('이름을 입력해주세요');
       return;
@@ -185,8 +248,22 @@ export const SettingsPage = () => {
   // 파일명 규칙 저장
   const handleSaveFileNameRule = async () => {
     try {
+      const downloadSettings = { ...userData?.settings?.download };
+      
+      if (fileNameRule === '사용자정의') {
+        if (!customFileNameRule.trim()) {
+          alert('사용자정의 파일명 규칙을 입력해주세요');
+          return;
+        }
+        downloadSettings.fileNameRule = '사용자정의';
+        downloadSettings.customFileNameRule = customFileNameRule;
+      } else {
+        downloadSettings.fileNameRule = fileNameRule;
+        downloadSettings.customFileNameRule = '';
+      }
+      
       await updateUserSettings({
-        download: { ...userData?.settings?.download, fileNameRule },
+        download: downloadSettings,
       });
     } catch (err) {
       console.error('파일명 규칙 저장 실패:', err);
@@ -226,7 +303,7 @@ export const SettingsPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white dark:bg-neutral-950">
       <PrismHeader activeNav="settings" />
 
       <main className="pt-[73px]">
@@ -241,16 +318,43 @@ export const SettingsPage = () => {
               <div className="col-span-1">
                 <div className="bg-white border border-neutral-200 rounded-2xl p-6">
                   <div className="text-center mb-6">
-                    <img
-                      src="https://api.dicebear.com/7.x/notionists/svg?scale=200&seed=4782"
-                      alt="User"
-                      className="w-24 h-24 rounded-full border-4 border-neutral-200 mx-auto mb-4"
-                    />
+                    <div className="relative inline-block">
+                      <img
+                        src={avatarPreview || userData?.photoURL || 'https://api.dicebear.com/7.x/notionists/svg?scale=200&seed=' + (currentUser?.uid?.slice(0, 8) || '4782')}
+                        alt="User"
+                        className="w-24 h-24 rounded-full border-4 border-neutral-200 mx-auto mb-4 object-cover"
+                      />
+                      {isUploadingAvatar && (
+                        <div className="absolute inset-0 rounded-full bg-black/50 flex items-center justify-center">
+                          <div className="text-white text-xs">업로드 중...</div>
+                        </div>
+                      )}
+                    </div>
                     <h3 className="text-xl text-neutral-900 mb-1">{displayName}</h3>
                     <p className="text-neutral-600 text-sm">{userEmail}</p>
-                    <button className="mt-3 px-4 py-2 border border-neutral-300 hover:bg-neutral-50 rounded-lg text-sm transition-colors">
-                      <i className="fa-solid fa-camera mr-2"></i>아바타 변경
-                    </button>
+                    <div className="mt-3 flex gap-2 justify-center">
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept="image/jpeg,image/png,image/webp"
+                        onChange={handleAvatarChange}
+                        disabled={isUploadingAvatar}
+                        className="hidden"
+                      />
+                      <button
+                        onClick={() => fileInputRef.current?.click()}
+                        disabled={isUploadingAvatar}
+                        className="px-4 py-2 border border-neutral-300 hover:bg-neutral-50 rounded-lg text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        <i className="fa-solid fa-camera mr-2"></i>
+                        {isUploadingAvatar ? '업로드 중...' : '아바타 변경'}
+                      </button>
+                    </div>
+                    {avatarError && (
+                      <div className="mt-2 p-2 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
+                        {avatarError}
+                      </div>
+                    )}
                   </div>
 
                   <div className="space-y-3">
@@ -570,23 +674,61 @@ export const SettingsPage = () => {
                   <div className="p-6 space-y-6">
                     <div>
                       <label className="block text-sm text-neutral-700 mb-2">파일명 규칙</label>
-                      <div className="flex gap-2">
-                        <select 
-                          value={fileNameRule}
-                          onChange={(e) => setFileNameRule(e.target.value)}
-                          className="flex-1 px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-neutral-500"
-                        >
-                          <option value="주문번호_원본파일명">주문번호_원본파일명</option>
-                          <option value="날짜_주문번호_파일명">날짜_주문번호_파일명</option>
-                          <option value="원본파일명_보정완료">원본파일명_보정완료</option>
-                          <option value="사용자정의">사용자정의</option>
-                        </select>
-                        <button
-                          onClick={handleSaveFileNameRule}
-                          className="px-4 py-2 bg-neutral-900 text-white hover:bg-neutral-800 rounded-lg transition-colors"
-                        >
-                          저장
-                        </button>
+                      <div className="space-y-3">
+                        <div className="flex gap-2">
+                          <select 
+                            value={fileNameRule}
+                            onChange={(e) => setFileNameRule(e.target.value)}
+                            className="flex-1 px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-neutral-500"
+                          >
+                            <option value="주문번호_원본파일명">주문번호_원본파일명</option>
+                            <option value="날짜_주문번호_파일명">날짜_주문번호_파일명</option>
+                            <option value="원본파일명_보정완료">원본파일명_보정완료</option>
+                            <option value="사용자정의">사용자정의</option>
+                          </select>
+                          <button
+                            onClick={handleSaveFileNameRule}
+                            className="px-4 py-2 bg-neutral-900 text-white hover:bg-neutral-800 rounded-lg transition-colors"
+                          >
+                            저장
+                          </button>
+                        </div>
+                        
+                        {/* 사용자정의 옵션 표시 */}
+                        {fileNameRule === '사용자정의' && (
+                          <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg space-y-3">
+                            <div>
+                              <label className="block text-sm font-medium text-neutral-700 mb-2">사용자정의 파일명 규칙</label>
+                              <input
+                                type="text"
+                                placeholder="예: {주문번호}_{날짜}_{파일명}"
+                                value={customFileNameRule}
+                                onChange={(e) => setCustomFileNameRule(e.target.value)}
+                                className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                              />
+                            </div>
+                            <div className="text-sm text-neutral-600">
+                              <p className="font-medium mb-2">사용 가능한 변수:</p>
+                              <ul className="space-y-1 list-disc list-inside">
+                                <li><code className="bg-neutral-100 px-2 py-1 rounded">{'{주문번호}'}</code> - 주문 번호</li>
+                                <li><code className="bg-neutral-100 px-2 py-1 rounded">{'{날짜}'}</code> - 저장 날짜 (YYYYMMDD)</li>
+                                <li><code className="bg-neutral-100 px-2 py-1 rounded">{'{시간}'}</code> - 저장 시간 (HHMMSS)</li>
+                                <li><code className="bg-neutral-100 px-2 py-1 rounded">{'{파일명}'}</code> - 원본 파일명</li>
+                              </ul>
+                            </div>
+                            <div className="text-sm text-neutral-600 bg-white p-2 rounded border border-neutral-200">
+                              <p className="font-medium mb-1">미리보기:</p>
+                              <p className="text-blue-600">
+                                {customFileNameRule
+                                  .replace('{주문번호}', '20260309001')
+                                  .replace('{날짜}', '20260309')
+                                  .replace('{시간}', '143025')
+                                  .replace('{파일명}', 'photo.jpg')
+                                  || '규칙을 입력하면 미리보기가 표시됩니다'}
+                              </p>
+                            </div>
+                          </div>
+                        )}
                       </div>
                     </div>
 

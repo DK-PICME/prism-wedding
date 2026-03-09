@@ -4,6 +4,7 @@
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  color-scheme: light dark;
 }
 
 * {
@@ -17,6 +18,16 @@ body,
 #root {
   height: 100%;
   width: 100%;
+}
+
+/* Dark mode styles */
+html.dark {
+  color-scheme: dark;
+}
+
+html.dark body {
+  background-color: rgb(3, 7, 18);
+  color: rgb(245, 245, 245);
 }
 
 .loading-spinner {
