@@ -30,3 +30,7 @@ dist-ssr
 
 # Backup
 _backup
+
+# Playwright
+test-results/
+playwright-report/
