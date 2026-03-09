@@ -15,7 +15,10 @@
     "deploy:all": "npm run build && firebase deploy",
     "deploy:functions": "firebase deploy --only functions",
     "seed": "node functions/src/seed.js",
-    "emulators": "firebase emulators:start"
+    "emulators": "firebase emulators:start",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:debug": "playwright test --debug"
   },
   "dependencies": {
     "@react-oauth/google": "^0.13.4",
@@ -25,6 +28,7 @@
     "react-router-dom": "^7.13.1"
   },
   "devDependencies": {
+    "@playwright/test": "^1.58.2",
     "@types/react": "^18.2.43",
     "@types/react-dom": "^18.2.17",
     "@vitejs/plugin-react": "^4.2.1",
