@@ -5,6 +5,7 @@ export default defineConfig({
   plugins: [react()],
   server: {
     port: 5173,
+    host: '0.0.0.0', // 모든 인터페이스에서 접근 가능
     open: true,
   },
   build: {

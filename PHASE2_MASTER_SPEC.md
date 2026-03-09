@@ -399,16 +399,22 @@ export async function loadPriceConfig() {
 Step 1: 로그인 ✅ (Phase 1 완료)
   └─ LoginPage → AuthContext.currentUser 설정
 
-Step 2: 사진 관리 ❌ (미구현)
+Step 2: 사진 관리 ⏳ (구현 중)
   └─ PhotoManagementPage (/photo-management)
-     ├─ 폴더 목록 조회 (Firestore: folders where userId = uid)
-     ├─ 폴더 생성 / 폴더 진입
-     ├─ 사진 업로드 (Drag & Drop)
+     ├─ Project 목록 조회 (Firestore: projects where userId = uid)
+     ├─ Project CRUD (생성, 이름수정, 삭제)
+     ├─ Project별 섹션 UI (헤더: 프로젝트명 + 생성날짜, 접기/펴기 토글)
+     ├─ 사진 업로드 (각 Project 내 Drag & Drop)
      │   ├─ PENDING (로컬) → UPLOADING (Firestore 생성)
-     │   ├─ S3 업로드 → UPLOAD_COMPLETED
+     │   ├─ Cloud Storage 업로드 → UPLOAD_COMPLETED
      │   ├─ CF 자동 실행 → PROCESSING → READY
      │   └─ 실패 시 → UPLOAD_FAILED / PROCESSING_FAILED
-     └─ 사진 선택 후 "주문 생성" 버튼
+     ├─ Project 비었을 때: 업로드 유도 메시지 표시
+     ├─ Real-time 리스너 (onSnapshot): Project + Photo 실시간 업데이트
+     ├─ 사진 선택 로직 (체크박스: READY + !isLocked만 선택 가능)
+     ├─ 상태별 UI (7가지 배지, 액션 버튼: 재시도/삭제)
+     ├─ 하단: "선택됨 N개" + "주문 생성" 버튼
+     └─ 📌 TODO: 사진을 다른 Project로 드래그 이동 (고도화)
 
 Step 3: 주문 생성 ❌ (미구현)
   └─ CreateNewOrderPage (/create-new-order)
@@ -686,18 +692,27 @@ Order.paymentDeadline 초과 시:
 - [ ] Firestore 보안 규칙 업데이트 (userId 기반 접근 제어)
 
 #### PhotoManagementPage
-- [ ] 폴더 목록 조회 및 표시
-- [ ] 폴더 생성 다이얼로그
-- [ ] 폴더 진입 → 사진 그리드
-- [ ] Drag & Drop 업로드
-- [ ] photoId 생성 (`db.collection('photos').doc().id`)
-- [ ] S3 업로드 (Custom Metadata에 photo-id 포함)
-- [ ] Firestore Real-time Listener (onSnapshot)
-- [ ] 7가지 상태별 UI (색상 + 아이콘 + 뱃지)
-- [ ] 재시도 / 삭제 버튼
-- [ ] 클라이언트 사이드 타임아웃 (300초)
-- [ ] 사진 선택 체크박스 (READY + !isLocked 만 선택 가능)
+- [ ] Project 컬렉션 구조 확인 (userId, name, createdAt 등)
+- [ ] ProjectService 구현 (CRUD: create, read, update, delete)
+- [ ] PhotoManagementPage UI 재구현:
+  - [ ] Project 목록 조회 (Firestore)
+  - [ ] Project별 섹션 헤더 (프로젝트명 + 생성날짜 + 토글 버튼)
+  - [ ] 섹션 접기/펴기 상태 관리
+  - [ ] Project 비었을 때 업로드 유도 메시지
+  - [ ] 사진 그리드 (그리드/목록 뷰)
+  - [ ] Drag & Drop 업로드 (Project별)
+- [ ] 사진 선택 로직:
+  - [ ] 체크박스 (READY + !isLocked만 활성화)
+  - [ ] 선택 상태 관리
+  - [ ] 하단: "선택됨 N개" 표시
+- [ ] 상태별 UI (7가지 배지, 액션 버튼)
+- [ ] Real-time Listener (onSnapshot: projects + photos)
 - [ ] "주문 생성" 버튼 (1개 이상 선택 시 활성화)
+- [ ] Project CRUD UI:
+  - [ ] "새 프로젝트" 버튼 (다이얼로그)
+  - [ ] Project 이름 수정 버튼
+  - [ ] Project 삭제 버튼 (확인 팝업)
+- [ ] Analytics 통합 (photo_upload, photo_delete 등)
 
 #### PriceConfigService
 - [ ] Firebase Remote Config 초기화
