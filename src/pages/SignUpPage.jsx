@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { PrismHeader } from '../components/PrismHeader';
 import { PrismFooter } from '../components/PrismFooter';
 import { useAuth } from '../contexts/AuthContext';
+import { analyticsService } from '../services/AnalyticsService';
 
 export const SignUpPage = () => {
   const navigate = useNavigate();
@@ -91,6 +92,7 @@ export const SignUpPage = () => {
     setIsLoading(true);
     try {
       await signup(formData.email, formData.password, formData.studioName);
+      analyticsService.trackSignUp('email');
       navigate('/verify-email');
     } catch (err) {
       const code = err?.code || '';
@@ -111,6 +113,7 @@ export const SignUpPage = () => {
     setIsLoading(true);
     try {
       await loginWithGooglePopup();
+      analyticsService.trackSignUp('google');
       navigate('/order-list');
     } catch (err) {
       setError(err?.message || '소셜 로그인에 실패했습니다');
@@ -120,8 +123,9 @@ export const SignUpPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-white">
-      <main className="pt-[73px]">
+    <div className="min-h-screen bg-white flex flex-col">
+      <PrismHeader activeNav="sign-up" />
+      <main className="flex-1 pt-[73px]">
         <div className="px-8 py-8">
           <div className="max-w-md mx-auto">
             <div className="flex items-center justify-center w-12 h-12 bg-gradient-to-r from-neutral-800 to-neutral-600 rounded-lg mx-auto mb-6">
@@ -287,6 +291,7 @@ export const SignUpPage = () => {
           </div>
         </div>
       </main>
+      <PrismFooter />
     </div>
   );
 };
