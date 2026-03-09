@@ -24,13 +24,13 @@ const useEmulator = import.meta.env.VITE_USE_EMULATOR === 'true';
 if (useEmulator && typeof window !== 'undefined') {
   // 에뮬레이터가 이미 연결되었는지 확인
   if (!auth.emulatorConfig) {
-    connectAuthEmulator(auth, 'http://localhost:9099', {
+    connectAuthEmulator(auth, `http://localhost:${import.meta.env.VITE_FIREBASE_AUTH_EMULATOR_PORT || '9099'}`, {
       disableWarnings: true,
     });
   }
   
   if (!db.emulatorConfig) {
-    connectFirestoreEmulator(db, 'localhost', 8080);
+    connectFirestoreEmulator(db, 'localhost', parseInt(import.meta.env.VITE_FIREBASE_FIRESTORE_EMULATOR_PORT || '8181'));
   }
   
   console.log('✅ Firebase 에뮬레이터 연결됨');
