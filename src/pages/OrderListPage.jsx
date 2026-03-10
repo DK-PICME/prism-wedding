@@ -151,7 +151,7 @@ export const OrderListPage = () => {
                   <h1 className="text-3xl font-bold text-neutral-900 mb-1">주문 내역</h1>
                   <div className="flex items-center gap-3">
                     <p className="text-neutral-600">
-                      💍 당신의 소중한 순간을 완성하는 중입니다
+                      보정 주문 프로젝트를 관리하고 진행 상태를 확인하세요 💍
                     </p>
                     {stats.find(s => s.label === '대기중')?.count > 0 && (
                       <span className="inline-flex items-center gap-1 px-3 py-1 bg-orange-50 text-orange-700 text-sm font-medium rounded-full">
