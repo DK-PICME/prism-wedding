@@ -37,7 +37,7 @@ export default function PhotoSelectionModal({ isOpen, onClose }) {
             먼저 마음에 드는 사진들을 업로드 후 선택해주세요.
           </p>
           <p className="text-lg md:text-xl text-neutral-600 font-medium">
-            프리즘이 센스있게 보정해드릴게요! ✨
+            프리즘이 센스있게 보정해드릴게요!
           </p>
         </div>
 

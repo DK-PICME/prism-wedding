@@ -683,12 +683,6 @@ export const SettingsPage = () => {
                       </div>
                     </div>
 
-                    {currentUser?.providerData?.some(provider => provider.providerId === 'password') && (
-                      <div>
-                        <div className="border-t border-neutral-200 my-2"></div>
-                      </div>
-                    )}
-
                     <div className="border-t border-neutral-200 pt-6">
                       <h3 className="text-lg text-neutral-900 mb-3">계정 관리</h3>
                       <div className="space-y-3">
