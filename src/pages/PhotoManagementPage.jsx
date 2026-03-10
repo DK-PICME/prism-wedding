@@ -268,6 +268,32 @@ export const PhotoManagementPage = () => {
   };
 
   /**
+   * 프로젝트 내 사진 전체 선택/해제
+   */
+  const handleToggleSelectAll = (projectId) => {
+    const projectPhotos = photosByProject[projectId] || [];
+    const selectablePhotos = projectPhotos.filter(p => p.status === 'READY' && !p.isLocked);
+    
+    if (selectablePhotos.length === 0) return;
+
+    const allSelected = selectablePhotos.every(p => selectedPhotoIds.has(p.id));
+    
+    const newSelected = new Set(selectedPhotoIds);
+    
+    if (allSelected) {
+      // 전체 해제
+      selectablePhotos.forEach(p => newSelected.delete(p.id));
+      analyticsService.track('photos_deselected_all', { projectId, count: selectablePhotos.length });
+    } else {
+      // 전체 선택
+      selectablePhotos.forEach(p => newSelected.add(p.id));
+      analyticsService.track('photos_selected_all', { projectId, count: selectablePhotos.length });
+    }
+    
+    setSelectedPhotoIds(newSelected);
+  };
+
+  /**
    * 사진 삭제
    */
   const handleDeletePhoto = async (photoId, docId) => {
@@ -438,6 +464,7 @@ export const PhotoManagementPage = () => {
                           handleDeletePhoto(photoId, docId)
                         }
                         formatFileSize={formatFileSize}
+                        onToggleSelectAll={handleToggleSelectAll}
                       />
                     ))}
 
@@ -510,8 +537,13 @@ const ProjectSection = ({
   onPhotoSelect,
   onPhotoDelete,
   formatFileSize,
+  onToggleSelectAll,
 }) => {
   const fileInputRef = useRef(null);
+  
+  // 선택 가능한 사진 계산 (READY + !isLocked)
+  const selectablePhotos = photos.filter(p => p.status === 'READY' && !p.isLocked);
+  const allSelected = selectablePhotos.length > 0 && selectablePhotos.every(p => selectedPhotoIds.has(p.id));
 
   return (
     <div className="bg-white border border-neutral-200 rounded-2xl overflow-hidden">
@@ -533,6 +565,19 @@ const ProjectSection = ({
         </div>
 
         <div className="flex items-center gap-2">
+          {selectablePhotos.length > 0 && (
+            <button
+              onClick={() => onToggleSelectAll(project.id)}
+              className={`p-2 rounded-lg transition-colors ${
+                allSelected
+                  ? 'text-neutral-900 bg-neutral-200'
+                  : 'text-neutral-400 hover:text-neutral-600 hover:bg-neutral-100'
+              }`}
+              title={allSelected ? '전체 해제' : '전체 선택'}
+            >
+              <i className={`fa-solid ${allSelected ? 'fa-check-square' : 'fa-square'}`}></i>
+            </button>
+          )}
           <button
             onClick={onDelete}
             className="p-2 text-neutral-400 hover:text-neutral-600 hover:bg-neutral-100 rounded-lg transition-colors"
