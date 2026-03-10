@@ -392,10 +392,10 @@ export const PhotoManagementPage = () => {
   }));
 
   return (
-    <div className="min-h-screen bg-neutral-50">
+    <div className="min-h-screen bg-neutral-50 flex flex-col">
       <PrismHeader activeNav="photo-management" />
 
-      <main className="pt-[73px] pb-[100px]">
+      <main className="pt-[73px] flex-1">
         <div className="px-8 py-8">
           <div className="max-w-[1376px] mx-auto">
             {/* 페이지 헤더 */}
@@ -498,7 +498,7 @@ export const PhotoManagementPage = () => {
       )}
 
       {/* 하단 액션 바 */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-neutral-200 px-8 py-4">
+      <div className="bg-white border-t border-neutral-200 px-8 py-4">
         <div className="max-w-[1376px] mx-auto flex items-center justify-between">
           <div className="text-sm text-neutral-600">
             선택됨: <span className="font-bold text-neutral-900">{selectedPhotoIds.size}</span>개
