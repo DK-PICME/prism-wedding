@@ -383,12 +383,12 @@ export class ProjectServiceMock extends ProjectService {
   /**
    * 사진 목록 구독 (실시간 리스너)
    */
-  onPhotosChanged(projectId, callback) {
+  onPhotosChanged(projectId, userId, callback) {
     const listenerId = ++this.listenerCounter;
 
     // 즉시 현재 데이터 전달
     const projectPhotos = Array.from(this.photos.values()).filter(
-      p => p.projectId === projectId
+      p => p.projectId === projectId && p.userId === userId
     );
     callback(projectPhotos);
 
@@ -396,6 +396,7 @@ export class ProjectServiceMock extends ProjectService {
     this.listeners.set(`photos_${listenerId}`, {
       type: 'photos',
       projectId,
+      userId,
       callback,
     });
 

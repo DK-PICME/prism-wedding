@@ -237,11 +237,13 @@ export class ProjectServiceApi extends ProjectService {
   /**
    * 사진 목록 구독 (실시간 리스너)
    */
-  onPhotosChanged(projectId, callback) {
+  onPhotosChanged(projectId, userId, callback) {
     try {
+      // Firestore Rules를 만족하기 위해 userId 필터 추가 필수
       const q = query(
         collection(db, 'photos'),
         where('projectId', '==', projectId),
+        where('userId', '==', userId),
         orderBy('createdAt', 'desc')
       );
 

@@ -86,7 +86,7 @@ export class ProjectService {
    * @param {Function} callback - 데이터 변경 시 호출되는 콜백
    * @returns {Function} 구독 해제 함수
    */
-  onPhotosChanged(projectId, callback) {
+  onPhotosChanged(projectId, userId, callback) {
     throw new Error('onPhotosChanged method must be implemented');
   }
 

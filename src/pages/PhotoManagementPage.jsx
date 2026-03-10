@@ -69,6 +69,7 @@ export const PhotoManagementPage = () => {
           if (!photoUnsubscribesRef.current[project.id]) {
             photoUnsubscribesRef.current[project.id] = projectService.onPhotosChanged(
               project.id,
+              currentUser.uid,
               (photos) => {
                 setPhotosByProject(prev => ({ ...prev, [project.id]: photos }));
               }
