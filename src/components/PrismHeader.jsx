@@ -10,7 +10,7 @@ export const PrismHeader = ({ activeNav = 'order-list' }) => {
   
   const navItems = [
     { id: 'photo-management', label: '사진 관리', icon: 'fa-images', path: '/photo-management' },
-    { id: 'order-list', label: '주문 내역', icon: 'fa-list-check', path: '/order-list' },
+    { id: 'order-list', label: '주문 내역', icon: 'fa-list-check', path: '/orders' },
   ];
 
   // 사용자 정보 우선순위: userData.displayName > currentUser.displayName > 이메일앞부분
