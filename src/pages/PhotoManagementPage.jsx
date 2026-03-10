@@ -535,7 +535,7 @@ const ProjectSection = ({
         <div className="flex items-center gap-2">
           <button
             onClick={onDelete}
-            className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+            className="p-2 text-neutral-400 hover:text-neutral-600 hover:bg-neutral-100 rounded-lg transition-colors"
             title="삭제"
           >
             <i className="fa-solid fa-trash"></i>
