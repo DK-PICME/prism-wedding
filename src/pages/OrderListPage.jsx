@@ -209,22 +209,10 @@ export const OrderListPage = () => {
                         onChange={(e) => setSearchText(e.target.value)}
                         className="w-full pl-11 pr-4 py-3 border border-neutral-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-transparent"
                       />
-                    </div>
                   </div>
-
-                  <select 
-                    value={filterStatus}
-                    onChange={(e) => setFilterStatus(e.target.value)}
-                    className="px-4 py-3 border border-neutral-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-neutral-900 bg-white text-neutral-700"
-                  >
-                    <option value="all">전체 상태</option>
-                    <option value={ORDER_STATUS.READY_TO_PAY}>{ORDER_STATUS_LABEL.READY_TO_PAY}</option>
-                    <option value={ORDER_STATUS.PAID}>{ORDER_STATUS_LABEL.PAID}</option>
-                    <option value={ORDER_STATUS.CORRECTING}>{ORDER_STATUS_LABEL.CORRECTING}</option>
-                    <option value={ORDER_STATUS.DELIVERY_DONE}>{ORDER_STATUS_LABEL.DELIVERY_DONE}</option>
-                    <option value={ORDER_STATUS.CANCELLED}>{ORDER_STATUS_LABEL.CANCELLED}</option>
-                  </select>
                 </div>
+
+                {/* 상태 필터는 제거됨 - PhotoManagementPage로 이동 */}
               </div>
 
               {/* 통계 카드 */}

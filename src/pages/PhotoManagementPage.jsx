@@ -34,6 +34,7 @@ export const PhotoManagementPage = () => {
   const [error, setError] = useState(null);
   const [showNewProjectDialog, setShowNewProjectDialog] = useState(false);
   const [newProjectName, setNewProjectName] = useState('');
+  const [searchText, setSearchText] = useState(''); // 파일 검색
 
   // 사진 리스너 구독 관리 (projectId → unsubscribe 함수)
   const photoUnsubscribesRef = useRef({});
@@ -391,6 +392,14 @@ export const PhotoManagementPage = () => {
     photos: photosByProject[project.id] || [],
   }));
 
+  // 검색 필터링: 모든 프로젝트의 사진을 검색
+  const filteredProjectsWithPhotos = projectsWithPhotos.map((project) => ({
+    ...project,
+    photos: project.photos.filter((photo) =>
+      (photo.fileName || '').toLowerCase().includes(searchText.toLowerCase())
+    ),
+  })).filter((project) => project.photos.length > 0 || searchText === ''); // 검색 중이 아니면 모든 프로젝트 표시
+
   return (
     <div className="min-h-screen bg-neutral-50 flex flex-col">
       <PrismHeader activeNav="photo-management" />
@@ -402,6 +411,20 @@ export const PhotoManagementPage = () => {
             <div className="mb-8">
               <h1 className="text-3xl font-bold text-neutral-900 mb-2">사진 관리</h1>
               <p className="text-neutral-600">웨딩 사진들을 프로젝트별로 보관하고 관리하세요</p>
+            </div>
+
+            {/* 파일 검색 */}
+            <div className="mb-8">
+              <div className="relative">
+                <i className="fa-solid fa-magnifying-glass absolute left-4 top-1/2 transform -translate-y-1/2 text-neutral-400"></i>
+                <input
+                  type="text"
+                  placeholder="파일 이름으로 검색..."
+                  value={searchText}
+                  onChange={(e) => setSearchText(e.target.value)}
+                  className="w-full pl-12 pr-4 py-3 border border-neutral-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-neutral-900"
+                />
+              </div>
             </div>
 
             {/* 에러 메시지 */}
@@ -446,7 +469,7 @@ export const PhotoManagementPage = () => {
                   </div>
                 ) : (
                   <div className="space-y-6">
-                    {projectsWithPhotos.map((project) => (
+                    {filteredProjectsWithPhotos.map((project) => (
                       <ProjectSection
                         key={project.id}
                         project={project}
