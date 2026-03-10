@@ -236,6 +236,7 @@ export const LoginPage = () => {
                   회원가입
                 </button>
               </p>
+            </div>
           </div>
         </div>
       </main>
