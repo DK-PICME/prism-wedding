@@ -4,6 +4,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { PrismHeader } from '../components/PrismHeader';
 import { PrismFooter } from '../components/PrismFooter';
+import { compressImage, formatFileSize } from '../utils/imageCompression';
 
 export const SettingsPage = () => {
   const navigate = useNavigate();
@@ -91,13 +92,23 @@ export const SettingsPage = () => {
       };
       reader.readAsDataURL(file);
 
+      // 이미지 압축 (프로필용 200x200, 80% 품질)
+      const compressedFile = await compressImage(file, {
+        maxWidth: 200,
+        maxHeight: 200,
+        quality: 0.8,
+        format: 'image/jpeg',
+      });
+
+      console.log(`원본: ${formatFileSize(file.size)} → 압축: ${formatFileSize(compressedFile.size)}`);
+
       // Firebase Storage에 업로드
       const firebaseApp = (await import('../config/firebase')).default;
       const firebaseStorage = getStorage(firebaseApp);
       const fileName = `users/${currentUser.uid}/avatar_${Date.now()}`;
       const fileRef = ref(firebaseStorage, fileName);
       
-      await uploadBytes(fileRef, file);
+      await uploadBytes(fileRef, compressedFile);
       const photoURL = await getDownloadURL(fileRef);
 
       // Firestore에 photoURL 저장
