@@ -30,6 +30,7 @@ export class PhotoService {
 
         // ── 파일 정보 ──
         fileName,
+        originalFileName: fileName,  // 원본 파일명 메타 정보
         fileSize,
         fileExt: fileExt.toLowerCase(),
         fileMd5: null, // 나중에 업로드 후 계산
@@ -58,6 +59,7 @@ export class PhotoService {
 
         // ── 생성된 파일 URL ──
         uploadedUrl: null,
+        storagePath: null,  // 저장될 스토리지 경로
         thumbnailUrl: null,
         previewUrl: null,
         webpUrl: null,
@@ -102,9 +104,9 @@ export class PhotoService {
 
   /**
    * 사진 업로드 성공 처리
-   * 상태를 UPLOAD_COMPLETED로 변경
+   * 상태를 READY로 변경하고 스토리지 경로 저장
    */
-  async markUploadCompleted(photoDocId, uploadedUrl, fileMd5) {
+  async markUploadCompleted(photoDocId, uploadedUrl, storagePath, fileMd5) {
     try {
       const photoRef = doc(db, 'photos', photoDocId);
       // MVP: Cloud Function 없이 바로 READY로 설정
@@ -112,6 +114,7 @@ export class PhotoService {
       await updateDoc(photoRef, {
         status: 'READY',
         uploadedUrl,
+        storagePath,  // 스토리지 경로 저장
         fileMd5: fileMd5 || null,
         uploadEndTime: serverTimestamp(),
         uploadProgress: 100,

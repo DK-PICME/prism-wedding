@@ -14,10 +14,12 @@ export class StorageService {
    * 파일을 Cloud Storage에 업로드
    * @param {File} file - 업로드할 파일
    * @param {string} userId - 사용자 ID
+   * @param {string} projectId - 프로젝트 ID
+   * @param {string} photoId - 사진 ID (nanoid)
    * @param {Function} onProgress - 진행률 콜백 (0-100)
-   * @returns {Promise<{url: string, metadata: object}>}
+   * @returns {Promise<{url: string, path: string, originalFileName: string, metadata: object}>}
    */
-  async uploadPhoto(file, userId, onProgress = () => {}) {
+  async uploadPhoto(file, userId, projectId, photoId, onProgress = () => {}) {
     try {
       // 파일 확장자 추출
       const fileExt = file.name.split('.').pop().toLowerCase();
@@ -34,10 +36,9 @@ export class StorageService {
         throw new Error(`파일이 너무 큽니다. 최대 10MB까지 가능합니다. (현재: ${(file.size / 1024 / 1024).toFixed(2)}MB)`);
       }
 
-      // 업로드 경로
-      const timestamp = Date.now();
-      const filename = `${file.name.replace(/\.[^/.]+$/, '')}_${timestamp}.${fileExt}`;
-      const storagePath = `user-uploads/${userId}/${filename}`;
+      // 업로드 경로: user-uploads/{userId}/{projectId}/{photoId}.{ext}
+      const filename = `${photoId}.${fileExt}`;
+      const storagePath = `user-uploads/${userId}/${projectId}/${filename}`;
 
       const fileRef = ref(this.storage, storagePath);
 
@@ -83,6 +84,7 @@ export class StorageService {
               resolve({
                 url: downloadUrl,
                 path: storagePath,
+                originalFileName: file.name,  // 원본 파일명 반환 (메타로 저장)
                 metadata,
               });
             } catch (error) {

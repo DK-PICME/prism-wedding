@@ -209,6 +209,8 @@ export const PhotoManagementPage = () => {
       const uploadResult = await StorageService.uploadPhoto(
         file,
         currentUser.uid,
+        projectId,
+        photoDoc.photoId,
         (progress) => {
           setUploadingFiles((prev) => ({ ...prev, [photoKey]: progress }));
           if (progress % 20 === 0) {
@@ -217,8 +219,12 @@ export const PhotoManagementPage = () => {
         }
       );
 
-      // 3. 업로드 완료 처리
-      await PhotoService.markUploadCompleted(photoDoc.docId, uploadResult.url);
+      // 3. 업로드 완료 처리 (originalFileName과 storagePath도 함께 저장)
+      await PhotoService.markUploadCompleted(
+        photoDoc.docId,
+        uploadResult.url,
+        uploadResult.path
+      );
 
       setUploadingFiles((prev) => {
         const newState = { ...prev };
