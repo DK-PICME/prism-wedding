@@ -35,8 +35,7 @@ export const CreateNewOrderPage = () => {
   // 주문 정보 폼
   const [brideName, setBrideName] = useState('');
   const [groomName, setGroomName] = useState('');
-  const [shootingType, setShootingType] = useState('wedding'); // wedding | snap | photobook | other
-  const [location, setLocation] = useState('');
+  const [correctionPurpose, setCorrectionPurpose] = useState('invitation'); // invitation | table | personal | other
   const [notes, setNotes] = useState('');
   const [correctionOption, setCorrectionOption] = useState('basic'); // basic | urgent
 
@@ -108,8 +107,7 @@ export const CreateNewOrderPage = () => {
 
     if (!brideName.trim()) errors.brideName = '신부 이름을 입력해주세요';
     if (!groomName.trim()) errors.groomName = '신랑 이름을 입력해주세요';
-    if (!shootingType) errors.shootingType = '촬영 유형을 선택해주세요';
-    if (!location.trim()) errors.location = '촬영 장소를 입력해주세요';
+    if (!correctionPurpose) errors.correctionPurpose = '보정 목적을 선택해주세요';
     if (selectedPhotoIds.length === 0) errors.photos = '사진을 1개 이상 선택해주세요';
 
     setValidationErrors(errors);
@@ -137,8 +135,7 @@ export const CreateNewOrderPage = () => {
         // 주문 정보
         brideName: brideName.trim(),
         groomName: groomName.trim(),
-        shootingType,
-        location: location.trim(),
+        correctionPurpose,
         notes: notes.trim(),
         correctionOption,
 
@@ -310,44 +307,25 @@ export const CreateNewOrderPage = () => {
                 </div>
               </div>
 
-              {/* 촬영 유형 */}
+              {/* 보정 목적 */}
               <div>
                 <label className="block text-sm font-medium text-neutral-700 mb-1">
-                  촬영 유형 <span className="text-red-600">*</span>
+                  보정 목적 <span className="text-red-600">*</span>
                 </label>
                 <select
-                  value={shootingType}
-                  onChange={(e) => setShootingType(e.target.value)}
+                  value={correctionPurpose}
+                  onChange={(e) => setCorrectionPurpose(e.target.value)}
                   className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
                     validationErrors.shootingType ? 'border-red-300' : 'border-neutral-300'
                   }`}
                 >
-                  <option value="wedding">웨딩 촬영</option>
-                  <option value="snap">스냅 촬영</option>
-                  <option value="photobook">포토북</option>
+                  <option value="invitation">모바일 청첩장</option>
+                  <option value="table">포토 테이블</option>
+                  <option value="personal">소장용</option>
                   <option value="other">기타</option>
                 </select>
                 {validationErrors.shootingType && (
                   <p className="text-red-600 text-sm mt-1">{validationErrors.shootingType}</p>
-                )}
-              </div>
-
-              {/* 촬영 장소 */}
-              <div>
-                <label className="block text-sm font-medium text-neutral-700 mb-1">
-                  촬영 장소 <span className="text-red-600">*</span>
-                </label>
-                <input
-                  type="text"
-                  value={location}
-                  onChange={(e) => setLocation(e.target.value)}
-                  placeholder="예: 롯데월드 타워"
-                  className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                    validationErrors.location ? 'border-red-300' : 'border-neutral-300'
-                  }`}
-                />
-                {validationErrors.location && (
-                  <p className="text-red-600 text-sm mt-1">{validationErrors.location}</p>
                 )}
               </div>
 
