@@ -49,9 +49,8 @@ export const VerifyEmailPage = () => {
 
   return (
     <div className="min-h-screen bg-white flex flex-col">
-      <main className="flex-1 flex items-center justify-center">
-        <div className="px-8 py-8">
-          <div className="max-w-md mx-auto">
+      <main className="flex-1 flex flex-col items-center justify-center px-8 py-8">
+        <div className="w-full max-w-md">
             <div className="flex items-center justify-center w-12 h-12 bg-gradient-to-r from-neutral-800 to-neutral-600 rounded-lg mx-auto mb-6">
               <i className="fa-solid fa-envelope text-white text-lg"></i>
             </div>
