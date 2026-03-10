@@ -31,9 +31,9 @@ import { analyticsService } from './services/AnalyticsService';
 import './App.css';
 
 // 환경변수로 Mock/Api 전환
-// 개발 서버(npm run dev)에서는 VITE_USE_MOCK=true → Mock 사용
-// 빌드(npm run build) 또는 에뮬레이터 연결 시 → Api 사용
-const useMock = import.meta.env.VITE_USE_MOCK === 'true';
+// 프로덕션(npm run build): VITE_USE_MOCK_DATA가 false 또는 정의되지 않음 → Api 사용
+// 개발(npm run dev): VITE_USE_MOCK_DATA=true → Mock 사용
+const useMock = import.meta.env.VITE_USE_MOCK_DATA === 'true' && import.meta.env.DEV;
 const projectService = useMock ? new ProjectServiceMock() : new ProjectServiceApi();
 
 function AppContent() {
