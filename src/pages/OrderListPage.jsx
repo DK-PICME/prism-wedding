@@ -124,6 +124,7 @@ export const OrderListPage = () => {
       <PrismHeader activeNav="order-list" />
 
       <main className="flex-1 pt-[73px] pb-8">
+        <div className="px-8 py-8">
         {loading ? (
           <div className="flex items-center justify-center min-h-[500px]">
             <div className="text-center">
@@ -132,7 +133,7 @@ export const OrderListPage = () => {
             </div>
           </div>
         ) : error ? (
-          <div className="max-w-[1376px] mx-auto px-8">
+          <div className="max-w-[1376px] mx-auto">
             <div className="bg-red-50 border border-red-200 rounded-lg p-6">
               <p className="text-red-700">오류 발생: {error}</p>
               <button
@@ -144,9 +145,8 @@ export const OrderListPage = () => {
             </div>
           </div>
         ) : (
-          <div className="px-8">
-            <div className="max-w-[1376px] mx-auto">
-              <div className="flex items-center justify-between mb-8">
+          <div className="max-w-[1376px] mx-auto">
+            <div className="flex items-center justify-between mb-8">
                 <div>
                   <h1 className="text-3xl font-bold text-neutral-900 mb-1">주문 내역</h1>
                   <div className="flex items-center gap-3">
@@ -320,8 +320,8 @@ export const OrderListPage = () => {
                 </div>
               )}
             </div>
-          </div>
         )}
+        </div>
       </main>
 
       <PrismFooter />
