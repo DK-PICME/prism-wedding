@@ -192,9 +192,11 @@ interface Order {
   vatAmount: number;
   totalAmount: number;
 
-  // ── 상태 ──
-  status: 'PENDING_PAYMENT' | 'PAID' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED';
-  // ※ DRAFT 제거 — 주문 생성 즉시 PENDING_PAYMENT로 시작
+  // ── 상태 (통일된 상태코드 — Phase 2부터 Phase 3까지) ──
+  // Phase 2 활성 상태: PENDING_PAYMENT(10) → PAID(30) → CORRECTING(40) → COMPLETED(100) or CANCELLED(20)
+  // Phase 3 추가 상태: WAITING_BANK_INPUT(25), PRINTING(50), BEFORE_DELIVERY(60), IN_DELIVERY(70)
+  // 향후 액자, 앨범 등 제작 발송 단계 확장 가능
+  status: 'PENDING_PAYMENT' | 'WAITING_BANK_INPUT' | 'PAID' | 'CORRECTING' | 'PRINTING' | 'BEFORE_DELIVERY' | 'IN_DELIVERY' | 'COMPLETED' | 'CANCELLED';
 
   // ※ copyStatus 관련 필드 제거됨
   // processUploadedPhoto()에서 이미 내부 백업 복제 완료.

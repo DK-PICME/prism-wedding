@@ -7,6 +7,7 @@ import { PrismFooter } from '../components/PrismFooter';
 import { useAuth } from '../contexts/AuthContext';
 import priceConfigService from '../services/PriceConfigService.js';
 import analyticsService from '../services/AnalyticsService.js';
+import { ORDER_STATUS } from '../constants/OrderStatus.ts';
 
 /**
  * PaymentPage - 결제 처리 페이지
@@ -123,7 +124,7 @@ export const PaymentPage = () => {
       // 주문 상태 업데이트
       const orderRef = doc(db, 'orders', order.id);
       await updateDoc(orderRef, {
-        status: 'PAID',
+        status: ORDER_STATUS.PAID,
         updatedAt: serverTimestamp(),
       });
 

@@ -6,6 +6,7 @@ import { useAuth } from '../contexts/AuthContext';
 import ProjectServiceApi from '../services/ProjectServiceApi.js';
 import priceConfigService from '../services/PriceConfigService.js';
 import analyticsService from '../services/AnalyticsService.js';
+import { ORDER_STATUS } from '../constants/OrderStatus.ts';
 import { Timestamp, collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../config/firebase.js';
 
@@ -151,15 +152,7 @@ export const CreateNewOrderPage = () => {
         totalAmount: priceBreakdown.totalAmount,
 
         // 상태
-        status: 'DRAFT', // DRAFT → PENDING_PAYMENT → PAID → ...
-        copyStatus: 'PENDING', // PENDING → IN_PROGRESS → COMPLETED | FAILED
-
-        // 사진 복제 상태
-        copiedPhotoUrls: [],
-        copyStartedAt: null,
-        copyCompletedAt: null,
-        copyError: null,
-        copyAttempt: 0,
+        status: ORDER_STATUS.PENDING_PAYMENT, // PENDING_PAYMENT → PAID → CORRECTING → COMPLETED or CANCELLED
 
         // 타임아웃
         paymentDeadline: new Timestamp(

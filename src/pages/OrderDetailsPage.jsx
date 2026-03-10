@@ -7,6 +7,7 @@ import { PrismFooter } from '../components/PrismFooter';
 import { useAuth } from '../contexts/AuthContext';
 import priceConfigService from '../services/PriceConfigService.js';
 import analyticsService from '../services/AnalyticsService.js';
+import { ORDER_STATUS, ORDER_STATUS_LABEL } from '../constants/OrderStatus.ts';
 
 /**
  * OrderDetailsPage - 주문 상세 및 견적서 확인 페이지

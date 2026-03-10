@@ -7,6 +7,7 @@ import { PrismFooter } from '../components/PrismFooter';
 import { useAuth } from '../contexts/AuthContext';
 import priceConfigService from '../services/PriceConfigService.js';
 import analyticsService from '../services/AnalyticsService.js';
+import { ORDER_STATUS, ORDER_STATUS_LABEL, ORDER_STATUS_COLOR } from '../constants/OrderStatus.ts';
 
 export const OrderListPage = () => {
   const navigate = useNavigate();
@@ -80,31 +81,35 @@ export const OrderListPage = () => {
   const stats = [
     { 
       label: '대기중', 
-      count: orders.filter(o => o.status === 'PENDING_PAYMENT').length,
+      count: orders.filter(o => o.status === ORDER_STATUS.PENDING_PAYMENT).length,
       icon: 'fa-clock' 
     },
     { 
       label: '진행중', 
-      count: orders.filter(o => o.status === 'PAID' || o.status === 'IN_PROGRESS').length,
+      count: orders.filter(o => [ORDER_STATUS.PAID, ORDER_STATUS.CORRECTING].includes(o.status)).length,
       icon: 'fa-spinner' 
     },
     { 
       label: '완료', 
-      count: orders.filter(o => o.status === 'COMPLETED').length,
+      count: orders.filter(o => o.status === ORDER_STATUS.COMPLETED).length,
       icon: 'fa-check-circle' 
     },
   ];
 
   // 상태 라벨
   const getStatusLabel = (status) => {
-    const labels = {
-      'PENDING_PAYMENT': { label: '결제 대기', icon: 'fa-clock' },
-      'PAID': { label: '진행중', icon: 'fa-spinner' },
-      'IN_PROGRESS': { label: '진행중', icon: 'fa-spinner' },
-      'COMPLETED': { label: '완료', icon: 'fa-check-circle' },
-      'CANCELLED': { label: '취소됨', icon: 'fa-times' },
+    const labelMap = {
+      [ORDER_STATUS.PENDING_PAYMENT]: { label: ORDER_STATUS_LABEL.PENDING_PAYMENT, icon: 'fa-clock' },
+      [ORDER_STATUS.WAITING_BANK_INPUT]: { label: ORDER_STATUS_LABEL.WAITING_BANK_INPUT, icon: 'fa-piggy-bank' },
+      [ORDER_STATUS.PAID]: { label: ORDER_STATUS_LABEL.PAID, icon: 'fa-credit-card' },
+      [ORDER_STATUS.CORRECTING]: { label: ORDER_STATUS_LABEL.CORRECTING, icon: 'fa-wand-magic-sparkles' },
+      [ORDER_STATUS.PRINTING]: { label: ORDER_STATUS_LABEL.PRINTING, icon: 'fa-print' },
+      [ORDER_STATUS.BEFORE_DELIVERY]: { label: ORDER_STATUS_LABEL.BEFORE_DELIVERY, icon: 'fa-box' },
+      [ORDER_STATUS.IN_DELIVERY]: { label: ORDER_STATUS_LABEL.IN_DELIVERY, icon: 'fa-truck' },
+      [ORDER_STATUS.COMPLETED]: { label: ORDER_STATUS_LABEL.COMPLETED, icon: 'fa-check-circle' },
+      [ORDER_STATUS.CANCELLED]: { label: ORDER_STATUS_LABEL.CANCELLED, icon: 'fa-times' },
     };
-    return labels[status] || { label: status, icon: 'fa-question' };
+    return labelMap[status] || { label: status, icon: 'fa-question' };
   };
 
   // 날짜 포맷
@@ -178,10 +183,11 @@ export const OrderListPage = () => {
                     className="px-4 py-3 border border-neutral-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-neutral-900 bg-white text-neutral-700"
                   >
                     <option value="all">전체 상태</option>
-                    <option value="PENDING_PAYMENT">결제 대기</option>
-                    <option value="PAID">진행중</option>
-                    <option value="COMPLETED">완료</option>
-                    <option value="CANCELLED">취소됨</option>
+                    <option value={ORDER_STATUS.PENDING_PAYMENT}>{ORDER_STATUS_LABEL.PENDING_PAYMENT}</option>
+                    <option value={ORDER_STATUS.PAID}>{ORDER_STATUS_LABEL.PAID}</option>
+                    <option value={ORDER_STATUS.CORRECTING}>{ORDER_STATUS_LABEL.CORRECTING}</option>
+                    <option value={ORDER_STATUS.COMPLETED}>{ORDER_STATUS_LABEL.COMPLETED}</option>
+                    <option value={ORDER_STATUS.CANCELLED}>{ORDER_STATUS_LABEL.CANCELLED}</option>
                   </select>
                 </div>
               </div>
@@ -238,10 +244,15 @@ export const OrderListPage = () => {
                               </td>
                               <td className="px-6 py-4">
                                 <span className={`inline-flex items-center gap-2 px-3 py-1 rounded-lg text-sm font-medium ${
-                                  order.status === 'PENDING_PAYMENT' ? 'bg-yellow-50 text-yellow-700' :
-                                  order.status === 'PAID' || order.status === 'IN_PROGRESS' ? 'bg-blue-50 text-blue-700' :
-                                  order.status === 'COMPLETED' ? 'bg-green-50 text-green-700' :
-                                  'bg-neutral-50 text-neutral-700'
+                                  order.status === ORDER_STATUS.PENDING_PAYMENT ? 'bg-indigo-50 text-indigo-700' :
+                                  order.status === ORDER_STATUS.WAITING_BANK_INPUT ? 'bg-cyan-50 text-cyan-700' :
+                                  order.status === ORDER_STATUS.PAID ? 'bg-teal-50 text-teal-700' :
+                                  order.status === ORDER_STATUS.CORRECTING ? 'bg-amber-50 text-amber-700' :
+                                  order.status === ORDER_STATUS.PRINTING ? 'bg-purple-50 text-purple-700' :
+                                  order.status === ORDER_STATUS.BEFORE_DELIVERY ? 'bg-orange-50 text-orange-700' :
+                                  order.status === ORDER_STATUS.IN_DELIVERY ? 'bg-blue-50 text-blue-700' :
+                                  order.status === ORDER_STATUS.COMPLETED ? 'bg-green-50 text-green-700' :
+                                  'bg-red-50 text-red-700'
                                 }`}>
                                   <i className={`fa-solid ${statusInfo.icon}`}></i>
                                   {statusInfo.label}
