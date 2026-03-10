@@ -11,14 +11,14 @@ import analyticsService from '../services/AnalyticsService.js';
 /**
  * PaymentPage - 결제 처리 페이지
  * 
- * 주문의 사진 복제가 완료된 후 결제를 진행합니다.
+ * 주문 정보를 확인하고 결제를 진행합니다.
  * 
  * 진입 조건:
- * - copyStatus = COMPLETED
+ * - status = PENDING_PAYMENT
  * - 1시간 이내 (paymentDeadline 이전)
  * 
  * 플로우:
- * OrderDetailsPage (복제 완료)
+ * OrderDetailsPage (견적 확인)
  *   → PaymentPage (결제 수행)
  *   → 완료 (Order.status = PAID)
  */
@@ -76,13 +76,7 @@ export const PaymentPage = () => {
           return;
         }
 
-        // 진입 조건 검증
-        if (orderData.copyStatus !== 'COMPLETED') {
-          setError('사진 복제가 완료되지 않았습니다. OrderDetailsPage로 돌아가세요.');
-          setLoading(false);
-          return;
-        }
-
+        // 진입 조건 검증 (1시간 이내)
         const paymentDeadline = orderData.paymentDeadline.toDate
           ? orderData.paymentDeadline.toDate()
           : new Date(orderData.paymentDeadline);
