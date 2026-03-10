@@ -364,7 +364,7 @@ export const SettingsPage = () => {
                       <button
                         onClick={() => fileInputRef.current?.click()}
                         disabled={isUploadingAvatar}
-                        className="px-4 py-2 border border-neutral-300 hover:bg-neutral-50 rounded-lg text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="px-4 py-2 border border-neutral-300 text-neutral-700 hover:bg-neutral-50 rounded-lg text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         <i className="fa-solid fa-camera mr-2"></i>
                         {isUploadingAvatar ? '업로드 중...' : '아바타 변경'}

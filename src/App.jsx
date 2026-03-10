@@ -22,6 +22,7 @@ import { VerifyEmailPage } from './pages/VerifyEmailPage';
 import { InquiryPage } from './pages/InquiryPage';
 import { FailedItemManagementPage } from './pages/FailedItemManagementPage';
 import { PhotoManagementPage } from './pages/PhotoManagementPage';
+import { ServiceIntroPage } from './pages/ServiceIntroPage';
 import { ProjectServiceMock } from './services/ProjectServiceMock';
 import { ProjectServiceApi } from './services/ProjectServiceApi';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
@@ -71,6 +72,9 @@ function AppContent() {
         <Route path="/verify-email" element={<VerifyEmailPage />} />
         <Route path="/password-recovery" element={<PasswordRecoveryPage />} />
 
+        {/* 서비스 소개 페이지 (공개) */}
+        <Route path="/" element={<ServiceIntroPage />} />
+
         {/* 주문 관리 페이지 (보호됨) */}
         <Route path="/orders" element={<ProtectedRoute element={<OrderListPage />} />} />
         <Route path="/orders/new" element={<ProtectedRoute element={<CreateNewOrderPage />} />} />
@@ -102,7 +106,6 @@ function AppContent() {
         <Route path="/waiting" element={<ProtectedRoute element={<WaitingPage projectService={projectService} />} />} />
 
         {/* 루트 경로 및 기본값 */}
-        <Route path="/" element={<Navigate to="/login" replace />} />
         <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
     </div>

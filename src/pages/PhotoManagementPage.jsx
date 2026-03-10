@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { PrismHeader } from '../components/PrismHeader';
-import { PrismFooter } from '../components/PrismFooter';
 import { useAuth } from '../contexts/AuthContext';
 import ProjectServiceApi from '../services/ProjectServiceApi.js';
 import PhotoService from '../services/PhotoService.js';
@@ -404,7 +403,7 @@ export const PhotoManagementPage = () => {
     <div className="min-h-screen bg-neutral-50 flex flex-col">
       <PrismHeader activeNav="photo-management" />
 
-      <main className="pt-[73px] flex-1">
+      <main className="pt-[73px] pb-[89px] flex-1">
         <div className="px-8 py-8">
           <div className="max-w-[1376px] mx-auto">
             {/* 페이지 헤더 */}
@@ -520,8 +519,8 @@ export const PhotoManagementPage = () => {
         />
       )}
 
-      {/* 하단 액션 바 */}
-      <div className="bg-white border-t border-neutral-200 px-8 py-4">
+      {/* 하단 액션 바 (고정) */}
+      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-neutral-200 px-8 py-4 z-40">
         <div className="max-w-[1376px] mx-auto flex items-center justify-between">
           <div className="text-sm text-neutral-600">
             선택됨: <span className="font-bold text-neutral-900">{selectedPhotoIds.size}</span>개
@@ -539,8 +538,6 @@ export const PhotoManagementPage = () => {
           </button>
         </div>
       </div>
-
-      <PrismFooter />
     </div>
   );
 };

@@ -10,6 +10,7 @@ export const PrismHeader = ({ activeNav = 'order-list' }) => {
   const profileMenuRef = useRef(null);
   
   const navItems = [
+    { id: 'service-intro', label: '서비스 소개', icon: 'fa-star', path: '/' },
     { id: 'photo-management', label: '사진 관리', icon: 'fa-images', path: '/photo-management' },
     { id: 'order-list', label: '주문 내역', icon: 'fa-list-check', path: '/orders' },
   ];
