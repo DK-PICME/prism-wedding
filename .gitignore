@@ -13,8 +13,8 @@ dist-ssr
 *.local
 
 # Environment variables
-.env.local              # 로컬 개발 (실제 값, 무시)
-.env.production         # 운영 배포 (실제 값, 무시)
+.env.local              # 로컬 개발 실제값
+functions/.env.local    # Functions 로컬 실제값
 .env.*.local
 .env.development
 .env.production.local
