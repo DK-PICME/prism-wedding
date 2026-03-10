@@ -550,11 +550,51 @@ const ProjectSection = ({
 
       {/* 섹션 바디 (접혀있으면 숨김) */}
       {isExpanded && (
-        <div className="p-6">
+        <div 
+          className="p-6"
+          onDragOver={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            e.currentTarget.classList.add('bg-blue-50');
+          }}
+          onDragLeave={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            e.currentTarget.classList.remove('bg-blue-50');
+          }}
+          onDrop={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            e.currentTarget.classList.remove('bg-blue-50');
+            const files = Array.from(e.dataTransfer?.files || []);
+            if (files.length > 0) {
+              onFileSelect(files);
+            }
+          }}
+        >
           {photos.length === 0 ? (
             // 비어있을 때 업로드 유도
             <div
               onClick={() => fileInputRef.current?.click()}
+              onDragOver={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                e.currentTarget.classList.add('border-blue-400', 'bg-blue-50');
+              }}
+              onDragLeave={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                e.currentTarget.classList.remove('border-blue-400', 'bg-blue-50');
+              }}
+              onDrop={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                e.currentTarget.classList.remove('border-blue-400', 'bg-blue-50');
+                const files = Array.from(e.dataTransfer?.files || []);
+                if (files.length > 0) {
+                  onFileSelect(files);
+                }
+              }}
               className="border-2 border-dashed border-neutral-300 rounded-xl p-12 text-center hover:border-neutral-400 transition-colors cursor-pointer"
             >
               <div className="flex items-center justify-center w-16 h-16 bg-neutral-100 rounded-full mx-auto mb-4">
