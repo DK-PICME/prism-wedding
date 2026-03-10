@@ -756,7 +756,9 @@ const PhotoCard = ({
         {/* 체크박스 & 호버 액션 */}
         {canSelect && uploadProgress === undefined && (
           <>
-            <div className="absolute top-2 right-2">
+            <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 rounded-lg transition-all pointer-events-none"></div>
+
+            <div className="absolute top-2 right-2 z-10 cursor-pointer">
               <input
                 type="checkbox"
                 checked={isSelected}
@@ -767,8 +769,6 @@ const PhotoCard = ({
                 className="w-5 h-5 cursor-pointer"
               />
             </div>
-
-            <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 rounded-lg transition-all"></div>
 
             <div className="absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
               <button
