@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { doc, onSnapshot } from 'firebase/firestore';
 import { db } from '../config/firebase.js';
 import { PrismHeader } from '../components/PrismHeader';
@@ -22,8 +22,7 @@ import analyticsService from '../services/AnalyticsService.js';
 export const OrderDetailsPage = () => {
   const navigate = useNavigate();
   const { currentUser } = useAuth();
-  const [searchParams] = useSearchParams();
-  const orderId = searchParams.get('orderId');
+  const { orderId } = useParams();
 
   // ─── 상태 관리 ─────────────────────────────────────────
   const [order, setOrder] = useState(null);
@@ -89,7 +88,7 @@ export const OrderDetailsPage = () => {
       totalAmount: order.totalAmount,
     });
 
-    navigate(`/payment?orderId=${orderId}`);
+    navigate(`/orders/${orderId}/payment`);
   };
 
   // ─── 렌더링 유틸리티 ─────────────────────────────────────────

@@ -187,7 +187,7 @@ export const CreateNewOrderPage = () => {
       });
 
       // OrderDetailsPage로 이동
-      navigate(`/order-details?orderId=${orderId}`, {
+      navigate(`/orders/${orderId}`, {
         state: { newOrder: true },
       });
     } catch (err) {

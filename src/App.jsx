@@ -72,10 +72,10 @@ function AppContent() {
         <Route path="/password-recovery" element={<PasswordRecoveryPage />} />
 
         {/* 주문 관리 페이지 (보호됨) */}
-        <Route path="/order-list" element={<ProtectedRoute element={<OrderListPage />} />} />
-        <Route path="/order-details" element={<ProtectedRoute element={<OrderDetailsPage />} />} />
-        <Route path="/create-new-order" element={<ProtectedRoute element={<CreateNewOrderPage />} />} />
-        <Route path="/payment" element={<ProtectedRoute element={<PaymentPage />} />} />
+        <Route path="/orders" element={<ProtectedRoute element={<OrderListPage />} />} />
+        <Route path="/orders/new" element={<ProtectedRoute element={<CreateNewOrderPage />} />} />
+        <Route path="/orders/:orderId" element={<ProtectedRoute element={<OrderDetailsPage />} />} />
+        <Route path="/orders/:orderId/payment" element={<ProtectedRoute element={<PaymentPage />} />} />
 
         {/* 사진 관리 페이지 (보호됨) */}
         <Route path="/photo-management" element={<ProtectedRoute element={<PhotoManagementPage />} />} />

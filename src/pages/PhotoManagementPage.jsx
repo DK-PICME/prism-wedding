@@ -312,7 +312,7 @@ export const PhotoManagementPage = () => {
     sessionStorage.setItem('selectedPhotoIds', JSON.stringify(selectedIds));
 
     // CreateNewOrderPage로 이동 (선택된 사진 정보 전달)
-    navigate('/create-new-order', {
+    navigate('/orders/new', {
       state: {
         selectedPhotoIds: selectedIds,
       },

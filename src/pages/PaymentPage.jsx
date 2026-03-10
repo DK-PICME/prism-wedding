@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { doc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../config/firebase.js';
 import { PrismHeader } from '../components/PrismHeader';
@@ -25,8 +25,7 @@ import analyticsService from '../services/AnalyticsService.js';
 export const PaymentPage = () => {
   const navigate = useNavigate();
   const { currentUser } = useAuth();
-  const [searchParams] = useSearchParams();
-  const orderId = searchParams.get('orderId');
+  const { orderId } = useParams();
 
   // ─── 상태 관리 ─────────────────────────────────────────
   const [order, setOrder] = useState(null);
