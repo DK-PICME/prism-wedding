@@ -18,12 +18,9 @@ export const OrderListPage = () => {
   const [searchText, setSearchText] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
 
-  // 권한 검증 및 주문 로드
+  // 주문 로드 (ProtectedRoute에서 인증 보장됨)
   useEffect(() => {
-    if (!currentUser) {
-      navigate('/login');
-      return;
-    }
+    if (!currentUser) return;
 
     setLoading(true);
     
