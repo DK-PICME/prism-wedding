@@ -1,6 +1,7 @@
 import { initializeApp } from 'firebase/app';
 import { getAuth, connectAuthEmulator } from 'firebase/auth';
 import { getFirestore, connectFirestoreEmulator } from 'firebase/firestore';
+import { getStorage, connectStorageEmulator } from 'firebase/storage';
 
 // Firebase 설정 (프리즘 스튜디오 프로젝트)
 const firebaseConfig = {
@@ -18,6 +19,7 @@ const app = initializeApp(firebaseConfig);
 // Firebase 서비스 초기화
 export const auth = getAuth(app);
 export const db = getFirestore(app);
+export const storage = getStorage(app);
 
 // 로컬 에뮬레이터 연결 (개발 환경)
 const useEmulator = import.meta.env.VITE_USE_EMULATOR === 'true';
@@ -31,6 +33,10 @@ if (useEmulator && typeof window !== 'undefined') {
   
   if (!db.emulatorConfig) {
     connectFirestoreEmulator(db, 'localhost', parseInt(import.meta.env.VITE_FIREBASE_FIRESTORE_EMULATOR_PORT || '8181'));
+  }
+
+  if (!storage.emulatorConfig) {
+    connectStorageEmulator(storage, 'localhost', 9199);
   }
   
   console.log('✅ Firebase 에뮬레이터 연결됨');
