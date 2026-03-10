@@ -771,6 +771,11 @@ Order.paymentDeadline 초과 시:
 
 🔵 TODO: Remote Config A/B 테스트
 └─ 가격 실험 그룹 설정 및 분석
+
+🔵 TODO (추후 검토): 주문 참조 사진 삭제 정책
+├─ 주문에 참조된 사진(usedInOrders) 삭제 허용 여부
+├─ 내부 백업(internalBackupUrl) 존재 시 삭제 허용 vs isLocked로 삭제 차단
+└─ 결정 후 Photo 삭제 로직 및 UI 반영
 ```
 
 ---
