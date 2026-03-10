@@ -13,11 +13,11 @@ dist-ssr
 *.local
 
 # Environment variables
-.env
-.env.local
+.env.local              # 로컬 개발 (실제 값, 무시)
+.env.production         # 운영 배포 (실제 값, 무시)
 .env.*.local
 .env.development
-.env.production
+.env.production.local
 
 # Editor directories and files
 .vscode/*
