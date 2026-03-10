@@ -8,7 +8,7 @@
  */
 
 import { getRemoteConfig, fetchAndActivate, getValue } from 'firebase/remote-config';
-import { app } from '../config/firebase.js';
+import app from '../config/firebase.js';
 
 // ── 로컬 기본값 (Remote Config 패치 실패 시 사용) ──
 export const DEFAULT_PRICE_CONFIG = {

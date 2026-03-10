@@ -23,5 +23,17 @@ service cloud.firestore {
       allow read, write: if request.auth != null && resource.data.userId == request.auth.uid;
       allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
     }
+
+    // Order 컬렉션: userId 기반 접근 제어
+    match /orders/{orderId} {
+      allow read, write: if request.auth != null && resource.data.userId == request.auth.uid;
+      allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
+    }
+
+    // Payment 컬렉션: userId 기반 접근 제어
+    match /payments/{paymentId} {
+      allow read, write: if request.auth != null && resource.data.userId == request.auth.uid;
+      allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
+    }
   }
 }
