@@ -53,7 +53,7 @@ export const LoginPage = () => {
     setIsLoading(true);
     try {
       await login(formData.email, formData.password);
-      navigate('/order-list');
+      navigate('/photo-management');
     } catch (err) {
       const code = err?.code || '';
       if (code === 'auth/invalid-credential' || code === 'auth/user-not-found' || code === 'auth/wrong-password') {
@@ -79,7 +79,7 @@ export const LoginPage = () => {
     setIsLoading(true);
     try {
       await loginWithGooglePopup();
-      navigate('/order-list');
+      navigate('/photo-management');
     } catch (err) {
       const code = err?.code || '';
       if (code === 'auth/popup-closed-by-user') {

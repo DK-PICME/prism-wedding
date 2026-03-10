@@ -110,7 +110,7 @@ export const SignUpPage = () => {
     setIsLoading(true);
     try {
       await loginWithGooglePopup();
-      navigate('/order-list');
+      navigate('/photo-management');
     } catch (err) {
       setError(err?.message || '소셜 로그인에 실패했습니다');
     } finally {
