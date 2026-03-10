@@ -312,10 +312,14 @@ export const PhotoManagementPage = () => {
       photoCount: selectedPhotoIds.size,
     });
 
+    // 선택된 사진 ID를 sessionStorage에 저장 (새로고침 대비)
+    const selectedIds = Array.from(selectedPhotoIds);
+    sessionStorage.setItem('selectedPhotoIds', JSON.stringify(selectedIds));
+
     // CreateNewOrderPage로 이동 (선택된 사진 정보 전달)
     navigate('/create-new-order', {
       state: {
-        selectedPhotoIds: Array.from(selectedPhotoIds),
+        selectedPhotoIds: selectedIds,
       },
     });
   };
