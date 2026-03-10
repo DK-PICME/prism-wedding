@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { getProfileImageUrl } from '../utils/avatarUtils';
 
 export const PrismHeader = ({ activeNav = 'order-list' }) => {
   const navigate = useNavigate();
@@ -17,6 +18,7 @@ export const PrismHeader = ({ activeNav = 'order-list' }) => {
   const displayName = userData?.displayName || currentUser?.displayName || currentUser?.email?.split('@')[0] || '사용자';
   const userEmail = userData?.email || currentUser?.email || 'user@example.com';
   const photoURL = userData?.photoURL || currentUser?.photoURL || null;
+  const profileImageUrl = getProfileImageUrl(photoURL, currentUser?.uid);
 
   // 프로필 메뉴 외부 클릭 감지
   useEffect(() => {
@@ -89,17 +91,11 @@ export const PrismHeader = ({ activeNav = 'order-list' }) => {
               onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
               className="flex items-center gap-3 pl-4 border-l border-neutral-200 hover:bg-neutral-50 px-3 py-1 rounded-lg transition-colors"
             >
-              {photoURL ? (
-                <img
-                  src={photoURL}
-                  alt="User"
-                  className="w-10 h-10 rounded-full border-2 border-neutral-200 object-cover"
-                />
-              ) : (
-                <div className="w-10 h-10 rounded-full border-2 border-neutral-200 bg-gradient-to-r from-neutral-800 to-neutral-600 flex items-center justify-center">
-                  <i className="fa-solid fa-user text-white text-sm"></i>
-                </div>
-              )}
+              <img
+                src={profileImageUrl}
+                alt="User"
+                className="w-10 h-10 rounded-full border-2 border-neutral-200 object-cover flex-shrink-0"
+              />
               <div className="text-sm text-left">
                 <div className="text-neutral-900">{displayName}</div>
                 <div className="text-neutral-500 text-xs">{userEmail}</div>

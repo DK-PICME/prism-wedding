@@ -4,7 +4,9 @@ import { useAuth } from '../contexts/AuthContext';
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { PrismHeader } from '../components/PrismHeader';
 import { PrismFooter } from '../components/PrismFooter';
+import { ChangePasswordModal } from '../components/ChangePasswordModal';
 import { compressImage, formatFileSize } from '../utils/imageCompression';
+import { getProfileImageUrl } from '../utils/avatarUtils';
 
 export const SettingsPage = () => {
   const navigate = useNavigate();
@@ -32,10 +34,8 @@ export const SettingsPage = () => {
   const [avatarError, setAvatarError] = useState('');
   const fileInputRef = useRef(null);
   
-  // 비밀번호 변경
-  const [currentPasswordInput, setCurrentPasswordInput] = useState('');
-  const [newPasswordInput, setNewPasswordInput] = useState('');
-  const [newPasswordConfirm, setNewPasswordConfirm] = useState('');
+  // 비밀번호 변경 모달
+  const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
   const [passwordError, setPasswordError] = useState('');
   const [passwordSuccess, setPasswordSuccess] = useState('');
   const [isChangingPassword, setIsChangingPassword] = useState(false);
@@ -220,35 +220,35 @@ export const SettingsPage = () => {
   };
 
   // 비밀번호 변경 핸들러
-  const handleChangePassword = async () => {
+  const handleChangePassword = async (currentPassword, newPassword, newPasswordConfirm) => {
     setPasswordError('');
     setPasswordSuccess('');
 
-    if (!currentPasswordInput.trim()) {
+    if (!currentPassword.trim()) {
       setPasswordError('현재 비밀번호를 입력해주세요');
       return;
     }
-    if (!newPasswordInput.trim()) {
+    if (!newPassword.trim()) {
       setPasswordError('새 비밀번호를 입력해주세요');
       return;
     }
-    if (newPasswordInput !== newPasswordConfirm) {
+    if (newPassword !== newPasswordConfirm) {
       setPasswordError('새 비밀번호가 일치하지 않습니다');
       return;
     }
-    if (newPasswordInput.length < 6) {
+    if (newPassword.length < 6) {
       setPasswordError('새 비밀번호는 최소 6자 이상이어야 합니다');
       return;
     }
 
     setIsChangingPassword(true);
     try {
-      await changePassword(currentPasswordInput, newPasswordInput);
+      await changePassword(currentPassword, newPassword);
       setPasswordSuccess('비밀번호가 성공적으로 변경되었습니다');
-      setCurrentPasswordInput('');
-      setNewPasswordInput('');
-      setNewPasswordConfirm('');
-      setTimeout(() => setPasswordSuccess(''), 3000);
+      setTimeout(() => {
+        setPasswordSuccess('');
+        setIsPasswordModalOpen(false);
+      }, 2000);
     } catch (err) {
       setPasswordError(err.message || '비밀번호 변경에 실패했습니다');
     } finally {
@@ -317,6 +317,15 @@ export const SettingsPage = () => {
     <div className="min-h-screen bg-white dark:bg-neutral-950">
       <PrismHeader activeNav="settings" />
 
+      <ChangePasswordModal
+        isOpen={isPasswordModalOpen}
+        isLoading={isChangingPassword}
+        error={passwordError}
+        success={passwordSuccess}
+        onClose={() => setIsPasswordModalOpen(false)}
+        onSubmit={handleChangePassword}
+      />
+
       <main className="pt-[73px]">
         <div className="px-8 py-8">
           <div className="max-w-[1376px] mx-auto">
@@ -331,7 +340,7 @@ export const SettingsPage = () => {
                   <div className="text-center mb-6">
                     <div className="relative inline-block">
                       <img
-                        src={avatarPreview || userData?.photoURL || 'https://api.dicebear.com/7.x/notionists/svg?scale=200&seed=' + (currentUser?.uid?.slice(0, 8) || '4782')}
+                        src={getProfileImageUrl(avatarPreview || userData?.photoURL, currentUser?.uid, 200)}
                         alt="User"
                         className="w-24 h-24 rounded-full border-4 border-neutral-200 mx-auto mb-4 object-cover"
                       />
@@ -405,238 +414,12 @@ export const SettingsPage = () => {
                     >
                       {isSavingProfile ? '저장 중...' : '프로필 저장'}
                     </button>
+                    
                   </div>
                 </div>
               </div>
 
               <div className="col-span-2 space-y-6">
-                <div className="bg-white border border-neutral-200 rounded-2xl">
-                  <div className="border-b border-neutral-200 p-6">
-                    <h2 className="text-xl text-neutral-900">로그인 및 보안</h2>
-                  </div>
-                  <div className="p-6 space-y-6">
-                    <div>
-                      <div className="flex items-center justify-between mb-4">
-                        <div>
-                          <h3 className="text-lg text-neutral-900">연결된 계정</h3>
-                          <p className="text-sm text-neutral-600">소셜 로그인 계정을 관리하세요</p>
-                        </div>
-                      </div>
-
-                      <div className="space-y-3">
-                        {currentUser?.providerData?.length ? (
-                          currentUser.providerData.map((provider, idx) => {
-                            const info = getProviderInfo(provider.providerId);
-                            const email = provider.email || userEmail;
-                            const isPrimary = idx === 0;
-                            const canUnlink = currentUser.providerData.length > 1;
-                            const isUnlinkTarget = unlinkTargetProviderId === provider.providerId;
-                            // Google 해제 시 → 이메일 유지 → 비밀번호로 재인증
-                            // 이메일 해제 시 → Google 유지 → Google 팝업으로 재인증
-                            const needsPasswordForUnlink = provider.providerId === 'google.com' &&
-                              currentUser?.providerData?.some((p) => p.providerId === 'password');
-
-                            return (
-                              <div key={provider.providerId + (provider.uid || idx)} className="border border-neutral-200 rounded-lg overflow-hidden">
-                                <div className="flex items-center justify-between p-4">
-                                  <div className="flex items-center gap-3">
-                                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${info.bgClass}`}>
-                                      {provider.providerId === 'google.com' ? (
-                                        <svg className="w-4 h-4" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
-                                      ) : info.icon ? (
-                                        <i className={`${info.icon} text-white text-xs`}></i>
-                                      ) : null}
-                                    </div>
-                                    <div>
-                                      <div className="text-neutral-900">{info.label}</div>
-                                      <div className="text-sm text-neutral-600">{email}</div>
-                                    </div>
-                                  </div>
-                                  {canUnlink ? (
-                                    <button
-                                      onClick={() => handleUnlinkClick(provider.providerId)}
-                                      disabled={isUnlinking}
-                                      className="px-3 py-1 text-sm border border-neutral-300 hover:bg-neutral-50 rounded text-neutral-700 disabled:opacity-50"
-                                    >
-                                      연결 해제
-                                    </button>
-                                  ) : (
-                                    <span className="px-3 py-1 text-sm bg-neutral-100 text-neutral-600 rounded">기본 계정</span>
-                                  )}
-                                </div>
-
-                                {isUnlinkTarget && (
-                                  <div className="px-4 pb-4 pt-0 border-t border-neutral-100">
-                                    {needsPasswordForUnlink ? (
-                                      <div className="space-y-3 mt-3">
-                                        <p className="text-sm text-neutral-600">이메일 계정으로 재인증하기 위해 비밀번호를 입력해주세요</p>
-                                        <input
-                                          type="password"
-                                          placeholder="비밀번호"
-                                          value={unlinkPassword}
-                                          onChange={(e) => setUnlinkPassword(e.target.value)}
-                                          className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-neutral-500"
-                                          disabled={isUnlinking}
-                                        />
-                                      </div>
-                                    ) : (
-                                      <p className="text-sm text-neutral-600 mt-3">연결된 소셜 계정으로 재인증한 후 이메일 연결이 해제됩니다.</p>
-                                    )}
-                                    {unlinkError && (
-                                      <p className="text-sm text-red-600 mt-2">{unlinkError}</p>
-                                    )}
-                                    <div className="flex gap-2 mt-3">
-                                      <button
-                                        onClick={handleUnlinkCancel}
-                                        disabled={isUnlinking}
-                                        className="px-3 py-1.5 text-sm border border-neutral-300 hover:bg-neutral-50 rounded"
-                                      >
-                                        취소
-                                      </button>
-                                      <button
-                                        onClick={handleUnlinkConfirm}
-                                        disabled={isUnlinking}
-                                        className="px-3 py-1.5 text-sm bg-neutral-900 text-white hover:bg-neutral-800 rounded disabled:opacity-50"
-                                      >
-                                        {isUnlinking ? '처리 중...' : '확인'}
-                                      </button>
-                                    </div>
-                                  </div>
-                                )}
-                              </div>
-                            );
-                          })
-                        ) : (
-                          <div className="p-4 border border-neutral-200 rounded-lg text-sm text-neutral-500">
-                            연결된 계정 정보를 불러올 수 없습니다.
-                          </div>
-                        )}
-                      </div>
-                    </div>
-
-                    {currentUser?.providerData?.some(provider => provider.providerId === 'password') && (
-                      <div>
-                        <h3 className="text-lg text-neutral-900 mb-3">비밀번호 변경</h3>
-                        <div className="space-y-3">
-                          <input 
-                            type="password" 
-                            placeholder="현재 비밀번호" 
-                            value={currentPasswordInput}
-                            onChange={(e) => setCurrentPasswordInput(e.target.value)}
-                            className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-neutral-500" 
-                          />
-                          <input 
-                            type="password" 
-                            placeholder="새 비밀번호" 
-                            value={newPasswordInput}
-                            onChange={(e) => setNewPasswordInput(e.target.value)}
-                            className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-neutral-500" 
-                          />
-                          <input 
-                            type="password" 
-                            placeholder="새 비밀번호 확인" 
-                            value={newPasswordConfirm}
-                            onChange={(e) => setNewPasswordConfirm(e.target.value)}
-                            className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-neutral-500" 
-                          />
-                          {passwordError && (
-                            <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
-                              {passwordError}
-                            </div>
-                          )}
-                          {passwordSuccess && (
-                            <div className="p-3 bg-green-50 border border-green-200 rounded-lg text-sm text-green-700">
-                              {passwordSuccess}
-                            </div>
-                          )}
-                          <button 
-                            onClick={handleChangePassword}
-                            disabled={isChangingPassword}
-                            className="px-4 py-2 bg-neutral-900 text-white hover:bg-neutral-800 rounded-lg transition-colors disabled:bg-neutral-400"
-                          >
-                            {isChangingPassword ? '변경 중...' : '비밀번호 변경'}
-                          </button>
-                        </div>
-                      </div>
-                    )}
-
-                    <div className="border-t border-neutral-200 pt-6">
-                      <h3 className="text-lg text-neutral-900 mb-3">계정 관리</h3>
-                      <div className="space-y-3">
-                        {logoutError && (
-                          <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
-                            {logoutError}
-                          </div>
-                        )}
-                        <button
-                          onClick={handleLogout}
-                          disabled={isLoggingOut}
-                          className="w-full px-4 py-2 bg-neutral-900 hover:bg-neutral-800 text-white rounded-lg transition-colors disabled:bg-neutral-400 font-medium"
-                        >
-                          {isLoggingOut ? '로그아웃 중...' : '로그아웃'}
-                        </button>
-                      </div>
-                    </div>
-
-                    <div className="border-t border-neutral-200 pt-6">
-                      <h3 className="text-lg text-neutral-900 mb-3">계정 삭제</h3>
-                      <p className="text-sm text-neutral-600 mb-4">
-                        계정을 삭제하면 모든 데이터가 영구적으로 삭제되며 복구할 수 없습니다.
-                      </p>
-                      
-                      {!deleteConfirmation ? (
-                        <button
-                          onClick={() => setDeleteConfirmation(true)}
-                          className="w-full px-4 py-2 bg-red-100 text-red-700 hover:bg-red-200 rounded-lg transition-colors font-medium"
-                        >
-                          계정 삭제하기
-                        </button>
-                      ) : (
-                        <div className="space-y-3 p-4 bg-red-50 border border-red-200 rounded-lg">
-                          <p className="text-sm text-red-700 font-medium">
-                            정말로 계정을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.
-                          </p>
-                          {currentUser?.providerData.some(provider => provider.providerId === 'password') && (
-                            <input
-                              type="password"
-                              placeholder="비밀번호 입력"
-                              value={deletePassword}
-                              onChange={(e) => setDeletePassword(e.target.value)}
-                              className="w-full px-3 py-2 border border-red-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
-                              disabled={isDeletingAccount}
-                            />
-                          )}
-                          {deleteError && (
-                            <div className="p-2 bg-red-100 border border-red-300 rounded text-sm text-red-700">
-                              {deleteError}
-                            </div>
-                          )}
-                          <div className="flex gap-3">
-                            <button
-                              onClick={() => {
-                                setDeleteConfirmation(false);
-                                setDeleteError('');
-                                setDeletePassword('');
-                              }}
-                              disabled={isDeletingAccount}
-                              className="flex-1 px-4 py-2 bg-neutral-200 text-neutral-900 hover:bg-neutral-300 rounded-lg transition-colors disabled:bg-neutral-100"
-                            >
-                              취소
-                            </button>
-                            <button
-                              onClick={handleDeleteAccount}
-                              disabled={isDeletingAccount}
-                              className="flex-1 px-4 py-2 bg-red-600 text-white hover:bg-red-700 rounded-lg transition-colors disabled:bg-red-400 font-medium"
-                            >
-                              {isDeletingAccount ? '삭제 중...' : '계정 삭제'}
-                            </button>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-
                 <div className="bg-white border border-neutral-200 rounded-2xl">
                   <div className="border-b border-neutral-200 p-6">
                     <h2 className="text-xl text-neutral-900">알림 설정</h2>
@@ -794,6 +577,199 @@ export const SettingsPage = () => {
                           </button>
                         ))}
                       </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-white border border-neutral-200 rounded-2xl">
+                  <div className="border-b border-neutral-200 p-6">
+                    <h2 className="text-xl text-neutral-900">로그인 및 보안</h2>
+                  </div>
+                  <div className="p-6 space-y-6">
+                    <div>
+                      <div className="flex items-center justify-between mb-4">
+                        <div>
+                          <h3 className="text-lg text-neutral-900">연결된 계정</h3>
+                          <p className="text-sm text-neutral-600">소셜 로그인 계정을 관리하세요</p>
+                        </div>
+                      </div>
+
+                      <div className="space-y-3">
+                        {currentUser?.providerData?.length ? (
+                          currentUser.providerData.map((provider, idx) => {
+                            const info = getProviderInfo(provider.providerId);
+                            const email = provider.email || userEmail;
+                            const isPrimary = idx === 0;
+                            const canUnlink = currentUser.providerData.length > 1;
+                            const isUnlinkTarget = unlinkTargetProviderId === provider.providerId;
+                            const needsPasswordForUnlink = provider.providerId === 'google.com' &&
+                              currentUser?.providerData?.some((p) => p.providerId === 'password');
+
+                            return (
+                              <div key={provider.providerId + (provider.uid || idx)} className="border border-neutral-200 rounded-lg overflow-hidden">
+                                <div className="flex items-center justify-between p-4">
+                                  <div className="flex items-center gap-3">
+                                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${info.bgClass}`}>
+                                      {provider.providerId === 'google.com' ? (
+                                        <svg className="w-4 h-4" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+                                      ) : info.icon ? (
+                                        <i className={`${info.icon} text-white text-xs`}></i>
+                                      ) : null}
+                                    </div>
+                                    <div>
+                                      <div className="text-neutral-900">{info.label}</div>
+                                      <div className="text-sm text-neutral-600">{email}</div>
+                                    </div>
+                                  </div>
+                                  {canUnlink ? (
+                                    <button
+                                      onClick={() => handleUnlinkClick(provider.providerId)}
+                                      disabled={isUnlinking}
+                                      className="px-3 py-1 text-sm border border-neutral-300 hover:bg-neutral-50 rounded text-neutral-700 disabled:opacity-50"
+                                    >
+                                      연결 해제
+                                    </button>
+                                  ) : (
+                                    <span className="px-3 py-1 text-sm bg-neutral-100 text-neutral-600 rounded">기본 계정</span>
+                                  )}
+                                </div>
+
+                                {isUnlinkTarget && (
+                                  <div className="px-4 pb-4 pt-0 border-t border-neutral-100">
+                                    {needsPasswordForUnlink ? (
+                                      <div className="space-y-3 mt-3">
+                                        <p className="text-sm text-neutral-600">이메일 계정으로 재인증하기 위해 비밀번호를 입력해주세요</p>
+                                        <input
+                                          type="password"
+                                          placeholder="비밀번호"
+                                          value={unlinkPassword}
+                                          onChange={(e) => setUnlinkPassword(e.target.value)}
+                                          className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-neutral-500"
+                                          disabled={isUnlinking}
+                                        />
+                                      </div>
+                                    ) : (
+                                      <p className="text-sm text-neutral-600 mt-3">연결된 소셜 계정으로 재인증한 후 이메일 연결이 해제됩니다.</p>
+                                    )}
+                                    {unlinkError && (
+                                      <p className="text-sm text-red-600 mt-2">{unlinkError}</p>
+                                    )}
+                                    <div className="flex gap-2 mt-3">
+                                      <button
+                                        onClick={handleUnlinkCancel}
+                                        disabled={isUnlinking}
+                                        className="px-3 py-1.5 text-sm border border-neutral-300 hover:bg-neutral-50 rounded"
+                                      >
+                                        취소
+                                      </button>
+                                      <button
+                                        onClick={handleUnlinkConfirm}
+                                        disabled={isUnlinking}
+                                        className="px-3 py-1.5 text-sm bg-neutral-900 text-white hover:bg-neutral-800 rounded disabled:opacity-50"
+                                      >
+                                        {isUnlinking ? '처리 중...' : '확인'}
+                                      </button>
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
+                            );
+                          })
+                        ) : (
+                          <div className="p-4 border border-neutral-200 rounded-lg text-sm text-neutral-500">
+                            연결된 계정 정보를 불러올 수 없습니다.
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {currentUser?.providerData?.some(provider => provider.providerId === 'password') && (
+                      <div>
+                        <div className="border-t border-neutral-200 my-2"></div>
+                      </div>
+                    )}
+
+                    <div className="border-t border-neutral-200 pt-6">
+                      <h3 className="text-lg text-neutral-900 mb-3">계정 관리</h3>
+                      <div className="space-y-3">
+                        {logoutError && (
+                          <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
+                            {logoutError}
+                          </div>
+                        )}
+                        {currentUser?.providerData?.some(provider => provider.providerId === 'password') && (
+                          <button
+                            onClick={() => setIsPasswordModalOpen(true)}
+                            className="w-full px-4 py-2 border border-neutral-300 text-neutral-700 hover:bg-neutral-50 rounded-lg transition-colors font-medium"
+                          >
+                            비밀번호 변경
+                          </button>
+                        )}
+                        <button
+                          onClick={handleLogout}
+                          disabled={isLoggingOut}
+                          className="w-full px-4 py-2 bg-neutral-900 hover:bg-neutral-800 text-white rounded-lg transition-colors disabled:bg-neutral-400 font-medium"
+                        >
+                          {isLoggingOut ? '로그아웃 중...' : '로그아웃'}
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="border-t border-neutral-200 pt-6">
+                      <h3 className="text-lg text-neutral-900 mb-3">계정 삭제</h3>
+                      <p className="text-sm text-neutral-600 mb-4">
+                        계정을 삭제하면 모든 데이터가 영구적으로 삭제되며 복구할 수 없습니다.
+                      </p>
+                      
+                      {!deleteConfirmation ? (
+                        <button
+                          onClick={() => setDeleteConfirmation(true)}
+                          className="w-full px-4 py-2 bg-red-100 text-red-700 hover:bg-red-200 rounded-lg transition-colors font-medium"
+                        >
+                          계정 삭제하기
+                        </button>
+                      ) : (
+                        <div className="space-y-3 p-4 bg-red-50 border border-red-200 rounded-lg">
+                          <p className="text-sm text-red-700 font-medium">
+                            정말로 계정을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.
+                          </p>
+                          {currentUser?.providerData.some(provider => provider.providerId === 'password') && (
+                            <input
+                              type="password"
+                              placeholder="비밀번호 입력"
+                              value={deletePassword}
+                              onChange={(e) => setDeletePassword(e.target.value)}
+                              className="w-full px-3 py-2 border border-red-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
+                              disabled={isDeletingAccount}
+                            />
+                          )}
+                          {deleteError && (
+                            <div className="p-2 bg-red-100 border border-red-300 rounded text-sm text-red-700">
+                              {deleteError}
+                            </div>
+                          )}
+                          <div className="flex gap-3">
+                            <button
+                              onClick={() => {
+                                setDeleteConfirmation(false);
+                                setDeleteError('');
+                                setDeletePassword('');
+                              }}
+                              disabled={isDeletingAccount}
+                              className="flex-1 px-4 py-2 bg-neutral-200 text-neutral-900 hover:bg-neutral-300 rounded-lg transition-colors disabled:bg-neutral-100"
+                            >
+                              취소
+                            </button>
+                            <button
+                              onClick={handleDeleteAccount}
+                              disabled={isDeletingAccount}
+                              className="flex-1 px-4 py-2 bg-red-600 text-white hover:bg-red-700 rounded-lg transition-colors disabled:bg-red-400 font-medium"
+                            >
+                              {isDeletingAccount ? '삭제 중...' : '계정 삭제'}
+                            </button>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
