@@ -9,15 +9,13 @@ import priceConfigService from '../services/PriceConfigService.js';
 import analyticsService from '../services/AnalyticsService.js';
 
 /**
- * OrderDetailsPage - 주문 상세 및 복제 상태 페이지
- * 
- * 주문 생성 후 사진 복제 상태를 실시간으로 모니터링하고
- * 복제 완료 후 결제 페이지로 이동할 수 있습니다.
- * 
+ * OrderDetailsPage - 주문 상세 및 견적서 확인 페이지
+ *
+ * 주문 정보와 가격 내역을 확인하고 결제 페이지로 이동합니다.
+ * 사진 복제는 결제 완료 후 백그라운드에서 자동 처리됩니다 (Phase 3).
+ *
  * 플로우:
- * CreateNewOrderPage (Order 문서 생성)
- *   → OrderDetailsPage (복제 상태 모니터링)
- *   → PaymentPage (결제)
+ * CreateNewOrderPage → OrderDetailsPage (견적 확인) → PaymentPage
  */
 export const OrderDetailsPage = () => {
   const navigate = useNavigate();
@@ -78,11 +76,6 @@ export const OrderDetailsPage = () => {
 
   // ─── 결제 진행 ─────────────────────────────────────────
   const handlePayment = () => {
-    if (order.copyStatus !== 'COMPLETED') {
-      setError('사진 복제가 완료되지 않았습니다');
-      return;
-    }
-
     analyticsService.track('payment_initiated', {
       orderId,
       totalAmount: order.totalAmount,
@@ -92,36 +85,6 @@ export const OrderDetailsPage = () => {
   };
 
   // ─── 렌더링 유틸리티 ─────────────────────────────────────────
-
-  const getCopyStatusLabel = (status) => {
-    const labels = {
-      PENDING: '대기 중...',
-      IN_PROGRESS: '진행 중...',
-      COMPLETED: '완료됨',
-      FAILED: '실패함',
-    };
-    return labels[status] || status;
-  };
-
-  const getCopyStatusColor = (status) => {
-    const colors = {
-      PENDING: 'bg-gray-50 border-gray-200',
-      IN_PROGRESS: 'bg-blue-50 border-blue-200',
-      COMPLETED: 'bg-green-50 border-green-200',
-      FAILED: 'bg-red-50 border-red-200',
-    };
-    return colors[status] || 'bg-gray-50 border-gray-200';
-  };
-
-  const getCopyStatusBadgeColor = (status) => {
-    const colors = {
-      PENDING: 'bg-gray-100 text-gray-800',
-      IN_PROGRESS: 'bg-blue-100 text-blue-800',
-      COMPLETED: 'bg-green-100 text-green-800',
-      FAILED: 'bg-red-100 text-red-800',
-    };
-    return colors[status] || 'bg-gray-100 text-gray-800';
-  };
 
   const formatDate = (timestamp) => {
     if (!timestamp) return '-';
@@ -197,58 +160,9 @@ export const OrderDetailsPage = () => {
         <div className="max-w-3xl mx-auto">
           {/* 페이지 제목 */}
           <div className="mb-8">
-            <h1 className="text-3xl font-bold text-neutral-900">주문 상세</h1>
-            <p className="text-neutral-600 mt-2">주문 정보 및 복제 상태를 확인하세요</p>
+            <h1 className="text-3xl font-bold text-neutral-900">주문 확인</h1>
+            <p className="text-neutral-600 mt-2">주문 내용을 확인하고 결제를 진행하세요</p>
           </div>
-
-          {/* 복제 상태 */}
-          <section className={`mb-8 p-6 rounded-lg border ${getCopyStatusColor(order.copyStatus)}`}>
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold text-neutral-900">📸 사진 복제 상태</h2>
-              <span className={`px-3 py-1 rounded-full text-sm font-medium ${getCopyStatusBadgeColor(order.copyStatus)}`}>
-                {getCopyStatusLabel(order.copyStatus)}
-              </span>
-            </div>
-
-            {order.copyStatus === 'IN_PROGRESS' && (
-              <div className="flex items-center gap-3 text-blue-700">
-                <div className="w-4 h-4 border-2 border-blue-400 border-t-blue-700 rounded-full animate-spin"></div>
-                <span>사진을 복제하는 중입니다...</span>
-              </div>
-            )}
-
-            {order.copyStatus === 'PENDING' && (
-              <div className="text-neutral-700">
-                <p>사진 복제를 준비 중입니다.</p>
-              </div>
-            )}
-
-            {order.copyStatus === 'COMPLETED' && (
-              <div className="text-green-700">
-                <p>✅ 모든 사진이 복제되었습니다!</p>
-              </div>
-            )}
-
-            {order.copyStatus === 'FAILED' && (
-              <div className="text-red-700">
-                <p>❌ 사진 복제에 실패했습니다</p>
-                {order.copyError && (
-                  <p className="text-sm mt-2">오류: {order.copyError}</p>
-                )}
-              </div>
-            )}
-
-            {/* 복제 진행 정보 */}
-            <div className="mt-4 pt-4 border-t border-current border-opacity-20 text-sm space-y-1">
-              <div>복제 시도: {order.copyAttempt}</div>
-              {order.copyStartedAt && (
-                <div>복제 시작: {formatDate(order.copyStartedAt)}</div>
-              )}
-              {order.copyCompletedAt && (
-                <div>복제 완료: {formatDate(order.copyCompletedAt)}</div>
-              )}
-            </div>
-          </section>
 
           {/* 주문 기본 정보 */}
           <section className="bg-white p-6 rounded-lg border border-neutral-200 mb-8">
@@ -349,10 +263,9 @@ export const OrderDetailsPage = () => {
             </button>
             <button
               onClick={handlePayment}
-              disabled={order.copyStatus !== 'COMPLETED'}
-              className="flex-1 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition font-medium"
+              className="flex-1 px-6 py-3 bg-neutral-900 text-white rounded-lg hover:bg-neutral-800 transition font-medium"
             >
-              {order.copyStatus === 'COMPLETED' ? '결제하기' : `복제 진행 중 (${order.copyStatus})`}
+              결제하기
             </button>
           </div>
         </div>

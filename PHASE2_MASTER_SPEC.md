@@ -193,15 +193,17 @@ interface Order {
   totalAmount: number;
 
   // ── 상태 ──
-  status: 'DRAFT' | 'PENDING_PAYMENT' | 'PAID' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED';
+  status: 'PENDING_PAYMENT' | 'PAID' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED';
+  // ※ DRAFT 제거 — 주문 생성 즉시 PENDING_PAYMENT로 시작
 
-  // ── 사진 복제 상태 ──
-  copyStatus: 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'FAILED';
-  copiedPhotoUrls: string[];     // 복제된 사진 URL 목록 (order-storage/)
-  copyStartedAt: Timestamp | null;
-  copyCompletedAt: Timestamp | null;
-  copyError: string | null;
-  copyAttempt: number;           // 재시도 횟수
+  // ── 사진 복제 상태 (Phase 3 — 결제 완료 후 백그라운드) ──
+  // ※ Phase 2에서는 Order 생성 시 이 필드들을 저장하지 않음
+  // copyStatus: 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'FAILED';
+  // copiedPhotoUrls: string[];
+  // copyStartedAt: Timestamp | null;
+  // copyCompletedAt: Timestamp | null;
+  // copyError: string | null;
+  // copyAttempt: number;
 
   // ── 타임아웃 ──
   paymentDeadline: Timestamp;    // createdAt + 3600초 (1시간)
@@ -417,36 +419,42 @@ Step 2: 사진 관리 ⏳ (구현 중)
      └─ 📌 TODO: 사진을 다른 Project로 드래그 이동 (고도화)
 
 Step 3: 주문 생성 ❌ (미구현)
-  └─ CreateNewOrderPage (/create-new-order)
+  └─ CreateNewOrderPage (/orders/new)
      ├─ 선택된 사진 목록 표시 (READY 상태만 허용)
      ├─ 주문 정보 입력 (신부/신랑 이름, 촬영 유형 등)
      ├─ 보정 옵션 선택 (기본 / 긴급)
      ├─ Remote Config 기반 가격 계산 (실시간)
-     └─ "견적서 확인" → Order 문서 생성 (status: DRAFT, copyStatus: PENDING)
+     └─ "주문 확인" → Order 문서 생성 (status: PENDING_PAYMENT)
+          ※ copyStatus 필드 불필요 — 복제는 결제 후 백그라운드 처리
 
-Step 4: 사진 복제 (백그라운드 자동)
-  └─ CF: photoCopyOnOrder() — Pub/Sub 트리거
-     ├─ Photo.isLocked = true (Lock 획득)
-     ├─ Worker Pool (10-15개) 병렬 복제
-     │   └─ user-uploads/ → order-storage/{orderId}/
-     ├─ 지수 백오프 재시도 (최대 2-3회)
-     └─ Order.copyStatus = COMPLETED
-
-Step 5: 견적서 확인 ❌ (미구현)
-  └─ OrderDetailsPage (/order-details?orderId=xxx)
-     ├─ 주문 정보 표시
-     ├─ 복제 상태 Real-time 표시 (Firestore onSnapshot)
+Step 4: 견적서 확인 & 결제 ❌ (미구현)
+  └─ OrderDetailsPage (/orders/:orderId)
+     ├─ 주문 정보 확인 (사진 수, 가격 내역, 요청사항)
      ├─ 타임아웃 카운트다운 (1시간, paymentDeadline 기준)
-     ├─ 세마포어 갱신 (5분마다 lockExpiry 연장)
-     └─ "결제하기" 버튼 (copyStatus = COMPLETED 시 활성화)
+     ├─ "결제하기" 버튼 → PaymentPage로 이동
+     └─ ※ 복제 상태 섹션 제거 — 사용자가 기다릴 필요 없음
 
-Step 6: 결제 ❌ (인터페이스만 구현)
-  └─ PaymentPage (/payment?orderId=xxx)
-     ├─ 진입 조건 검증 (복제 완료 + 1시간 이내)
+Step 5: 결제 ❌ (인터페이스만 구현)
+  └─ PaymentPage (/orders/:orderId/payment)
+     ├─ 진입 조건 검증 (1시간 이내, status = PENDING_PAYMENT)
      ├─ 결제 방법 선택 (카드/계좌/휴대폰)
      ├─ PaymentServiceMock 호출 (실제 PG 연동은 추후)
      └─ 완료 → Order.status = PAID
+
+Step 6: 사진 복제 (결제 완료 후 백그라운드 자동) — Phase 3
+  └─ CF: photoCopyOnOrder() — Firestore Write 트리거 (status: PAID)
+     ├─ Photo.isLocked = true (Lock 획득)
+     ├─ Worker Pool 병렬 복제: user-uploads/ → order-storage/{orderId}/
+     ├─ 지수 백오프 재시도 (최대 2-3회)
+     └─ Order.copyStatus = COMPLETED (사용자에게 별도 알림 — 추후)
 ```
+
+> **⚠️ 설계 변경 이유 (2026-03-10)**
+> 사진은 PhotoManagementPage에서 업로드 시 `processUploadedPhoto()` CF가 이미 실행되어
+> 썸네일/백업/미리보기 생성까지 완료된 `READY` 상태입니다.
+> `photoCopyOnOrder()`는 결제 후 보정 작업용 격리 스토리지로 복제하는 것으로,
+> 사용자가 결제 전에 이를 기다릴 필요가 없습니다.
+> → OrderDetailsPage의 "사진 복제 상태" 섹션 및 복제 완료 대기 로직 제거.
 
 ### 5.2 화면 간 데이터 전달
 
@@ -456,11 +464,11 @@ PhotoManagementPage → CreateNewOrderPage
   └─ 새로고침 대비: 선택 즉시 sessionStorage에도 저장
 
 CreateNewOrderPage → OrderDetailsPage
-  └─ React Router navigate: /order-details?orderId={id}
+  └─ React Router navigate: /orders/:orderId
   └─ orderId는 URL 파라미터 (새로고침 안전)
 
 OrderDetailsPage → PaymentPage
-  └─ React Router navigate: /payment?orderId={id}
+  └─ React Router navigate: /orders/:orderId/payment
   └─ orderId는 URL 파라미터
 ```
 
