@@ -4,6 +4,7 @@ import { collection, query, where, orderBy, onSnapshot } from 'firebase/firestor
 import { db } from '../config/firebase.js';
 import { PrismHeader } from '../components/PrismHeader';
 import { PrismFooter } from '../components/PrismFooter';
+import { OrderEmptyState } from '../components/OrderEmptyState';
 import { useAuth } from '../contexts/AuthContext';
 import priceConfigService from '../services/PriceConfigService.js';
 import analyticsService from '../services/AnalyticsService.js';
@@ -201,16 +202,7 @@ export const OrderListPage = () => {
 
               {/* 주문 테이블 */}
               {orders.length === 0 ? (
-                <div className="bg-white border border-neutral-200 rounded-2xl p-12 text-center">
-                  <div className="text-6xl mb-4">📭</div>
-                  <p className="text-neutral-600 text-lg">주문 내역이 없습니다</p>
-                  <button
-                    onClick={() => navigate('/orders/new')}
-                    className="mt-4 px-6 py-3 bg-neutral-900 text-white rounded-lg hover:bg-neutral-800"
-                  >
-                    첫 주문 생성하기
-                  </button>
-                </div>
+                <OrderEmptyState />
               ) : (
                 <div className="bg-white border border-neutral-200 rounded-2xl overflow-hidden">
                   <div className="overflow-x-auto">
