@@ -3,6 +3,11 @@ import { useNavigate } from 'react-router-dom';
 import { PrismFooter } from '../components/PrismFooter';
 import { useAuth } from '../contexts/AuthContext';
 
+// 개발 환경 플래그
+const isDev = import.meta.env.VITE_ENABLE_DEV_LOGIN === 'true';
+const devEmail = import.meta.env.VITE_DEV_TEST_EMAIL || 'test@prism.com';
+const devPassword = import.meta.env.VITE_DEV_TEST_PASSWORD || 'testPassword123';
+
 export const LoginPage = () => {
   const navigate = useNavigate();
   const { login, loginWithGooglePopup, error: authError } = useAuth();
@@ -46,6 +51,21 @@ export const LoginPage = () => {
     e.preventDefault();
     setError('');
 
+    // 로컬 개발: 아무것도 입력 안 해도 진행
+    if (isDev && !formData.email && !formData.password) {
+      setIsLoading(true);
+      try {
+        await login(devEmail, devPassword);
+        navigate('/photo-management');
+      } catch (err) {
+        setError('개발 계정 로그인 실패: ' + (err?.message || '알 수 없는 오류'));
+      } finally {
+        setIsLoading(false);
+      }
+      return;
+    }
+
+    // 프로덕션: 기존 검증
     if (!validateForm()) {
       return;
     }
@@ -178,6 +198,12 @@ export const LoginPage = () => {
                   비밀번호 찾기
                 </button>
               </div>
+
+              {isDev && (
+                <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 text-sm text-amber-700">
+                  💡 <strong>개발 모드:</strong> 아무것도 입력하지 않고 로그인을 클릭하면 자동 로그인됩니다.
+                </div>
+              )}
 
               <button
                 type="submit"
