@@ -17,7 +17,6 @@ export const OrderListPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchText, setSearchText] = useState('');
-  const [filterStatus, setFilterStatus] = useState('all');
 
   // 주문 로드 (ProtectedRoute에서 인증 보장됨)
   useEffect(() => {
@@ -66,16 +65,11 @@ export const OrderListPage = () => {
   }, [currentUser, navigate]);
 
   // 필터링된 주문 목록
-  const filteredOrders = orders.filter(order => {
-    const matchesSearch = 
-      order.brideName?.toLowerCase().includes(searchText.toLowerCase()) ||
-      order.groomName?.toLowerCase().includes(searchText.toLowerCase()) ||
-      order.id?.toLowerCase().includes(searchText.toLowerCase());
-    
-    const matchesStatus = filterStatus === 'all' || order.status === filterStatus;
-    
-    return matchesSearch && matchesStatus;
-  });
+  const filteredOrders = orders.filter(order =>
+    order.brideName?.toLowerCase().includes(searchText.toLowerCase()) ||
+    order.groomName?.toLowerCase().includes(searchText.toLowerCase()) ||
+    order.id?.toLowerCase().includes(searchText.toLowerCase())
+  );
 
   // 상태별 통계
   const stats = [
@@ -187,7 +181,7 @@ export const OrderListPage = () => {
                       </div>
                     </div>
                     <button
-                      onClick={() => setFilterStatus(ORDER_STATUS.READY_TO_PAY)}
+                      onClick={() => navigate('/orders?status=ready_to_pay')}
                       className="px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-lg text-sm font-medium transition-colors"
                     >
                       결제하기
@@ -196,23 +190,18 @@ export const OrderListPage = () => {
                 </div>
               )}
 
-              {/* 검색 및 필터 */}
+              {/* 검색 */}
               <div className="bg-white border border-neutral-200 rounded-2xl p-6 mb-6">
-                <div className="flex items-center gap-4 flex-wrap">
-                  <div className="flex-1 min-w-[300px]">
-                    <div className="relative">
-                      <i className="fa-solid fa-search absolute left-4 top-1/2 -translate-y-1/2 text-neutral-400"></i>
-                      <input
-                        type="text"
-                        placeholder="신부/신랑 이름, 주문 ID 검색..."
-                        value={searchText}
-                        onChange={(e) => setSearchText(e.target.value)}
-                        className="w-full pl-11 pr-4 py-3 border border-neutral-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-transparent"
-                      />
-                  </div>
+                <div className="relative">
+                  <i className="fa-solid fa-search absolute left-4 top-1/2 -translate-y-1/2 text-neutral-400"></i>
+                  <input
+                    type="text"
+                    placeholder="신부/신랑 이름, 주문 ID 검색..."
+                    value={searchText}
+                    onChange={(e) => setSearchText(e.target.value)}
+                    className="w-full pl-11 pr-4 py-3 border border-neutral-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-transparent"
+                  />
                 </div>
-
-                {/* 상태 필터는 제거됨 - PhotoManagementPage로 이동 */}
               </div>
 
               {/* 통계 카드 */}
