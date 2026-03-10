@@ -28,8 +28,8 @@
 | 항목 | 결정 | 이유 |
 |------|------|------|
 | **Order : Payment 관계** | 1 : N | 긴급보정 등 추가 결제 가능성 |
-| **사진 처리 방식** | 복제 (Copy-on-Order) | 결제 후 원본 삭제 시 데이터 안전 보장 |
-| **복제 트리거** | Cloud Function (Pub/Sub) | 서버 기준 정확한 타이밍, 프론트 부하 없음 |
+| **사진 처리 방식** | 업로드 시 내부 백업 + 주문은 참조 | 업로드 CF에서 백업 완료, 주문은 photoIds 참조만 |
+| **~~복제 트리거~~** | ~~Cloud Function (Pub/Sub)~~ | 삭제됨 — 업로드 시 내부 백업 완료, 별도 주문 복제 불필요 |
 | **업로드 처리** | Event-Driven (S3 → Pub/Sub → CF) | 비동기, 확장성, UX 우수 |
 | **가격 테이블** | Firebase Remote Config + 로컬 기본값 | A/B 테스트 가능, 배포 없이 가격 변경 |
 | **PENDING 상태** | 프론트 로컬 상태만 (Firestore 저장 안 함) | 불필요한 고아 문서 방지 |
@@ -196,14 +196,9 @@ interface Order {
   status: 'PENDING_PAYMENT' | 'PAID' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED';
   // ※ DRAFT 제거 — 주문 생성 즉시 PENDING_PAYMENT로 시작
 
-  // ── 사진 복제 상태 (Phase 3 — 결제 완료 후 백그라운드) ──
-  // ※ Phase 2에서는 Order 생성 시 이 필드들을 저장하지 않음
-  // copyStatus: 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'FAILED';
-  // copiedPhotoUrls: string[];
-  // copyStartedAt: Timestamp | null;
-  // copyCompletedAt: Timestamp | null;
-  // copyError: string | null;
-  // copyAttempt: number;
+  // ※ copyStatus 관련 필드 제거됨
+  // processUploadedPhoto()에서 이미 내부 백업 복제 완료.
+  // Order는 photoIds로 READY 사진을 참조만 함.
 
   // ── 타임아웃 ──
   paymentDeadline: Timestamp;    // createdAt + 3600초 (1시간)
@@ -441,12 +436,8 @@ Step 5: 결제 ❌ (인터페이스만 구현)
      ├─ PaymentServiceMock 호출 (실제 PG 연동은 추후)
      └─ 완료 → Order.status = PAID
 
-Step 6: 사진 복제 (결제 완료 후 백그라운드 자동) — Phase 3
-  └─ CF: photoCopyOnOrder() — Firestore Write 트리거 (status: PAID)
-     ├─ Photo.isLocked = true (Lock 획득)
-     ├─ Worker Pool 병렬 복제: user-uploads/ → order-storage/{orderId}/
-     ├─ 지수 백오프 재시도 (최대 2-3회)
-     └─ Order.copyStatus = COMPLETED (사용자에게 별도 알림 — 추후)
+※ photoCopyOnOrder 제거됨 — processUploadedPhoto()에서 이미 내부 백업 복제 완료.
+  주문은 기존 READY 상태의 사진을 photoIds로 참조만 하면 충분.
 ```
 
 > **⚠️ 설계 변경 이유 (2026-03-10)**
@@ -524,36 +515,10 @@ const photoId = fileMetadata.metadata?.['photo-id'];     // ✅ 안전한 추출
 if (!photoId) throw new Error('photo-id metadata missing');
 ```
 
-### 6.2 photoCopyOnOrder (주문 복제)
+### 6.2 ~~photoCopyOnOrder~~ (삭제됨)
 
-```
-트리거: Firestore Write 이벤트 (orders 컬렉션, status: DRAFT 생성 시)
-런타임: Node.js 20
-메모리: 256MB
-타임아웃: 540초 (9분, 최대 1000장 × 복제 시간 고려)
-
-입력: Order 문서 (orderId, photoIds[])
-출력: Order.copyStatus = COMPLETED, Photo.isLocked = true
-
-처리 순서:
-1. Order 문서 조회 → photoIds 추출
-2. Order.copyStatus = IN_PROGRESS 업데이트
-3. 각 Photo에 Lock 획득:
-   ├─ Photo.isLocked = true
-   ├─ Photo.lockedByOrder = orderId
-   └─ Photo.lockExpiry = now + 30분
-4. Worker Pool (10-15개)로 병렬 복제:
-   └─ user-uploads/{userId}/{photoId}.ext → order-storage/{orderId}/{photoId}.ext
-5. 복제 완료 후:
-   ├─ Order.copyStatus = COMPLETED
-   ├─ Order.copiedPhotoUrls = [...]
-   └─ Order.copyCompletedAt = now
-
-에러 처리 (지수 백오프):
-- 1회 실패: 1초 대기 후 재시도
-- 2회 실패: 2초 대기 후 재시도
-- 3회 실패: Order.copyStatus = FAILED + copyError 저장 → Admin 수동 처리
-```
+> **삭제 사유**: `processUploadedPhoto()`에서 이미 내부 백업 복제(`internalBackupUrl`)를 수행.
+> Order는 `photoIds`로 READY 상태 사진을 참조만 하면 충분하므로 별도 복제 CF 불필요.
 
 ---
 
