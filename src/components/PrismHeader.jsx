@@ -10,7 +10,6 @@ export const PrismHeader = ({ activeNav = 'order-list' }) => {
   const profileMenuRef = useRef(null);
   
   const navItems = [
-    { id: 'service-intro', label: '서비스 소개', icon: 'fa-star', path: '/' },
     { id: 'photo-management', label: '사진 관리', icon: 'fa-images', path: '/photo-management' },
     { id: 'order-list', label: '주문 내역', icon: 'fa-list-check', path: '/orders' },
   ];
@@ -53,12 +52,15 @@ export const PrismHeader = ({ activeNav = 'order-list' }) => {
     <header className="fixed top-0 left-0 right-0 bg-white dark:bg-neutral-900 border-b border-neutral-200 dark:border-neutral-800 z-50">
       <div className="flex items-center justify-between px-8 py-4">
         <div className="flex items-center gap-8">
-          <div className="flex items-center gap-3">
+          <button
+            onClick={() => navigate('/')}
+            className="flex items-center gap-3 hover:opacity-80 transition-opacity cursor-pointer"
+          >
             <div className="flex items-center justify-center w-10 h-10 bg-gradient-to-r from-neutral-800 to-neutral-600 rounded-lg">
               <i className="fa-solid fa-gem text-white text-lg"></i>
             </div>
             <span className="text-xl text-neutral-900 dark:text-white">Prism Studio</span>
-          </div>
+          </button>
 
           <nav className="flex items-center gap-1">
             {navItems.map((item) => (
