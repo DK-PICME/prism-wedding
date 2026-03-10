@@ -25,6 +25,7 @@ export class PhotoService {
 
       const photoData = {
         id: photoId,
+        docId: null, // 문서 생성 후 설정
         userId,
         projectId: folderId,  // projectId로 저장 (ProjectServiceApi의 쿼리와 일치)
 
@@ -76,10 +77,15 @@ export class PhotoService {
       };
 
       const docRef = await addDoc(collection(db, 'photos'), photoData);
+      
+      // docId를 문서에 저장 (실시간 리스너로 가져올 때 필요)
+      await updateDoc(docRef, { docId: docRef.id });
+      
       return {
         photoId,
         docId: docRef.id,
         ...photoData,
+        docId: docRef.id, // 반환값에도 포함
       };
     } catch (error) {
       console.error('❌ 사진 문서 생성 실패:', error);

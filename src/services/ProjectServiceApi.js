@@ -249,7 +249,8 @@ export class ProjectServiceApi extends ProjectService {
         q,
         (snapshot) => {
           const photos = snapshot.docs.map(doc => ({
-            id: doc.id,
+            docId: doc.id,  // 명시적으로 Firestore docId 저장
+            id: doc.id,     // 호환성 유지
             ...doc.data(),
           }));
           callback(photos);
