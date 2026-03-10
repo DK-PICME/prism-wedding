@@ -148,18 +148,53 @@ export const OrderListPage = () => {
             <div className="max-w-[1376px] mx-auto">
               <div className="flex items-center justify-between mb-8">
                 <div>
-                  <h1 className="text-3xl text-neutral-900 mb-2">주문 내역</h1>
-                  <p className="text-neutral-600">보정 주문 프로젝트를 관리하고 진행 상태를 확인하세요</p>
+                  <h1 className="text-3xl font-bold text-neutral-900 mb-1">주문 내역</h1>
+                  <div className="flex items-center gap-3">
+                    <p className="text-neutral-600">
+                      💍 당신의 소중한 순간을 완성하는 중입니다
+                    </p>
+                    {stats.find(s => s.label === '대기중')?.count > 0 && (
+                      <span className="inline-flex items-center gap-1 px-3 py-1 bg-orange-50 text-orange-700 text-sm font-medium rounded-full">
+                        <i className="fa-solid fa-hourglass-end"></i>
+                        결제 대기: {stats.find(s => s.label === '대기중')?.count}건
+                      </span>
+                    )}
+                  </div>
                 </div>
 
                 <button 
                   onClick={() => navigate('/orders/new')}
-                  className="flex items-center gap-2 bg-neutral-900 hover:bg-neutral-800 text-white px-6 py-3 rounded-xl transition-colors cursor-pointer"
+                  className="flex items-center gap-2 bg-neutral-900 hover:bg-neutral-800 text-white px-6 py-3 rounded-xl transition-colors cursor-pointer font-medium shadow-lg hover:shadow-xl"
                 >
                   <i className="fa-solid fa-plus"></i>
-                  새 주문 생성
+                  새 주문 시작
                 </button>
               </div>
+
+              {/* 결제 대기 배너 */}
+              {stats.find(s => s.label === '대기중')?.count > 0 && (
+                <div className="mb-6 p-4 bg-gradient-to-r from-orange-50 to-yellow-50 border border-orange-200 rounded-xl">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <i className="fa-solid fa-bell text-orange-600 text-xl"></i>
+                      <div>
+                        <p className="font-semibold text-orange-900">
+                          결제 대기 중인 주문이 있습니다
+                        </p>
+                        <p className="text-sm text-orange-700">
+                          1시간 이내에 결제를 완료해야 주문이 보존됩니다
+                        </p>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => setFilterStatus(ORDER_STATUS.READY_TO_PAY)}
+                      className="px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-lg text-sm font-medium transition-colors"
+                    >
+                      결제하기
+                    </button>
+                  </div>
+                </div>
+              )}
 
               {/* 검색 및 필터 */}
               <div className="bg-white border border-neutral-200 rounded-2xl p-6 mb-6">
