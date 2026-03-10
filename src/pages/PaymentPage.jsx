@@ -1,117 +1,369 @@
+import { useState, useEffect } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { doc, updateDoc, serverTimestamp } from 'firebase/firestore';
+import { db } from '../config/firebase.js';
 import { PrismHeader } from '../components/PrismHeader';
 import { PrismFooter } from '../components/PrismFooter';
+import { useAuth } from '../contexts/AuthContext';
+import priceConfigService from '../services/PriceConfigService.js';
+import analyticsService from '../services/AnalyticsService.js';
 
+/**
+ * PaymentPage - 결제 처리 페이지
+ * 
+ * 주문의 사진 복제가 완료된 후 결제를 진행합니다.
+ * 
+ * 진입 조건:
+ * - copyStatus = COMPLETED
+ * - 1시간 이내 (paymentDeadline 이전)
+ * 
+ * 플로우:
+ * OrderDetailsPage (복제 완료)
+ *   → PaymentPage (결제 수행)
+ *   → 완료 (Order.status = PAID)
+ */
 export const PaymentPage = () => {
-  return (
-    <div className="min-h-screen bg-white">
-      <PrismHeader activeNav="order-list" />
+  const navigate = useNavigate();
+  const { currentUser } = useAuth();
+  const [searchParams] = useSearchParams();
+  const orderId = searchParams.get('orderId');
 
-      <main className="pt-[73px]">
-        <div className="px-8 py-8">
-          <div className="max-w-[1376px] mx-auto">
-            <h1 className="text-3xl text-neutral-900 mb-2">결제</h1>
-            <p className="text-neutral-600 mb-8">안전한 결제로 주문을 완료하세요</p>
+  // ─── 상태 관리 ─────────────────────────────────────────
+  const [order, setOrder] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-            <div className="grid grid-cols-3 gap-6">
-              <div className="col-span-2">
-                <div className="bg-white border border-neutral-200 rounded-2xl p-6 mb-6">
-                  <h2 className="text-lg text-neutral-900 mb-4">주문 정보</h2>
-                  <div className="space-y-3 pb-4 border-b border-neutral-200">
-                    <div className="flex justify-between">
-                      <span className="text-neutral-600">주문명</span>
-                      <span className="text-neutral-900">김민수 & 박지영 웨딩</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-neutral-600">주문번호</span>
-                      <span className="text-neutral-900">ORD-2025-0122-4782</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-neutral-600">촬영 날짜</span>
-                      <span className="text-neutral-900">2025-01-20</span>
-                    </div>
-                  </div>
-                </div>
+  // 결제 방법 선택
+  const [paymentMethod, setPaymentMethod] = useState('card'); // card | bank_transfer | mobile
 
-                <div className="bg-white border border-neutral-200 rounded-2xl p-6 mb-6">
-                  <h2 className="text-lg text-neutral-900 mb-4">결제 방법</h2>
-                  <div className="space-y-3">
-                    {[
-                      { id: 'card', label: '신용카드', icon: 'fa-credit-card' },
-                      { id: 'bank', label: '계좌이체', icon: 'fa-bank' },
-                      { id: 'mobile', label: '휴대폰 결제', icon: 'fa-mobile' },
-                    ].map((method) => (
-                      <label key={method.id} className="flex items-center p-4 border border-neutral-200 rounded-lg cursor-pointer hover:bg-neutral-50">
-                        <input type="radio" name="payment" defaultChecked={method.id === 'card'} className="w-4 h-4" />
-                        <i className={`fa-solid ${method.icon} ml-3 mr-3 text-neutral-600`}></i>
-                        <span className="text-neutral-900">{method.label}</span>
-                      </label>
-                    ))}
-                  </div>
-                </div>
+  // 결제 상태
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [paymentComplete, setPaymentComplete] = useState(false);
+  const [paymentError, setPaymentError] = useState(null);
 
-                <div className="bg-white border border-neutral-200 rounded-2xl p-6">
-                  <h2 className="text-lg text-neutral-900 mb-4">신용카드 정보</h2>
-                  <div className="space-y-4">
-                    <div>
-                      <label className="block text-sm text-neutral-700 mb-2">카드번호</label>
-                      <input type="text" placeholder="0000 0000 0000 0000" className="w-full px-4 py-3 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-neutral-900" />
-                    </div>
-                    <div className="grid grid-cols-3 gap-4">
-                      <div>
-                        <label className="block text-sm text-neutral-700 mb-2">유효기간</label>
-                        <input type="text" placeholder="MM/YY" className="w-full px-4 py-3 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-neutral-900" />
-                      </div>
-                      <div>
-                        <label className="block text-sm text-neutral-700 mb-2">CVC</label>
-                        <input type="text" placeholder="000" className="w-full px-4 py-3 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-neutral-900" />
-                      </div>
-                      <div>
-                        <label className="block text-sm text-neutral-700 mb-2">카드주인명</label>
-                        <input type="text" placeholder="이름" className="w-full px-4 py-3 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-neutral-900" />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
+  // ─── 초기 로드 ─────────────────────────────────────────
+  useEffect(() => {
+    if (!currentUser) {
+      navigate('/login');
+      return;
+    }
 
-              <div>
-                <div className="bg-white border border-neutral-200 rounded-2xl p-6 sticky top-24">
-                  <h2 className="text-lg text-neutral-900 mb-4">결제 요약</h2>
-                  <div className="space-y-3 pb-4 border-b border-neutral-200 mb-4">
-                    <div className="flex justify-between">
-                      <span className="text-neutral-600">기본 요금</span>
-                      <span className="text-neutral-900">₩300,000</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-neutral-600">추가 요금</span>
-                      <span className="text-neutral-900">₩150,000</span>
-                    </div>
-                  </div>
+    if (!orderId) {
+      setError('주문 ID가 없습니다');
+      setLoading(false);
+      return;
+    }
 
-                  <div className="bg-neutral-50 p-4 rounded-lg mb-6">
-                    <div className="flex justify-between items-center">
-                      <span className="text-neutral-900 font-semibold">총 결제금액</span>
-                      <div>
-                        <div className="text-2xl text-neutral-900 font-semibold">₩450,000</div>
-                      </div>
-                    </div>
-                  </div>
+    // 주문 정보 로드
+    const loadOrder = async () => {
+      try {
+        const orderRef = doc(db, 'orders', orderId);
+        const orderSnap = await import('firebase/firestore').then(
+          ({ getDoc }) => getDoc(orderRef)
+        );
 
-                  <label className="flex items-start gap-2 mb-6 p-3 border border-neutral-300 rounded-lg cursor-pointer hover:bg-neutral-50">
-                    <input type="checkbox" className="w-4 h-4 mt-0.5" defaultChecked />
-                    <span className="text-sm text-neutral-600">결제 약관에 동의합니다</span>
-                  </label>
+        if (!orderSnap.exists()) {
+          setError('주문을 찾을 수 없습니다');
+          setLoading(false);
+          return;
+        }
 
-                  <button className="w-full px-6 py-3 bg-neutral-900 hover:bg-neutral-800 text-white rounded-lg transition-colors font-medium mb-2">
-                    ₩450,000 결제
-                  </button>
-                  <a href="?page=order-list" className="block w-full px-6 py-3 border border-neutral-300 hover:bg-neutral-50 text-neutral-900 rounded-lg transition-colors text-center cursor-pointer">
-                    취소
-                  </a>
-                </div>
-              </div>
-            </div>
+        const orderData = orderSnap.data();
+
+        // 권한 검증
+        if (orderData.userId !== currentUser.uid) {
+          setError('접근 권한이 없습니다');
+          setLoading(false);
+          return;
+        }
+
+        // 진입 조건 검증
+        if (orderData.copyStatus !== 'COMPLETED') {
+          setError('사진 복제가 완료되지 않았습니다. OrderDetailsPage로 돌아가세요.');
+          setLoading(false);
+          return;
+        }
+
+        const paymentDeadline = orderData.paymentDeadline.toDate
+          ? orderData.paymentDeadline.toDate()
+          : new Date(orderData.paymentDeadline);
+
+        if (new Date() > paymentDeadline) {
+          setError('결제 기한이 만료되었습니다. 새 주문을 생성해주세요.');
+          setLoading(false);
+          return;
+        }
+
+        setOrder({ id: orderId, ...orderData });
+        setError(null);
+        setLoading(false);
+      } catch (err) {
+        console.error('[PaymentPage] 주문 로드 오류:', err);
+        setError(`오류 발생: ${err.message}`);
+        setLoading(false);
+      }
+    };
+
+    loadOrder();
+    analyticsService.track('payment_page_viewed', { orderId });
+  }, [currentUser, orderId, navigate]);
+
+  // ─── 결제 처리 ─────────────────────────────────────────
+  const handlePayment = async (e) => {
+    e.preventDefault();
+
+    if (!order) {
+      setPaymentError('주문 정보를 불러올 수 없습니다');
+      return;
+    }
+
+    setIsProcessing(true);
+    setPaymentError(null);
+
+    try {
+      // 결제 처리 시뮬레이션 (2초 대기)
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+
+      // 실제 환경에서는 여기서 PG 연동 (Paddle, Portone 등)을 수행합니다.
+      // 예: const result = await PaymentService.processPayment(order, paymentMethod);
+
+      // 주문 상태 업데이트
+      const orderRef = doc(db, 'orders', order.id);
+      await updateDoc(orderRef, {
+        status: 'PAID',
+        updatedAt: serverTimestamp(),
+      });
+
+      console.log('[PaymentPage] 결제 완료:', order.id);
+
+      // 분석 추적
+      analyticsService.track('payment_completed', {
+        orderId: order.id,
+        totalAmount: order.totalAmount,
+        paymentMethod,
+      });
+
+      setPaymentComplete(true);
+      setIsProcessing(false);
+    } catch (err) {
+      console.error('[PaymentPage] 결제 실패:', err);
+      setPaymentError(`결제 실패: ${err.message}`);
+      setIsProcessing(false);
+
+      analyticsService.trackError('payment_failed', err.message);
+    }
+  };
+
+  // ─── 렌더링 ─────────────────────────────────────────
+  if (loading) {
+    return (
+      <div className="min-h-screen flex flex-col bg-neutral-50">
+        <PrismHeader />
+        <main className="flex-1 flex items-center justify-center">
+          <div className="text-center">
+            <div className="inline-block w-12 h-12 border-4 border-neutral-300 border-t-blue-600 rounded-full animate-spin"></div>
+            <p className="mt-4 text-neutral-600">로딩 중...</p>
           </div>
+        </main>
+        <PrismFooter />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen flex flex-col bg-neutral-50">
+        <PrismHeader />
+        <main className="flex-1 flex items-center justify-center">
+          <div className="text-center max-w-md">
+            <div className="text-6xl mb-4">❌</div>
+            <h1 className="text-2xl font-bold text-neutral-900 mb-2">오류 발생</h1>
+            <p className="text-neutral-600 mb-6">{error}</p>
+            <button
+              onClick={() => navigate('/photo-management')}
+              className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+            >
+              홈으로 이동
+            </button>
+          </div>
+        </main>
+        <PrismFooter />
+      </div>
+    );
+  }
+
+  if (paymentComplete) {
+    return (
+      <div className="min-h-screen flex flex-col bg-neutral-50">
+        <PrismHeader />
+        <main className="flex-1 flex items-center justify-center">
+          <div className="text-center max-w-md">
+            <div className="text-6xl mb-4">✅</div>
+            <h1 className="text-2xl font-bold text-neutral-900 mb-2">결제 완료!</h1>
+            <p className="text-neutral-600 mb-6">
+              주문이 완료되었습니다. 결제 금액은 {priceConfigService.formatPrice(order.totalAmount)}입니다.
+            </p>
+            <button
+              onClick={() => navigate('/photo-management')}
+              className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+            >
+              완료
+            </button>
+          </div>
+        </main>
+        <PrismFooter />
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen flex flex-col bg-neutral-50">
+      <PrismHeader />
+
+      <main className="flex-1 py-8 px-4">
+        <div className="max-w-2xl mx-auto">
+          {/* 페이지 제목 */}
+          <div className="mb-8">
+            <h1 className="text-3xl font-bold text-neutral-900">결제</h1>
+            <p className="text-neutral-600 mt-2">주문을 완료하려면 결제를 진행하세요</p>
+          </div>
+
+          {/* 에러 메시지 */}
+          {paymentError && (
+            <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-600">
+              {paymentError}
+            </div>
+          )}
+
+          <form onSubmit={handlePayment} className="space-y-8">
+            {/* 주문 요약 */}
+            <section className="bg-white p-6 rounded-lg border border-neutral-200">
+              <h2 className="text-lg font-semibold text-neutral-900 mb-4">📋 주문 요약</h2>
+
+              <div className="space-y-3 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-neutral-600">신부/신랑</span>
+                  <span className="font-medium">{order.brideName} / {order.groomName}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-neutral-600">촬영 유형</span>
+                  <span className="font-medium">{order.shootingType}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-neutral-600">촬영 장소</span>
+                  <span className="font-medium">{order.location}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-neutral-600">선택된 사진</span>
+                  <span className="font-medium">{order.photoIds.length}장</span>
+                </div>
+                <div className="border-t border-neutral-200 pt-3 flex justify-between">
+                  <span className="text-neutral-600">총 결제액</span>
+                  <span className="text-lg font-bold text-blue-600">
+                    {priceConfigService.formatPrice(order.totalAmount)}
+                  </span>
+                </div>
+              </div>
+            </section>
+
+            {/* 결제 방법 선택 */}
+            <section className="bg-white p-6 rounded-lg border border-neutral-200">
+              <h2 className="text-lg font-semibold text-neutral-900 mb-4">💳 결제 방법</h2>
+
+              <div className="space-y-3">
+                <label className="flex items-center p-4 border-2 border-neutral-200 rounded-lg cursor-pointer hover:border-blue-400 transition"
+                  style={{
+                    borderColor: paymentMethod === 'card' ? '#2563eb' : '',
+                    backgroundColor: paymentMethod === 'card' ? '#eff6ff' : '',
+                  }}>
+                  <input
+                    type="radio"
+                    name="payment-method"
+                    value="card"
+                    checked={paymentMethod === 'card'}
+                    onChange={(e) => setPaymentMethod(e.target.value)}
+                    className="w-4 h-4 text-blue-600"
+                  />
+                  <span className="ml-3 font-medium text-neutral-900">신용카드 / 체크카드</span>
+                </label>
+
+                <label className="flex items-center p-4 border-2 border-neutral-200 rounded-lg cursor-pointer hover:border-blue-400 transition"
+                  style={{
+                    borderColor: paymentMethod === 'bank_transfer' ? '#2563eb' : '',
+                    backgroundColor: paymentMethod === 'bank_transfer' ? '#eff6ff' : '',
+                  }}>
+                  <input
+                    type="radio"
+                    name="payment-method"
+                    value="bank_transfer"
+                    checked={paymentMethod === 'bank_transfer'}
+                    onChange={(e) => setPaymentMethod(e.target.value)}
+                    className="w-4 h-4 text-blue-600"
+                  />
+                  <span className="ml-3 font-medium text-neutral-900">계좌이체</span>
+                </label>
+
+                <label className="flex items-center p-4 border-2 border-neutral-200 rounded-lg cursor-pointer hover:border-blue-400 transition"
+                  style={{
+                    borderColor: paymentMethod === 'mobile' ? '#2563eb' : '',
+                    backgroundColor: paymentMethod === 'mobile' ? '#eff6ff' : '',
+                  }}>
+                  <input
+                    type="radio"
+                    name="payment-method"
+                    value="mobile"
+                    checked={paymentMethod === 'mobile'}
+                    onChange={(e) => setPaymentMethod(e.target.value)}
+                    className="w-4 h-4 text-blue-600"
+                  />
+                  <span className="ml-3 font-medium text-neutral-900">휴대폰 결제</span>
+                </label>
+              </div>
+
+              <div className="mt-4 p-4 bg-blue-50 rounded-lg text-sm text-blue-700">
+                <p>⚠️ 현재 MockPayment로 동작합니다. 실제 결제는 PG 연동 후 구현됩니다.</p>
+              </div>
+            </section>
+
+            {/* 이용약관 */}
+            <section className="bg-neutral-50 p-4 rounded-lg">
+              <label className="flex items-start">
+                <input
+                  type="checkbox"
+                  defaultChecked
+                  className="w-4 h-4 text-blue-600 mt-1 flex-shrink-0"
+                />
+                <span className="ml-3 text-sm text-neutral-700">
+                  결제 이용약관 및 개인정보 처리방침에 동의합니다
+                </span>
+              </label>
+            </section>
+
+            {/* 버튼 */}
+            <div className="flex gap-4">
+              <button
+                type="button"
+                onClick={() => navigate(-1)}
+                className="flex-1 px-6 py-3 border border-neutral-300 text-neutral-700 rounded-lg hover:bg-neutral-50 transition font-medium"
+              >
+                취소
+              </button>
+              <button
+                type="submit"
+                disabled={isProcessing}
+                className="flex-1 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition font-medium"
+              >
+                {isProcessing ? (
+                  <span className="flex items-center justify-center gap-2">
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    결제 진행 중...
+                  </span>
+                ) : (
+                  `${priceConfigService.formatPrice(order.totalAmount)} 결제하기`
+                )}
+              </button>
+            </div>
+          </form>
         </div>
       </main>
 
