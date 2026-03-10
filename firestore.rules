@@ -3,7 +3,7 @@ service cloud.firestore {
   match /databases/{database}/documents {
     
     // ═══════════════════════════════════════════════════════════════
-    // 보안 정책: 모든 접근은 인증된 사용자만 가능
+    // 보안 정책: userId 기반 접근 제어
     // ═══════════════════════════════════════════════════════════════
 
     // 사용자 프로필
@@ -11,37 +11,45 @@ service cloud.firestore {
       allow read, write: if request.auth != null && request.auth.uid == userId;
     }
 
-    // 사진 컬렉션
+    // 사진 컬렉션 (userId 필드 기반)
     match /photos/{photoId} {
-      allow read, write: if request.auth != null && resource.data.userId == request.auth.uid;
+      allow read: if request.auth != null && 
+                     (resource.data.userId == request.auth.uid || 
+                      resource.data.isPublic == true);
+      allow write: if request.auth != null && resource.data.userId == request.auth.uid;
       allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
     }
 
     // 주문 컬렉션
     match /orders/{orderId} {
-      allow read, write: if request.auth != null && resource.data.userId == request.auth.uid;
+      allow read: if request.auth != null && resource.data.userId == request.auth.uid;
+      allow write: if request.auth != null && resource.data.userId == request.auth.uid;
       allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
-    }
-
-    // 주문의 하위 컬렉션 (복제 상태 등)
-    match /orders/{orderId}/{document=**} {
-      allow read, write: if request.auth != null && get(/databases/$(database)/documents/orders/$(orderId)).data.userId == request.auth.uid;
+      
+      // 주문의 하위 컬렉션
+      match /{document=**} {
+        allow read, write: if request.auth != null && 
+                           get(/databases/$(database)/documents/orders/$(orderId)).data.userId == request.auth.uid;
+      }
     }
 
     // 결제 정보
     match /payments/{paymentId} {
-      allow read, write: if request.auth != null && resource.data.userId == request.auth.uid;
+      allow read: if request.auth != null && resource.data.userId == request.auth.uid;
+      allow write: if request.auth != null && resource.data.userId == request.auth.uid;
       allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
     }
 
     // 프로젝트 (샘플 보정)
     match /projects/{projectId} {
-      allow read, write: if request.auth != null && resource.data.userId == request.auth.uid;
+      allow read: if request.auth != null && resource.data.userId == request.auth.uid;
+      allow write: if request.auth != null && resource.data.userId == request.auth.uid;
       allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
       
-      // 프로젝트의 하위 컬렉션
+      // 프로젝트의 하위 컬렉션 (samples 등)
       match /{document=**} {
-        allow read, write: if request.auth != null && get(/databases/$(database)/documents/projects/$(projectId)).data.userId == request.auth.uid;
+        allow read, write: if request.auth != null && 
+                           get(/databases/$(database)/documents/projects/$(projectId)).data.userId == request.auth.uid;
       }
     }
 

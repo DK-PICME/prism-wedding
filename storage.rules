@@ -1,9 +1,21 @@
 rules_version = '2';
 service firebase.storage {
   match /b/{bucket}/o {
-    // 개발 환경: 인증된 사용자가 모든 파일 접근 가능
+    // 사용자 업로드 폴더: 자신의 파일만 읽기/쓰기
+    match /user-uploads/{userId}/{allPaths=**} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // 공개 이미지 (미리보기 등): 모든 인증 사용자가 읽기
+    match /public/{allPaths=**} {
+      allow read: if request.auth != null;
+      allow write: if false;
+    }
+
+    // 그 외 모든 접근 거부
     match /{allPaths=**} {
-      allow read, write: if request.auth != null;
+      allow read, write: if false;
     }
   }
 }
+
