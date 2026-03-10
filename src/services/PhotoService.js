@@ -107,8 +107,10 @@ export class PhotoService {
   async markUploadCompleted(photoDocId, uploadedUrl, fileMd5) {
     try {
       const photoRef = doc(db, 'photos', photoDocId);
+      // MVP: Cloud Function 없이 바로 READY로 설정
+      // Cloud Function 배포 후에는 UPLOAD_COMPLETED로 변경하고 CF가 READY로 전환
       await updateDoc(photoRef, {
-        status: 'UPLOAD_COMPLETED',
+        status: 'READY',
         uploadedUrl,
         fileMd5: fileMd5 || null,
         uploadEndTime: serverTimestamp(),

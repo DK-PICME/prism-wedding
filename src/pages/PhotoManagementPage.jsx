@@ -35,70 +35,65 @@ export const PhotoManagementPage = () => {
   const [showNewProjectDialog, setShowNewProjectDialog] = useState(false);
   const [newProjectName, setNewProjectName] = useState('');
 
+  // 사진 리스너 구독 관리 (projectId → unsubscribe 함수)
+  const photoUnsubscribesRef = useRef({});
+
   // ─── 초기 로드 ─────────────────────────────────────────
   useEffect(() => {
-    if (currentUser) {
-      loadProjects();
-      analyticsService.track('photo_management_viewed');
-    }
+    if (!currentUser) return;
+
+    analyticsService.track('photo_management_viewed');
+    setLoading(true);
+    setError(null);
+
+    // 프로젝트 실시간 리스너 등록
+    const unsubProjects = projectService.onProjectsChanged(
+      currentUser.uid,
+      (newProjects) => {
+        setProjects(newProjects);
+        setLoading(false);
+
+        // 새 프로젝트 ID 집합
+        const newIds = new Set(newProjects.map(p => p.id));
+
+        // 사라진 프로젝트 리스너 해제
+        Object.keys(photoUnsubscribesRef.current).forEach(id => {
+          if (!newIds.has(id)) {
+            photoUnsubscribesRef.current[id]();
+            delete photoUnsubscribesRef.current[id];
+          }
+        });
+
+        // 새 프로젝트에만 리스너 등록 (중복 방지)
+        newProjects.forEach(project => {
+          if (!photoUnsubscribesRef.current[project.id]) {
+            photoUnsubscribesRef.current[project.id] = projectService.onPhotosChanged(
+              project.id,
+              (photos) => {
+                setPhotosByProject(prev => ({ ...prev, [project.id]: photos }));
+              }
+            );
+          }
+        });
+
+        // 기본적으로 모든 프로젝트 펼치기 (새 프로젝트만)
+        setExpandedProjects(prev => {
+          const next = { ...prev };
+          newProjects.forEach(p => {
+            if (!(p.id in next)) next[p.id] = true;
+          });
+          return next;
+        });
+      }
+    );
+
+    // cleanup: 언마운트 시 모든 리스너 해제
+    return () => {
+      unsubProjects();
+      Object.values(photoUnsubscribesRef.current).forEach(unsub => unsub());
+      photoUnsubscribesRef.current = {};
+    };
   }, [currentUser]);
-
-  /**
-   * 프로젝트 목록 로드 (실시간 리스너)
-   */
-  const loadProjects = () => {
-    try {
-      setLoading(true);
-      setError(null);
-
-      // 실시간 리스너 등록
-      const unsubscribe = projectService.onProjectsChanged(
-        currentUser.uid,
-        (projects) => {
-          setProjects(projects);
-          setLoading(false);
-
-          // 각 프로젝트의 사진 로드
-          projects.forEach((project) => {
-            loadPhotosByProject(project.id);
-          });
-
-          // 프로젝트별로 기본적으로 펴기 상태로
-          const expanded = {};
-          projects.forEach((project) => {
-            expanded[project.id] = true;
-          });
-          setExpandedProjects(expanded);
-        }
-      );
-
-      // cleanup: 언마운트 시 리스너 해제
-      return unsubscribe;
-    } catch (err) {
-      console.error('❌ 프로젝트 로드 실패:', err);
-      setError(err.message);
-      analyticsService.trackError('project_load_failed', err.message);
-      setLoading(false);
-    }
-  };
-
-  /**
-   * 프로젝트별 사진 로드 (실시간 리스너)
-   */
-  const loadPhotosByProject = (projectId) => {
-    try {
-      const unsubscribe = projectService.onPhotosChanged(projectId, (photos) => {
-        setPhotosByProject((prev) => ({
-          ...prev,
-          [projectId]: photos,
-        }));
-      });
-
-      return unsubscribe;
-    } catch (err) {
-      console.error('❌ 사진 로드 실패:', err);
-    }
-  };
 
   // ─── 프로젝트 관리 ─────────────────────────────────────────
 
@@ -201,10 +196,9 @@ export const PhotoManagementPage = () => {
         file.name.split('.').pop()
       );
 
-      setUploadingFiles((prev) => ({
-        ...prev,
-        [photoDoc.docId]: 0,
-      }));
+      // photo.id(nanoid)를 key로 사용 - PhotoCard의 uploadingFiles[photo.id]와 일치
+      const photoKey = photoDoc.photoId;
+      setUploadingFiles((prev) => ({ ...prev, [photoKey]: 0 }));
 
       analyticsService.track('photo_upload_started', {
         fileName: file.name,
@@ -216,12 +210,7 @@ export const PhotoManagementPage = () => {
         file,
         currentUser.uid,
         (progress) => {
-          setUploadingFiles((prev) => ({
-            ...prev,
-            [photoDoc.docId]: progress,
-          }));
-
-          // 진행률 업데이트 (20% 단위)
+          setUploadingFiles((prev) => ({ ...prev, [photoKey]: progress }));
           if (progress % 20 === 0) {
             PhotoService.updateUploadProgress(photoDoc.docId, progress);
           }
@@ -233,7 +222,7 @@ export const PhotoManagementPage = () => {
 
       setUploadingFiles((prev) => {
         const newState = { ...prev };
-        delete newState[photoDoc.docId];
+        delete newState[photoKey];
         return newState;
       });
 
