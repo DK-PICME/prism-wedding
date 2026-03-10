@@ -26,7 +26,7 @@ export class PhotoService {
       const photoData = {
         id: photoId,
         userId,
-        folderId,
+        projectId: folderId,  // projectId로 저장 (ProjectServiceApi의 쿼리와 일치)
 
         // ── 파일 정보 ──
         fileName,
@@ -146,7 +146,7 @@ export class PhotoService {
       const q = query(
         collection(db, 'photos'),
         where('userId', '==', userId),
-        where('folderId', '==', folderId)
+        where('projectId', '==', folderId)  // projectId로 쿼리
       );
       const snapshot = await getDocs(q);
       return snapshot.docs.map((doc) => ({
