@@ -279,6 +279,7 @@ export const OrderListPage = () => {
             </div>
           </div>
         )}
+      </main>
 
       <PrismFooter />
     </div>
