@@ -152,7 +152,7 @@ export const CreateNewOrderPage = () => {
         totalAmount: priceBreakdown.totalAmount,
 
         // 상태
-        status: ORDER_STATUS.PENDING_PAYMENT, // PENDING_PAYMENT → PAID → CORRECTING → COMPLETED or CANCELLED
+        status: ORDER_STATUS.READY_TO_PAY, // READY_TO_PAY → PAID → CORRECTING → DELIVERY_DONE or CANCELLED
 
         // 타임아웃
         paymentDeadline: new Timestamp(

@@ -7,57 +7,57 @@
 
 export const ORDER_STATUS = {
   // 결제 단계
-  PENDING_PAYMENT: 'PENDING_PAYMENT',      // 10: 결제 대기 (초기 상태)
+  READY_TO_PAY: 'READY_TO_PAY',            // 10: 결제 대기 (초기 상태)
   WAITING_BANK_INPUT: 'WAITING_BANK_INPUT', // 25: 가상계좌 입금 대기
-  PAID: 'PAID',                            // 30: 결제 완료
+  PAID: 'PAID',                             // 30: 결제 완료
 
   // 작업 단계
-  CORRECTING: 'CORRECTING',                // 40: 사진 보정 중
-  PRINTING: 'PRINTING',                    // 50: 인화 중
-  BEFORE_DELIVERY: 'BEFORE_DELIVERY',      // 60: 배송 준비 중
+  CORRECTING: 'CORRECTING',                 // 40: 사진 보정 중
+  PRINTING: 'PRINTING',                     // 50: 인화 중
+  BEFORE_DELIVERY: 'BEFORE_DELIVERY',       // 60: 배송 준비 중
 
   // 배송 단계
-  IN_DELIVERY: 'IN_DELIVERY',              // 70: 배송 중
-  COMPLETED: 'COMPLETED',                  // 100: 배송 완료
+  IN_DELIVERY: 'IN_DELIVERY',               // 70: 배송 중
+  DELIVERY_DONE: 'DELIVERY_DONE',           // 100: 배송 완료
 
   // 취소
-  CANCELLED: 'CANCELLED',                  // 20: 주문 취소
+  CANCELLED: 'CANCELLED',                   // 20: 주문 취소
 } as const;
 
 export const ORDER_STATUS_CODE = {
-  PENDING_PAYMENT: 10,
+  READY_TO_PAY: 10,
   WAITING_BANK_INPUT: 25,
   PAID: 30,
   CORRECTING: 40,
   PRINTING: 50,
   BEFORE_DELIVERY: 60,
   IN_DELIVERY: 70,
-  COMPLETED: 100,
+  DELIVERY_DONE: 100,
   CANCELLED: 20,
 } as const;
 
 export const ORDER_STATUS_LABEL = {
-  PENDING_PAYMENT: '주문생성',
+  READY_TO_PAY: '주문생성',
   WAITING_BANK_INPUT: '입금대기',
   PAID: '결제완료',
   CORRECTING: '보정중',
   PRINTING: '인화중',
   BEFORE_DELIVERY: '배송대기',
   IN_DELIVERY: '배송중',
-  COMPLETED: '배송완료',
+  DELIVERY_DONE: '배송완료',
   CANCELLED: '주문취소',
 } as const;
 
 export const ORDER_STATUS_COLOR = {
-  PENDING_PAYMENT: 'indigo',      // 인디고
-  WAITING_BANK_INPUT: 'cyan',     // 시안
-  PAID: 'teal',                   // 틸
-  CORRECTING: 'amber',            // 앰버
-  PRINTING: 'purple',             // 보라
-  BEFORE_DELIVERY: 'orange',      // 오렌지
-  IN_DELIVERY: 'blue',            // 파랑
-  COMPLETED: 'green',             // 초록
-  CANCELLED: 'red',               // 빨강
+  READY_TO_PAY: 'indigo',      // 인디고
+  WAITING_BANK_INPUT: 'cyan',  // 시안
+  PAID: 'teal',                // 틸
+  CORRECTING: 'amber',         // 앰버
+  PRINTING: 'purple',          // 보라
+  BEFORE_DELIVERY: 'orange',   // 오렌지
+  IN_DELIVERY: 'blue',         // 파랑
+  DELIVERY_DONE: 'green',      // 초록
+  CANCELLED: 'red',            // 빨강
 } as const;
 
 /**
@@ -66,14 +66,14 @@ export const ORDER_STATUS_COLOR = {
  * Phase 3+: 모든 상태 활성화
  */
 export const ORDER_STATUS_ACTIONS = {
-  PENDING_PAYMENT: { cancel: false, delete: false, changeAddress: false },
+  READY_TO_PAY: { cancel: false, delete: false, changeAddress: false },
   WAITING_BANK_INPUT: { cancel: true, delete: false, changeAddress: true },
   PAID: { cancel: true, delete: false, changeAddress: true },
   CORRECTING: { cancel: false, delete: false, changeAddress: false },
   PRINTING: { cancel: false, delete: false, changeAddress: false },
   BEFORE_DELIVERY: { cancel: false, delete: false, changeAddress: false },
   IN_DELIVERY: { cancel: false, delete: false, changeAddress: false },
-  COMPLETED: { cancel: false, delete: true, changeAddress: false },
+  DELIVERY_DONE: { cancel: false, delete: true, changeAddress: false },
   CANCELLED: { cancel: false, delete: true, changeAddress: false },
 } as const;
 
@@ -81,14 +81,14 @@ export const ORDER_STATUS_ACTIONS = {
  * 상태 흐름 (전이 가능한 다음 상태들)
  */
 export const ORDER_STATUS_TRANSITIONS = {
-  PENDING_PAYMENT: ['PAID', 'CANCELLED'],
+  READY_TO_PAY: ['PAID', 'CANCELLED'],
   WAITING_BANK_INPUT: ['PAID', 'CANCELLED'],
   PAID: ['CORRECTING', 'CANCELLED'],
   CORRECTING: ['PRINTING'],
   PRINTING: ['BEFORE_DELIVERY'],
   BEFORE_DELIVERY: ['IN_DELIVERY'],
-  IN_DELIVERY: ['COMPLETED'],
-  COMPLETED: [],
+  IN_DELIVERY: ['DELIVERY_DONE'],
+  DELIVERY_DONE: [],
   CANCELLED: [],
 } as const;
 
@@ -97,10 +97,10 @@ export const ORDER_STATUS_TRANSITIONS = {
  * Phase 3에서 CORRECTING, PRINTING, BEFORE_DELIVERY, IN_DELIVERY 추가
  */
 export const PHASE_2_STATUSES = [
-  'PENDING_PAYMENT',
+  'READY_TO_PAY',
   'PAID',
-  'CORRECTING', // IN_PROGRESS로 표현되었던 부분
-  'COMPLETED',
+  'CORRECTING',
+  'DELIVERY_DONE',
   'CANCELLED',
 ] as const;
 

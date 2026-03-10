@@ -81,7 +81,7 @@ export const OrderListPage = () => {
   const stats = [
     { 
       label: '대기중', 
-      count: orders.filter(o => o.status === ORDER_STATUS.PENDING_PAYMENT).length,
+      count: orders.filter(o => o.status === ORDER_STATUS.READY_TO_PAY).length,
       icon: 'fa-clock' 
     },
     { 
@@ -91,7 +91,7 @@ export const OrderListPage = () => {
     },
     { 
       label: '완료', 
-      count: orders.filter(o => o.status === ORDER_STATUS.COMPLETED).length,
+      count: orders.filter(o => o.status === ORDER_STATUS.DELIVERY_DONE).length,
       icon: 'fa-check-circle' 
     },
   ];
@@ -99,14 +99,14 @@ export const OrderListPage = () => {
   // 상태 라벨
   const getStatusLabel = (status) => {
     const labelMap = {
-      [ORDER_STATUS.PENDING_PAYMENT]: { label: ORDER_STATUS_LABEL.PENDING_PAYMENT, icon: 'fa-clock' },
+      [ORDER_STATUS.READY_TO_PAY]: { label: ORDER_STATUS_LABEL.READY_TO_PAY, icon: 'fa-clock' },
       [ORDER_STATUS.WAITING_BANK_INPUT]: { label: ORDER_STATUS_LABEL.WAITING_BANK_INPUT, icon: 'fa-piggy-bank' },
       [ORDER_STATUS.PAID]: { label: ORDER_STATUS_LABEL.PAID, icon: 'fa-credit-card' },
       [ORDER_STATUS.CORRECTING]: { label: ORDER_STATUS_LABEL.CORRECTING, icon: 'fa-wand-magic-sparkles' },
       [ORDER_STATUS.PRINTING]: { label: ORDER_STATUS_LABEL.PRINTING, icon: 'fa-print' },
       [ORDER_STATUS.BEFORE_DELIVERY]: { label: ORDER_STATUS_LABEL.BEFORE_DELIVERY, icon: 'fa-box' },
       [ORDER_STATUS.IN_DELIVERY]: { label: ORDER_STATUS_LABEL.IN_DELIVERY, icon: 'fa-truck' },
-      [ORDER_STATUS.COMPLETED]: { label: ORDER_STATUS_LABEL.COMPLETED, icon: 'fa-check-circle' },
+      [ORDER_STATUS.DELIVERY_DONE]: { label: ORDER_STATUS_LABEL.DELIVERY_DONE, icon: 'fa-check-circle' },
       [ORDER_STATUS.CANCELLED]: { label: ORDER_STATUS_LABEL.CANCELLED, icon: 'fa-times' },
     };
     return labelMap[status] || { label: status, icon: 'fa-question' };
@@ -183,10 +183,10 @@ export const OrderListPage = () => {
                     className="px-4 py-3 border border-neutral-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-neutral-900 bg-white text-neutral-700"
                   >
                     <option value="all">전체 상태</option>
-                    <option value={ORDER_STATUS.PENDING_PAYMENT}>{ORDER_STATUS_LABEL.PENDING_PAYMENT}</option>
+                    <option value={ORDER_STATUS.READY_TO_PAY}>{ORDER_STATUS_LABEL.READY_TO_PAY}</option>
                     <option value={ORDER_STATUS.PAID}>{ORDER_STATUS_LABEL.PAID}</option>
                     <option value={ORDER_STATUS.CORRECTING}>{ORDER_STATUS_LABEL.CORRECTING}</option>
-                    <option value={ORDER_STATUS.COMPLETED}>{ORDER_STATUS_LABEL.COMPLETED}</option>
+                    <option value={ORDER_STATUS.DELIVERY_DONE}>{ORDER_STATUS_LABEL.DELIVERY_DONE}</option>
                     <option value={ORDER_STATUS.CANCELLED}>{ORDER_STATUS_LABEL.CANCELLED}</option>
                   </select>
                 </div>
@@ -244,14 +244,14 @@ export const OrderListPage = () => {
                               </td>
                               <td className="px-6 py-4">
                                 <span className={`inline-flex items-center gap-2 px-3 py-1 rounded-lg text-sm font-medium ${
-                                  order.status === ORDER_STATUS.PENDING_PAYMENT ? 'bg-indigo-50 text-indigo-700' :
+                                  order.status === ORDER_STATUS.READY_TO_PAY ? 'bg-indigo-50 text-indigo-700' :
                                   order.status === ORDER_STATUS.WAITING_BANK_INPUT ? 'bg-cyan-50 text-cyan-700' :
                                   order.status === ORDER_STATUS.PAID ? 'bg-teal-50 text-teal-700' :
                                   order.status === ORDER_STATUS.CORRECTING ? 'bg-amber-50 text-amber-700' :
                                   order.status === ORDER_STATUS.PRINTING ? 'bg-purple-50 text-purple-700' :
                                   order.status === ORDER_STATUS.BEFORE_DELIVERY ? 'bg-orange-50 text-orange-700' :
                                   order.status === ORDER_STATUS.IN_DELIVERY ? 'bg-blue-50 text-blue-700' :
-                                  order.status === ORDER_STATUS.COMPLETED ? 'bg-green-50 text-green-700' :
+                                  order.status === ORDER_STATUS.DELIVERY_DONE ? 'bg-green-50 text-green-700' :
                                   'bg-red-50 text-red-700'
                                 }`}>
                                   <i className={`fa-solid ${statusInfo.icon}`}></i>
