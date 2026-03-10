@@ -157,7 +157,7 @@ export const OrderDetailsPage = () => {
     <div className="min-h-screen flex flex-col bg-neutral-50">
       <PrismHeader />
 
-      <main className="flex-1 py-8 px-4">
+      <main className="flex-1 pt-[73px] pb-8 px-4">
         <div className="max-w-3xl mx-auto">
           {/* 페이지 제목 */}
           <div className="mb-8">
