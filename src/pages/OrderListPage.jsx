@@ -16,7 +16,6 @@ export const OrderListPage = () => {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [searchText, setSearchText] = useState('');
 
   // 주문 로드 (ProtectedRoute에서 인증 보장됨)
   useEffect(() => {
@@ -64,12 +63,7 @@ export const OrderListPage = () => {
     }
   }, [currentUser, navigate]);
 
-  // 필터링된 주문 목록
-  const filteredOrders = orders.filter(order =>
-    order.brideName?.toLowerCase().includes(searchText.toLowerCase()) ||
-    order.groomName?.toLowerCase().includes(searchText.toLowerCase()) ||
-    order.id?.toLowerCase().includes(searchText.toLowerCase())
-  );
+  // 주문 목록 (검색 없음 - 모두 표시)
 
   // 상태별 통계
   const stats = [
@@ -190,20 +184,6 @@ export const OrderListPage = () => {
                 </div>
               )}
 
-              {/* 검색 */}
-              <div className="bg-white border border-neutral-200 rounded-2xl p-6 mb-6">
-                <div className="relative">
-                  <i className="fa-solid fa-search absolute left-4 top-1/2 -translate-y-1/2 text-neutral-400"></i>
-                  <input
-                    type="text"
-                    placeholder="신부/신랑 이름, 주문 ID 검색..."
-                    value={searchText}
-                    onChange={(e) => setSearchText(e.target.value)}
-                    className="w-full pl-11 pr-4 py-3 border border-neutral-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-transparent"
-                  />
-                </div>
-              </div>
-
               {/* 통계 카드 */}
               <div className="grid grid-cols-3 gap-6 mb-8">
                 {stats.map((stat, idx) => (
@@ -220,7 +200,7 @@ export const OrderListPage = () => {
               </div>
 
               {/* 주문 테이블 */}
-              {filteredOrders.length === 0 ? (
+              {orders.length === 0 ? (
                 <div className="bg-white border border-neutral-200 rounded-2xl p-12 text-center">
                   <div className="text-6xl mb-4">📭</div>
                   <p className="text-neutral-600 text-lg">주문 내역이 없습니다</p>
@@ -246,7 +226,7 @@ export const OrderListPage = () => {
                         </tr>
                       </thead>
                       <tbody>
-                        {filteredOrders.map((order) => {
+                        {orders.map((order) => {
                           const statusInfo = getStatusLabel(order.status);
                           return (
                             <tr key={order.id} className="border-b border-neutral-100 hover:bg-neutral-50 cursor-pointer transition-colors">
