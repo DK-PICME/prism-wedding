@@ -16,6 +16,7 @@ export const PrismHeader = ({ activeNav = 'order-list' }) => {
   // 사용자 정보 우선순위: userData.displayName > currentUser.displayName > 이메일앞부분
   const displayName = userData?.displayName || currentUser?.displayName || currentUser?.email?.split('@')[0] || '사용자';
   const userEmail = userData?.email || currentUser?.email || 'user@example.com';
+  const photoURL = userData?.photoURL || currentUser?.photoURL || null;
 
   // 프로필 메뉴 외부 클릭 감지
   useEffect(() => {
@@ -88,11 +89,17 @@ export const PrismHeader = ({ activeNav = 'order-list' }) => {
               onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
               className="flex items-center gap-3 pl-4 border-l border-neutral-200 hover:bg-neutral-50 px-3 py-1 rounded-lg transition-colors"
             >
-              <img
-                src="https://api.dicebear.com/7.x/notionists/svg?scale=200&seed=4782"
-                alt="User"
-                className="w-10 h-10 rounded-full border-2 border-neutral-200"
-              />
+              {photoURL ? (
+                <img
+                  src={photoURL}
+                  alt="User"
+                  className="w-10 h-10 rounded-full border-2 border-neutral-200 object-cover"
+                />
+              ) : (
+                <div className="w-10 h-10 rounded-full border-2 border-neutral-200 bg-gradient-to-r from-neutral-800 to-neutral-600 flex items-center justify-center">
+                  <i className="fa-solid fa-user text-white text-sm"></i>
+                </div>
+              )}
               <div className="text-sm text-left">
                 <div className="text-neutral-900">{displayName}</div>
                 <div className="text-neutral-500 text-xs">{userEmail}</div>
