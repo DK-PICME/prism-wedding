@@ -40,9 +40,6 @@ export class PhotoService {
         status: 'UPLOADING',
 
         // ── 주문 연계 ──
-        isLocked: false,
-        lockedByOrder: null,
-        lockExpiry: null,
         usedInOrders: [],
 
         // ── 업로드 단계 ──
@@ -216,6 +213,7 @@ export class PhotoService {
       PROCESSING: '처리 중',
       READY: '준비완료',
       UPLOAD_FAILED: '업로드 실패',
+      PROCESSING_FAILED: '처리 실패',
       READONLY: '잠금',
     };
     return labels[status] || status;
@@ -228,9 +226,10 @@ export class PhotoService {
     const colors = {
       UPLOADING: 'bg-blue-100 text-blue-800',
       UPLOAD_COMPLETED: 'bg-purple-100 text-purple-800',
-      PROCESSING: 'bg-purple-100 text-purple-800',
+      PROCESSING: 'bg-orange-100 text-orange-800',
       READY: 'bg-green-100 text-green-800',
       UPLOAD_FAILED: 'bg-red-100 text-red-800',
+      PROCESSING_FAILED: 'bg-red-100 text-red-800',
       READONLY: 'bg-gray-100 text-gray-800',
     };
     return colors[status] || 'bg-gray-100 text-gray-800';

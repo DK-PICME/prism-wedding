@@ -197,8 +197,8 @@ export const PhotoManagementPage = () => {
         file.name.split('.').pop()
       );
 
-      // photo.id(nanoid)를 key로 사용 - PhotoCard의 uploadingFiles[photo.id]와 일치
-      const photoKey = photoDoc.photoId;
+      // Firestore docId를 key로 사용 - PhotoCard의 uploadingFiles[photo.id]와 일치
+      const photoKey = photoDoc.docId;
       setUploadingFiles((prev) => ({ ...prev, [photoKey]: 0 }));
 
       analyticsService.track('photo_upload_started', {
@@ -248,9 +248,9 @@ export const PhotoManagementPage = () => {
   /**
    * 사진 선택 토글
    */
-  const togglePhotoSelection = (photoId, status, isLocked) => {
-    // READY + !isLocked만 선택 가능
-    if (status !== 'READY' || isLocked) {
+  const togglePhotoSelection = (photoId, status) => {
+    // READY 상태만 선택 가능
+    if (status !== 'READY') {
       return;
     }
 
@@ -273,7 +273,7 @@ export const PhotoManagementPage = () => {
    */
   const handleToggleSelectAll = (projectId) => {
     const projectPhotos = photosByProject[projectId] || [];
-    const selectablePhotos = projectPhotos.filter(p => p.status === 'READY' && !p.isLocked);
+    const selectablePhotos = projectPhotos.filter(p => p.status === 'READY');
     
     if (selectablePhotos.length === 0) return;
 
@@ -480,8 +480,8 @@ export const PhotoManagementPage = () => {
                         onFileSelect={(files) => handleFileSelect(files, project.id)}
                         selectedPhotoIds={selectedPhotoIds}
                         uploadingFiles={uploadingFiles}
-                        onPhotoSelect={(photoId, status, isLocked) =>
-                          togglePhotoSelection(photoId, status, isLocked)
+                        onPhotoSelect={(photoId, status) =>
+                          togglePhotoSelection(photoId, status)
                         }
                         onPhotoDelete={(photoId, docId) =>
                           handleDeletePhoto(photoId, docId)
@@ -562,8 +562,8 @@ const ProjectSection = ({
 }) => {
   const fileInputRef = useRef(null);
   
-  // 선택 가능한 사진 계산 (READY + !isLocked)
-  const selectablePhotos = photos.filter(p => p.status === 'READY' && !p.isLocked);
+  // 선택 가능한 사진 계산 (READY)
+  const selectablePhotos = photos.filter(p => p.status === 'READY');
   const allSelected = selectablePhotos.length > 0 && selectablePhotos.every(p => selectedPhotoIds.has(p.id));
 
   return (
@@ -721,7 +721,7 @@ const PhotoCard = ({
   onDelete,
   formatFileSize,
 }) => {
-  const canSelect = photo.status === 'READY' && !photo.isLocked;
+  const canSelect = photo.status === 'READY';
 
   return (
     <div className="relative group">
@@ -765,7 +765,7 @@ const PhotoCard = ({
                 checked={isSelected}
                 onChange={(e) => {
                   e.stopPropagation();
-                  onSelect(photo.id, photo.status, photo.isLocked);
+                  onSelect(photo.id, photo.status);
                 }}
                 className="w-5 h-5 cursor-pointer"
               />

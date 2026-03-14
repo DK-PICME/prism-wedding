@@ -28,12 +28,12 @@
 | 항목 | 결정 | 이유 |
 |------|------|------|
 | **Order : Payment 관계** | 1 : N | 긴급보정 등 추가 결제 가능성 |
-| **사진 처리 방식** | 업로드 시 내부 백업 + 주문은 참조 | 업로드 CF에서 백업 완료, 주문은 photoIds 참조만 |
-| **~~복제 트리거~~** | ~~Cloud Function (Pub/Sub)~~ | 삭제됨 — 업로드 시 내부 백업 완료, 별도 주문 복제 불필요 |
-| **업로드 처리** | Event-Driven (S3 → Pub/Sub → CF) | 비동기, 확장성, UX 우수 |
+| **사진 처리 방식** | 업로드 시 필터링/변환 + 내부 백업 | 업로드 CF에서 처리 완료, 주문은 photoIds 참조만 |
+| **복제 트리거** | (삭제됨) | 업로드 시 이미 백업 완료되어 주문 시 별도 복제 불필요 |
+| **업로드 처리** | Event-Driven (Firebase Storage → CF) | 비동기, 확장성, UX 우수 |
 | **가격 테이블** | Firebase Remote Config + 로컬 기본값 | A/B 테스트 가능, 배포 없이 가격 변경 |
 | **PENDING 상태** | 프론트 로컬 상태만 (Firestore 저장 안 함) | 불필요한 고아 문서 방지 |
-| **COPYING_TO_ORDER 등** | 별도 상태 없이 `isLocked` 필드로 표현 | 7개 상태로 충분히 커버 가능 |
+| **isLocked (잠금)** | **[Phase 3로 연기]** | 구조 확정 전까지 구현 유예 (TODO) |
 
 ### 1.2 시스템 아키텍처
 
@@ -53,17 +53,15 @@
         └─────────────────────────┘
 
 [업로드 파이프라인]
-파일 선택 → S3 업로드 → S3 Event → Pub/Sub → CF: processUploadedPhoto()
+파일 선택 → Storage 업로드 → Storage Event → CF: processUploadedPhoto()
                                                     ├─ 썸네일 생성
-                                                    ├─ 내부 백업 복제
+                                                    ├─ 내부 백업 복제 (즉시 수행)
                                                     ├─ 미리보기/WebP 생성
                                                     └─ Photo.status = READY
 
 [주문 파이프라인]
-주문 생성 → Firestore Write → Pub/Sub → CF: photoCopyOnOrder()
-                                            ├─ 병렬 복제 (Worker Pool)
-                                            ├─ 지수 백오프 재시도
-                                            └─ Order.copyStatus = COMPLETED
+주문 생성 → Firestore Write → OrderDetailsPage (견적 확인) → PaymentPage (결제)
+                                            └─ 주문은 READY 사진을 photoIds로 참조만 함
 ```
 
 ---
@@ -112,9 +110,9 @@ interface Photo {
   status: PhotoStatus;
 
   // ── 주문 연계 (READY 상태에서 사용) ──
-  isLocked: boolean;             // 주문에 사용 중 여부 (COPYING_TO_ORDER/READONLY 대체)
-  lockedByOrder: string | null;  // 잠근 주문 ID
-  lockExpiry: Timestamp | null;  // 잠금 만료 시각 (주문 생성 후 30분)
+  isLocked: boolean;             // [TODO: Deferred] 주문에 사용 중 여부 (삭제 방지용)
+  lockedByOrder: string | null;  // [TODO: Deferred] 잠근 주문 ID
+  lockExpiry: Timestamp | null;  // [TODO: Deferred] 잠금 만료 시각
   usedInOrders: string[];        // 이 사진을 사용한 주문 ID 목록 (이력)
 
   // ── 업로드 단계 ──
@@ -238,11 +236,11 @@ interface Payment {
 | # | 상태 | 설명 | 담당 | 최종? |
 |---|------|------|------|-------|
 | 1 | `PENDING` | 파일 선택됨, 업로드 대기 | 프론트 로컬만 | ❌ (Firestore 저장 안 함) |
-| 2 | `UPLOADING` | S3 업로드 진행 중 | 프론트 + S3 | ❌ |
-| 3 | `UPLOAD_COMPLETED` | S3 저장 완료, CF 처리 대기 | S3 + Firestore | ❌ |
+| 2 | `UPLOADING` | Storage 업로드 진행 중 | 프론트 + Storage | ❌ |
+| 3 | `UPLOAD_COMPLETED` | Storage 저장 완료, CF 처리 대기 | Storage + Firestore | ❌ |
 | 4 | `PROCESSING` | 썸네일/백업/미리보기 생성 중 | Cloud Function | ❌ |
 | 5 | `READY` | ✅ 완전 완료, 주문 사용 가능 | Cloud Function | ✅ |
-| 6 | `UPLOAD_FAILED` | ❌ S3 업로드 실패 | 프론트 | ✅ |
+| 6 | `UPLOAD_FAILED` | ❌ 업로드 실패 | 프론트 | ✅ |
 | 7 | `PROCESSING_FAILED` | ❌ CF 처리 실패 (원본은 안전) | Cloud Function | ✅ |
 
 > **주문 연계 상태 표현**: 별도 상태 없이 `isLocked` + `lockedByOrder` 필드로 표현
@@ -259,10 +257,10 @@ PENDING ────────────────────────
   ▼                                                               │
 UPLOADING ──── 네트워크 에러 / 타임아웃(300s) ──► UPLOAD_FAILED   │
   │                                                  │            │
-  │ S3 업로드 100%                                   │ 재시도(최대3회)
+  │ Storage 업로드 100%                              │ 재시도(최대3회)
   ▼                                                  │            │
 UPLOAD_COMPLETED                                     └────────────┘
-  │ S3 Event → Pub/Sub → Cloud Function 자동 실행
+  │ Storage Event → Cloud Function 자동 실행
   ▼
 PROCESSING ──── CF 에러 / 타임아웃(180s) ──► PROCESSING_FAILED
   │                                              │
@@ -270,11 +268,8 @@ PROCESSING ──── CF 에러 / 타임아웃(180s) ──► PROCESSING_FAIL
   ▼                                              │
 READY ✅ ◄─────────────────────────────────────┘
   │
-  │ (주문 생성 시)
-  ├─ isLocked = true (복제 중)
-  │
-  │ (결제 완료 시)
-  └─ isLocked = false, usedInOrders에 추가
+  │ (주문 활용)
+  └─ usedInOrders에 추가 / isLocked(향후) 적용
 ```
 
 ### 3.3 타임아웃 정책
@@ -410,7 +405,7 @@ Step 2: 사진 관리 ⏳ (구현 중)
      │   └─ 실패 시 → UPLOAD_FAILED / PROCESSING_FAILED
      ├─ Project 비었을 때: 업로드 유도 메시지 표시
      ├─ Real-time 리스너 (onSnapshot): Project + Photo 실시간 업데이트
-     ├─ 사진 선택 로직 (체크박스: READY + !isLocked만 선택 가능)
+     ├─ 사진 선택 로직 (체크박스: READY 상태만 선택 가능)
      ├─ 상태별 UI (7가지 배지, 액션 버튼: 재시도/삭제)
      ├─ 하단: "선택됨 N개" + "주문 생성" 버튼
      └─ 📌 TODO: 사진을 다른 Project로 드래그 이동 (고도화)
@@ -472,7 +467,7 @@ OrderDetailsPage → PaymentPage
 ### 6.1 processUploadedPhoto (업로드 처리)
 
 ```
-트리거: Cloud Storage 업로드 이벤트 → Pub/Sub (topic: photo-uploads)
+트리거: Cloud Storage 업로드 이벤트 (onObjectFinalized)
 런타임: Node.js 20
 메모리: 512MB (sharp 라이브러리 + 이미지 버퍼 고려)
 타임아웃: 180초
@@ -583,20 +578,9 @@ useEffect(() => {
 // remaining <= 0: 만료 메시지 + "주문 재생성" 버튼
 ```
 
-### 7.3 세마포어 갱신 (OrderDetailsPage)
+### 7.3 [TODO: Deferred] 세마포어 갱신 (Phase 3)
 
-```javascript
-// 5분마다 Lock Duration 갱신 (메모리 누수 방지)
-useEffect(() => {
-  if (order.copyStatus !== 'COMPLETED') return; // 복제 완료 전에는 불필요
-
-  const interval = setInterval(async () => {
-    await renewSemaphoreLock(orderId, order.photoIds);
-  }, 5 * 60 * 1000);
-
-  return () => clearInterval(interval);  // ✅ cleanup 필수
-}, [orderId, order.copyStatus, order.photoIds]);
-```
+※ `isLocked` 구조 확정 후 구현 예정. 현재는 주문 시 별도 잠금 없이 진행.
 
 ---
 
@@ -630,18 +614,8 @@ PROCESSING_FAILED 발생 시:
 5. 14일 후 자동 삭제 (Cloud Scheduler, Phase 3)
 ```
 
-### 8.3 복제 실패 복구
-
-```
-Order.copyStatus = FAILED 발생 시:
-1. OrderDetailsPage에 에러 표시
-2. "복제 재시도" 버튼 표시
-3. 재시도 클릭:
-   ├─ Order.copyStatus = PENDING
-   ├─ Order.copyAttempt += 1
-   └─ Pub/Sub 이벤트 재발행 → CF 재실행
-4. 3회 초과 시 Admin 수동 처리 필요 (Admin Dashboard, Phase 3)
-```
+### 8.3 [삭제됨] 복제 실패 복구
+(업로드 시점에 이미 백업이 완료되므로 별도 주문 복제 실패 복구 로직 불필요)
 
 ### 8.4 타임아웃 처리
 
@@ -706,27 +680,19 @@ Order.paymentDeadline 초과 시:
 
 #### OrderDetailsPage
 - [ ] Firestore onSnapshot (Order 실시간 구독)
-- [ ] 복제 상태 표시 (copyStatus)
 - [ ] 타임아웃 카운트다운 (paymentDeadline 기준)
 - [ ] setInterval cleanup (메모리 누수 방지)
-- [ ] 세마포어 갱신 (5분마다, cleanup 포함)
-- [ ] "결제하기" 버튼 (copyStatus = COMPLETED 시 활성화)
-- [ ] 복제 실패 시 재시도 버튼
+- [ ] "결제하기" 버튼 활성화
 
-### Phase 2-2: 사진 복제 Cloud Function (3-4일)
+### Phase 2-2: 사진 처리 Cloud Function (3-4일)
 
 - [ ] Cloud Function 프로젝트 초기화 (`functions/`)
 - [ ] `processUploadedPhoto()` 구현
   - [ ] photoId를 메타데이터에서 추출
   - [ ] sharp 라이브러리 (메모리 512MB 설정)
-  - [ ] 썸네일 / 미리보기 / WebP / 백업 생성
+  - [ ] 썸네일 / 미리보기 / WebP / 백업 생성 (백업은 업로드 즉시 수행)
   - [ ] Photo 문서 업데이트 (READY)
   - [ ] 에러 시 PROCESSING_FAILED 처리
-- [ ] `photoCopyOnOrder()` 구현
-  - [ ] Firestore 트리거 설정
-  - [ ] Worker Pool 병렬 복제
-  - [ ] 지수 백오프 재시도
-  - [ ] Order.copyStatus 업데이트
 - [ ] Cloud Function 배포 및 테스트
 
 ### Phase 2-3: 결제 페이지 (1-2일)
