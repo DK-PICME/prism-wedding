@@ -1,8 +1,14 @@
 const { onRequest } = require('firebase-functions/v2/https');
+const { onObjectFinalized } = require('firebase-functions/v2/storage');
 const { initializeApp } = require('firebase-admin/app');
 const { getFirestore, Timestamp, FieldValue } = require('firebase-admin/firestore');
+const { getStorage } = require('firebase-admin/storage');
 const express = require('express');
 const cors = require('cors');
+const path = require('path');
+const os = require('os');
+const fs = require('fs');
+const sharp = require('sharp');
 
 initializeApp();
 const db = getFirestore();
@@ -398,3 +404,153 @@ app.get('/health', (req, res) => {
 // ─── Firebase Functions export ────────────────────────────────────────────────
 
 exports.api = onRequest({ region: 'asia-northeast3' }, app);
+
+/**
+ * processUploadedPhoto
+ * 
+ * 사진 업로드 이벤트 트리거 (Storage)
+ * - 썸네일, 미리보기, WebP 생성
+ * - Firestore 문서 업데이트 (READY)
+ */
+exports.processUploadedPhoto = onObjectFinalized({ 
+  bucket: 'prism-wedding-84b5d.appspot.com',
+  memory: '512MiB', 
+  timeoutSeconds: 120 
+}, async (event) => {
+  const file = event.data;
+  const filePath = file.name; // user-uploads/{uid}/{projectId}/{photoId}.ext
+  const contentType = file.contentType;
+  const bucketName = file.bucket;
+
+  // 이미지 파일만 처리
+  if (!contentType || !contentType.startsWith('image/')) {
+    console.log('이미지 파일이 아님:', contentType);
+    return null;
+  }
+
+  // user-uploads 경로만 처리
+  if (!filePath.startsWith('user-uploads/')) {
+    console.log('user-uploads 경로가 아님:', filePath);
+    return null;
+  }
+
+  // photoId는 파일명에서 추출 (StorageService의 filename = ${photoId}.${fileExt})
+  const fileName = path.basename(filePath);
+  const photoId = fileName.split('.')[0];
+
+  console.log(`📸 사진 처리 시작: ${photoId} (경로: ${filePath})`);
+
+  try {
+    // 1. Firestore에서 해당 사진 문서 조회
+    const photosRef = db.collection('photos');
+    const snapshot = await photosRef.where('id', '==', photoId).limit(1).get();
+
+    if (snapshot.empty) {
+      console.warn(`⚠️ Firestore에서 Photo 문서를 찾을 수 없음: ${photoId}`);
+      return null;
+    }
+
+    const photoDoc = snapshot.docs[0];
+    const photoDocRef = photoDoc.ref;
+
+    // 수동 상태 업데이트 (PROCESSING)
+    await photoDocRef.update({
+      status: 'PROCESSING',
+      processStartTime: FieldValue.serverTimestamp(),
+      updatedAt: FieldValue.serverTimestamp(),
+    });
+
+    // 2. 임시 디렉토리에 원본 파일 다운로드
+    const tempFilePath = path.join(os.tmpdir(), fileName);
+    const bucket = getStorage().bucket(bucketName);
+    await bucket.file(filePath).download({ destination: tempFilePath });
+
+    // 3. 사진 처리 (Thumbnail, Preview, WebP)
+    const thumbnailName = `thumb_${photoId}.jpg`;
+    const previewName = `prev_${photoId}.jpg`;
+    const webpName = `webp_${photoId}.webp`;
+
+    const thumbnailLocalPath = path.join(os.tmpdir(), thumbnailName);
+    const previewLocalPath = path.join(os.tmpdir(), previewName);
+    const webpLocalPath = path.join(os.tmpdir(), webpName);
+
+    // Sharp로 이미지 처리
+    const image = sharp(tempFilePath);
+    const metadata = await image.metadata();
+
+    // 썸네일 (100x100), 미리보기 (500x500), WebP 변환
+    await Promise.all([
+      image.clone().resize(100, 100, { fit: 'cover' }).jpeg({ quality: 80 }).toFile(thumbnailLocalPath),
+      image.clone().resize(500, 500, { fit: 'inside' }).jpeg({ quality: 85 }).toFile(previewLocalPath),
+      image.clone().webp({ quality: 80 }).toFile(webpLocalPath),
+    ]);
+
+    // 4. 처리된 파일들을 Storage에 업로드 (generated 디렉토리)
+    const folderPath = path.dirname(filePath); // user-uploads/{uid}/{projectId}
+    const generatedPath = folderPath.replace('user-uploads', 'processed');
+
+    const uploadOptions = {
+        metadata: {
+            contentType: 'image/jpeg',
+            cacheControl: 'public,max-age=3600',
+        },
+    };
+
+    await Promise.all([
+      bucket.upload(thumbnailLocalPath, { ...uploadOptions, destination: `${generatedPath}/${thumbnailName}` }),
+      bucket.upload(previewLocalPath, { ...uploadOptions, destination: `${generatedPath}/${previewName}` }),
+      bucket.upload(webpLocalPath, { 
+        ...uploadOptions, 
+        destination: `${generatedPath}/${webpName}`,
+        metadata: { contentType: 'image/webp' }
+      }),
+    ]);
+
+    // 5. 완료 후 Firestore 업데이트
+    // 에뮬레이터 환경에서는 getDownloadURL 대신 직접 경로를 구성할 수도 있음
+    // 여기서는 간단히 경로 정보만 저장하거나, 에뮬레이터 도메인을 포함한 가상 URL 저장
+    const baseUrl = `http://localhost:9199/v0/b/${bucketName}/o`;
+    const getUrl = (p) => `${baseUrl}/${encodeURIComponent(p)}?alt=media`;
+
+    await photoDocRef.update({
+      status: 'READY',
+      thumbnailUrl: getUrl(`${generatedPath}/${thumbnailName}`),
+      previewUrl: getUrl(`${generatedPath}/${previewName}`),
+      webpUrl: getUrl(`${generatedPath}/${webpName}`),
+      metadata: {
+        width: metadata.width,
+        height: metadata.height,
+        format: metadata.format,
+        colorspace: metadata.space,
+        hasAlpha: metadata.hasAlpha,
+      },
+      processEndTime: FieldValue.serverTimestamp(),
+      updatedAt: FieldValue.serverTimestamp(),
+    });
+
+    // 6. 임시 파일 삭제
+    fs.unlinkSync(tempFilePath);
+    fs.unlinkSync(thumbnailLocalPath);
+    fs.unlinkSync(previewLocalPath);
+    fs.unlinkSync(webpLocalPath);
+
+    console.log(`✅ 사진 처리 완료: ${photoId}`);
+
+  } catch (error) {
+    console.error(`❌ 사진 처리 실패: ${photoId}`, error);
+    
+    // 실패 상태 저장
+    const photosRef = db.collection('photos');
+    const snapshot = await photosRef.where('id', '==', photoId).limit(1).get();
+    if (!snapshot.empty) {
+      await snapshot.docs[0].ref.update({
+        status: 'PROCESSING_FAILED',
+        processingError: error.message,
+        processEndTime: FieldValue.serverTimestamp(),
+        updatedAt: FieldValue.serverTimestamp(),
+      });
+    }
+  }
+
+  return null;
+});
