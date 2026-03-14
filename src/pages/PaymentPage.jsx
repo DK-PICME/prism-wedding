@@ -9,6 +9,18 @@ import priceConfigService from '../services/PriceConfigService.js';
 import analyticsService from '../services/AnalyticsService.js';
 import { ORDER_STATUS } from '../constants/OrderStatus.ts';
 
+const CORRECTION_PURPOSE_LABEL = {
+  invitation: '📱 모바일 청첩장',
+  table: '🖼️ 포토 테이블',
+  personal: '💾 소장용',
+  other: '✏️ 기타',
+};
+
+const CORRECTION_OPTION_LABEL = {
+  basic: '기본 보정',
+  urgent: '긴급 보정 ⚡',
+};
+
 /**
  * PaymentPage - 결제 처리 페이지
  * 
@@ -236,20 +248,24 @@ export const PaymentPage = () => {
 
               <div className="space-y-3 text-sm">
                 <div className="flex justify-between">
-                  <span className="text-neutral-600">신부/신랑</span>
+                  <span className="text-neutral-600">신부 / 신랑</span>
                   <span className="font-medium">{order.brideName} / {order.groomName}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-neutral-600">촬영 유형</span>
-                  <span className="font-medium">{order.shootingType}</span>
+                  <span className="text-neutral-600">보정 목적</span>
+                  <span className="font-medium">
+                    {CORRECTION_PURPOSE_LABEL[order.correctionPurpose] || order.correctionPurpose || '-'}
+                  </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-neutral-600">촬영 장소</span>
-                  <span className="font-medium">{order.location}</span>
+                  <span className="text-neutral-600">보정 옵션</span>
+                  <span className="font-medium">
+                    {CORRECTION_OPTION_LABEL[order.correctionOption] || order.correctionOption}
+                  </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-neutral-600">선택된 사진</span>
-                  <span className="font-medium">{order.photoIds.length}장</span>
+                  <span className="font-medium">{order.photoIds?.length ?? 0}장</span>
                 </div>
                 <div className="border-t border-neutral-200 pt-3 flex justify-between">
                   <span className="text-neutral-600">총 결제액</span>

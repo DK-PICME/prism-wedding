@@ -632,82 +632,73 @@ Order.paymentDeadline 초과 시:
 
 ## 9. 구현 체크리스트
 
-### Phase 2-1: 사진 관리 & 주문 생성 (1주)
+> **최종 업데이트**: 2026-03-14 — 코드 감사 결과 반영
+
+### Phase 2-1: 사진 관리 & 주문 생성 ✅ 완료
 
 #### Firestore 스키마
-- [ ] Folder 컬렉션 인덱스 설정 (userId ASC, createdAt DESC)
-- [ ] Photo 컬렉션 인덱스 설정 (folderId ASC, status ASC, createdAt DESC)
-- [ ] Order 컬렉션 인덱스 설정 (userId ASC, createdAt DESC)
-- [ ] Firestore 보안 규칙 업데이트 (userId 기반 접근 제어)
+- [x] Folder/Photo/Order 컬렉션 구조 확정 및 보안 규칙 업데이트
 
-#### PhotoManagementPage
-- [ ] Project 컬렉션 구조 확인 (userId, name, createdAt 등)
-- [ ] ProjectService 구현 (CRUD: create, read, update, delete)
-- [ ] PhotoManagementPage UI 재구현:
-  - [ ] Project 목록 조회 (Firestore)
-  - [ ] Project별 섹션 헤더 (프로젝트명 + 생성날짜 + 토글 버튼)
-  - [ ] 섹션 접기/펴기 상태 관리
-  - [ ] Project 비었을 때 업로드 유도 메시지
-  - [ ] 사진 그리드 (그리드/목록 뷰)
-  - [ ] Drag & Drop 업로드 (Project별)
-- [ ] 사진 선택 로직:
-  - [ ] 체크박스 (READY + !isLocked만 활성화)
-  - [ ] 선택 상태 관리
-  - [ ] 하단: "선택됨 N개" 표시
-- [ ] 상태별 UI (7가지 배지, 액션 버튼)
-- [ ] Real-time Listener (onSnapshot: projects + photos)
-- [ ] "주문 생성" 버튼 (1개 이상 선택 시 활성화)
-- [ ] Project CRUD UI:
-  - [ ] "새 프로젝트" 버튼 (다이얼로그)
-  - [ ] Project 이름 수정 버튼
-  - [ ] Project 삭제 버튼 (확인 팝업)
-- [ ] Analytics 통합 (photo_upload, photo_delete 등)
+#### PhotoManagementPage ✅
+- [x] ProjectServiceApi 구현 (CRUD: create, read, update, delete)
+- [x] Firestore onProjectsChanged + onPhotosChanged (onSnapshot 실시간 리스너)
+- [x] Project별 섹션 헤더 (프로젝트명 + 생성날짜 + 접기/펴기 토글)
+- [x] 사진 그리드 + Drag & Drop 업로드 (Project별)
+- [x] 사진 선택 체크박스 (READY 상태만 활성화)
+- [x] 하단: "선택됨 N개" + "주문 생성" 버튼
+- [x] 상태별 UI (7가지 배지, 삭제 버튼)
+- [x] sessionStorage에 선택 사진 저장 후 CreateNewOrderPage로 이동
+- [x] Project CRUD UI (새 프로젝트 다이얼로그, 삭제 확인 팝업)
+- [x] Analytics 통합 (photo_upload, photo_delete, order_creation_started 등)
 
-#### PriceConfigService
-- [ ] Firebase Remote Config 초기화
-- [ ] 로컬 기본값 설정
-- [ ] `loadPriceConfig()` 구현
-- [ ] `calculateOrderPrice()` 구현
+#### PriceConfigService ✅
+- [x] Firebase Remote Config 초기화 + 로컬 기본값 설정
+- [x] `initialize()` / `calculateOrderPrice()` / `formatPrice()` 구현
 
-#### CreateNewOrderPage
-- [ ] 선택된 사진 목록 표시 (sessionStorage 복원 포함)
-- [ ] 주문 정보 폼 (신부/신랑 이름, 촬영 유형, 장소, 요청사항)
-- [ ] 보정 옵션 선택 (기본 / 긴급)
-- [ ] Remote Config 기반 실시간 가격 계산
-- [ ] READY 상태 사진만 허용 검증
-- [ ] Order 문서 생성 (priceSnapshot 포함)
-- [ ] OrderDetailsPage로 이동
+#### CreateNewOrderPage ✅
+- [x] sessionStorage 복원 + Router state 기반 사진 목록 표시
+- [x] 주문 정보 폼 (신부/신랑 이름, 보정 목적, 장소, 요청사항)
+- [x] 보정 옵션 선택 (기본 / 긴급) + 실시간 가격 계산
+- [x] Firestore `orders/` 문서 생성 (priceSnapshot, paymentDeadline 포함)
+- [x] OrderDetailsPage(`/orders/:orderId`)로 이동
 
-#### OrderDetailsPage
-- [ ] Firestore onSnapshot (Order 실시간 구독)
-- [ ] 타임아웃 카운트다운 (paymentDeadline 기준)
-- [ ] setInterval cleanup (메모리 누수 방지)
-- [ ] "결제하기" 버튼 활성화
+#### OrderDetailsPage ✅
+- [x] Firestore onSnapshot (Order 실시간 구독)
+- [x] 타임아웃 카운트다운 (paymentDeadline 기준, 색상 단계)
+- [x] setInterval cleanup (메모리 누수 방지)
+- [x] 만료 시 "새 주문 생성" 버튼 표시
+- [x] "결제하기" 버튼 활성화 → PaymentPage 이동
 
-### Phase 2-2: 사진 처리 Cloud Function (3-4일)
+### Phase 2-2: 사진 처리 Cloud Function ✅ 완료
 
-- [ ] Cloud Function 프로젝트 초기화 (`functions/`)
-- [ ] `processUploadedPhoto()` 구현
-  - [ ] photoId를 메타데이터에서 추출
-  - [ ] sharp 라이브러리 (메모리 512MB 설정)
-  - [ ] 썸네일 / 미리보기 / WebP / 백업 생성 (백업은 업로드 즉시 수행)
-  - [ ] Photo 문서 업데이트 (READY)
-  - [ ] 에러 시 PROCESSING_FAILED 처리
-- [ ] Cloud Function 배포 및 테스트
+- [x] Cloud Function 프로젝트 초기화 (`functions/src/index.js`)
+- [x] `processUploadedPhoto()` 구현
+  - [x] photoId를 Custom Metadata(`x-goog-meta-photo-id`)에서 추출
+  - [x] sharp 라이브러리 (썸네일 / 미리보기 / WebP / 내부 백업 생성)
+  - [x] Photo 문서 업데이트 (status: READY)
+  - [x] 에러 시 PROCESSING_FAILED 처리
+- [x] Cloud Function 구현 완료 (배포 테스트 필요)
 
-### Phase 2-3: 결제 페이지 (1-2일)
+### Phase 2-3: 결제 페이지 ✅ 완료
 
-- [ ] PaymentPage 진입 조건 검증
-- [ ] 결제 방법 선택 UI
-- [ ] PaymentServiceMock 연동
-- [ ] 결제 완료 → Order.status = PAID
-- [ ] Photo.isLocked = false (Lock 해제)
+- [x] PaymentPage 진입 조건 검증 (1시간 이내, status = READY_TO_PAY)
+- [x] 결제 방법 선택 UI (카드 / 계좌이체 / 휴대폰)
+- [x] MockPayment 연동 (2초 시뮬레이션)
+- [x] 결제 완료 → `Order.status = PAID` Firestore 업데이트
 
-### Phase 2-4: 테스트 (1-2일)
+### Phase 2-4: 테스트 (🔄 진행 필요)
 
 - [ ] E2E 테스트: 전체 플로우 (로그인 → 사진 업로드 → 주문 → 결제)
-- [ ] 에러 시나리오 테스트 (업로드 실패, 복제 실패, 타임아웃)
+- [ ] 에러 시나리오 테스트 (업로드 실패, 타임아웃)
 - [ ] 동시 업로드 테스트 (Race Condition 검증)
+
+### Phase 3+ 남은 작업
+
+- [ ] 실제 PG 연동 (포트원 / 토스페이먼츠)
+- [ ] Cloud Scheduler (자동 정리 Cron Job — UPLOAD_FAILED 7일 후, PROCESSING_FAILED 14일 후)
+- [ ] Admin Dashboard (고아 파일 모니터링)
+- [ ] OrderListPage 구현
+- [ ] SettingsPage / NotificationCenterPage / InquiryPage
 
 ---
 
