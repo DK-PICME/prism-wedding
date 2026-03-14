@@ -3,8 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { PrismFooter } from '../components/PrismFooter';
 import { useAuth } from '../contexts/AuthContext';
 
-// 개발 환경 플래그
-const isDev = import.meta.env.VITE_ENABLE_DEV_LOGIN === 'true';
+// 개발 환경 플래그 (VITE_USE_EMULATOR로 통일)
+const isDev = import.meta.env.VITE_USE_EMULATOR === 'true';
 const devEmail = import.meta.env.VITE_DEV_TEST_EMAIL || 'test@prism.com';
 const devPassword = import.meta.env.VITE_DEV_TEST_PASSWORD || 'testPassword123';
 
